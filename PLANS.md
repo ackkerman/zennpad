@@ -25,6 +25,7 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [x] GitHub Contents API との read/write/delete 実装（sha 管理・競合検知）
   - [x] 仮想FSと実ストレージの同期（URI → GitHub パス変換、pull/push）
   - [ ] TreeDataProvider を GitHub 上の articles/books 構造から生成（LRU/ステータス表示）
+  - [ ] Scrap対応？そもそもScrapはGithubに置かれないから編集できない？
 
 - コマンド実装
   - [x] 新規 Article/Book/Chapter 作成ロジック（slug 自動生成、日付ドラフト命名）

@@ -159,6 +159,21 @@ export function activate(context: vscode.ExtensionContext): void {
       }
       await vscode.env.clipboard.writeText(url);
       vscode.window.showInformationMessage("Copied Zenn article link to clipboard.");
+    }),
+    vscode.commands.registerCommand("zennpad.copyZennUrl", async (resource?: vscode.Uri) => {
+      await copyZennUrl(resource);
+    }),
+    vscode.commands.registerCommand("zennpad.copyGithubUrl", async (resource?: vscode.Uri) => {
+      await copyGithubUrl(resource);
+    }),
+    vscode.commands.registerCommand("zennpad.renameNode", async (resource?: vscode.Uri) => {
+      await renameNode(resource, fsProvider, treeDataProvider);
+    }),
+    vscode.commands.registerCommand("zennpad.duplicateNode", async (resource?: vscode.Uri) => {
+      await duplicateNode(resource, fsProvider, treeDataProvider);
+    }),
+    vscode.commands.registerCommand("zennpad.deleteNode", async (resource?: vscode.Uri) => {
+      await deleteNode(resource, fsProvider, treeDataProvider);
     })
   );
 
@@ -204,6 +219,145 @@ function seedScaffoldContent(fsProvider: ZennFsProvider, scheme: string): void {
   ensureDirectory("/articles");
   ensureDirectory("/books");
   ensureDirectory("/books/example-book");
+}
+
+async function copyZennUrl(resource?: vscode.Uri | { resourceUri?: vscode.Uri }): Promise<void> {
+  const uri = resolveResourceUri(resource) ?? vscode.window.activeTextEditor?.document?.uri;
+  if (!uri || !isZennUri(uri)) {
+    vscode.window.showWarningMessage("Open a ZennPad file to copy its Zenn URL.");
+    return;
+  }
+  const doc = await vscode.workspace.openTextDocument(uri);
+  const url = buildZennUrlFromDoc(doc);
+  if (!url) {
+    vscode.window.showErrorMessage("Could not determine Zenn URL for this file.");
+    return;
+  }
+  await vscode.env.clipboard.writeText(url);
+  vscode.window.showInformationMessage("Copied Zenn URL to clipboard.");
+}
+
+async function copyGithubUrl(resource?: vscode.Uri | { resourceUri?: vscode.Uri }): Promise<void> {
+  const uri = resolveResourceUri(resource) ?? vscode.window.activeTextEditor?.document?.uri;
+  if (!uri || !isZennUri(uri)) {
+    vscode.window.showWarningMessage("Open a ZennPad file to copy its GitHub URL.");
+    return;
+  }
+  const config = vscode.workspace.getConfiguration("zennpad");
+  const owner = config.get<string>("githubOwner")?.trim();
+  const repo = config.get<string>("githubRepo")?.trim();
+  const branch = config.get<string>("githubBranch")?.trim() || "main";
+  if (!owner || !repo) {
+    vscode.window.showErrorMessage("Set zennpad.githubOwner and zennpad.githubRepo to copy GitHub URL.");
+    return;
+  }
+  const path = uri.path.startsWith("/") ? uri.path.slice(1) : uri.path;
+  const url = `https://github.com/${owner}/${repo}/blob/${branch}/${path}`;
+  await vscode.env.clipboard.writeText(url);
+  vscode.window.showInformationMessage("Copied GitHub URL to clipboard.");
+}
+
+async function renameNode(
+  resource: vscode.Uri | { resourceUri?: vscode.Uri } | undefined,
+  fsProvider: ZennFsProvider,
+  treeDataProvider: ZennTreeDataProvider
+): Promise<void> {
+  const uri = resolveResourceUri(resource) ?? vscode.window.activeTextEditor?.document?.uri;
+  if (!uri || !isZennUri(uri)) {
+    vscode.window.showWarningMessage("Select a ZennPad item to rename.");
+    return;
+  }
+  const segments = uri.path.split("/");
+  const currentName = segments.pop() ?? "";
+  const basePath = segments.join("/");
+  const input = await vscode.window.showInputBox({
+    prompt: "Enter new file name (with .md)",
+    value: currentName,
+    ignoreFocusOut: true
+  });
+  if (!input || input === currentName) {
+    return;
+  }
+  const newUri = vscode.Uri.from({ scheme: uri.scheme, path: `${basePath}/${input}` });
+  try {
+    fsProvider.rename(uri, newUri, { overwrite: false });
+    treeDataProvider.refresh();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    vscode.window.showErrorMessage(`[ZennPad] Rename failed: ${message}`);
+  }
+}
+
+async function duplicateNode(
+  resource: vscode.Uri | { resourceUri?: vscode.Uri } | undefined,
+  fsProvider: ZennFsProvider,
+  treeDataProvider: ZennTreeDataProvider
+): Promise<void> {
+  const uri = resolveResourceUri(resource) ?? vscode.window.activeTextEditor?.document?.uri;
+  if (!uri || !isZennUri(uri)) {
+    vscode.window.showWarningMessage("Select a ZennPad item to duplicate.");
+    return;
+  }
+  let targetContent: Uint8Array;
+  try {
+    targetContent = fsProvider.readFile(uri);
+  } catch (error) {
+    vscode.window.showErrorMessage(`[ZennPad] Duplicate failed: ${error instanceof Error ? error.message : String(error)}`);
+    return;
+  }
+  const segments = uri.path.split("/");
+  const filename = segments.pop() ?? "";
+  const basePath = segments.join("/");
+  const candidate = filename.replace(/\.md$/, "");
+  const newName = `${candidate}-copy.md`;
+  const newUri = vscode.Uri.from({ scheme: uri.scheme, path: `${basePath}/${newName}` });
+  try {
+    fsProvider.writeFile(newUri, targetContent, { create: true, overwrite: false });
+    treeDataProvider.refresh();
+    const document = await vscode.workspace.openTextDocument(newUri);
+    await vscode.window.showTextDocument(document);
+  } catch (error) {
+    vscode.window.showErrorMessage(`[ZennPad] Duplicate failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+async function deleteNode(
+  resource: vscode.Uri | { resourceUri?: vscode.Uri } | undefined,
+  fsProvider: ZennFsProvider,
+  treeDataProvider: ZennTreeDataProvider
+): Promise<void> {
+  const uri = resolveResourceUri(resource) ?? vscode.window.activeTextEditor?.document?.uri;
+  if (!uri || !isZennUri(uri)) {
+    vscode.window.showWarningMessage("Select a ZennPad item to delete.");
+    return;
+  }
+  const confirm = await vscode.window.showWarningMessage(
+    `Delete ${uri.path}? This cannot be undone.`,
+    { modal: true },
+    "Delete"
+  );
+  if (confirm !== "Delete") {
+    return;
+  }
+  try {
+    fsProvider.delete(uri, { recursive: true });
+    treeDataProvider.refresh();
+  } catch (error) {
+    vscode.window.showErrorMessage(`[ZennPad] Delete failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+function resolveResourceUri(resource?: vscode.Uri | { resourceUri?: vscode.Uri }): vscode.Uri | undefined {
+  if (!resource) {
+    return undefined;
+  }
+  if (resource instanceof vscode.Uri) {
+    return resource;
+  }
+  if ("resourceUri" in resource && resource.resourceUri instanceof vscode.Uri) {
+    return resource.resourceUri;
+  }
+  return undefined;
 }
 
 async function createArticle(fsProvider: ZennFsProvider, treeDataProvider: ZennTreeDataProvider, scheme: string): Promise<void> {

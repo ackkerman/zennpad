@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { ZennFsProvider } from "./zennFsProvider";
+import { parseFrontmatter } from "./frontmatter";
 
 export type ZennNodeType = "articles" | "books" | "drafts" | "chapter" | "book" | "article";
 
@@ -12,6 +13,7 @@ export interface ZennTreeItemDescriptor {
   readonly iconPath?: vscode.ThemeIcon;
   readonly command?: vscode.Command;
   readonly published?: boolean;
+  readonly tooltip?: string;
 }
 
 class ZennTreeItem extends vscode.TreeItem {
@@ -20,6 +22,7 @@ class ZennTreeItem extends vscode.TreeItem {
     this.contextValue = descriptor.contextValue;
     this.description = descriptor.description;
     this.resourceUri = descriptor.resourceUri;
+    this.tooltip = descriptor.tooltip;
     if (descriptor.resourceUri && descriptor.collapsibleState === vscode.TreeItemCollapsibleState.None) {
       this.command = {
         command: "vscode.open",
@@ -111,32 +114,38 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([name]) => {
         const uri = this.buildUri(`/articles/${name}`);
-        const published = this.readPublished(uri);
+        const frontmatter = this.readFrontmatter(uri);
+        const published = frontmatter?.published;
         return new ZennTreeItem({
           label: name,
           collapsibleState: vscode.TreeItemCollapsibleState.None,
           contextValue: "article",
           resourceUri: uri,
-          published
+          published,
+          tooltip: this.buildTooltip(frontmatter)
         });
       });
   }
 
   private getDraftItems(): ZennTreeItem[] {
-    const draftPattern = /(draft|daily)/i;
     return this.readDirectory("/articles")
-      .filter(([name, type]) => type === vscode.FileType.File && draftPattern.test(name))
-      .sort(([a], [b]) => a.localeCompare(b))
+      .filter(([, type]) => type === vscode.FileType.File)
       .map(([name]) => {
         const uri = this.buildUri(`/articles/${name}`);
         const published = this.readPublished(uri);
+        return { name, uri, published };
+      })
+      .filter((entry) => entry.published === false)
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((entry) => {
         return new ZennTreeItem({
-          label: name,
+          label: entry.name,
           collapsibleState: vscode.TreeItemCollapsibleState.None,
           contextValue: "article",
           description: "draft",
-          resourceUri: uri,
-          published
+          resourceUri: entry.uri,
+          published: entry.published,
+          tooltip: this.buildTooltip(this.readFrontmatter(entry.uri))
         });
       });
   }
@@ -165,13 +174,15 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([name]) => {
         const uri = this.buildUri(`${bookPath}/${name}`);
-        const published = this.readPublished(uri);
+        const frontmatter = this.readFrontmatter(uri);
+        const published = frontmatter?.published;
         return new ZennTreeItem({
           label: name,
           collapsibleState: vscode.TreeItemCollapsibleState.None,
           contextValue: "chapter",
           resourceUri: uri,
-          published
+          published,
+          tooltip: this.buildTooltip(frontmatter)
         });
       });
   }
@@ -204,6 +215,42 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
       // Ignore parse failures.
     }
     return undefined;
+  }
+
+  private readFrontmatter(
+    uri: vscode.Uri
+  ): { title?: string; emoji?: string; type?: string; topics?: unknown; published?: boolean } | undefined {
+    try {
+      const content = this.fsProvider.readFile(uri).toString();
+      const parsed = parseFrontmatter(content);
+      const fm = parsed.frontmatter;
+      return {
+        title: typeof fm.title === "string" ? fm.title : undefined,
+        emoji: typeof fm.emoji === "string" ? fm.emoji : undefined,
+        type: typeof fm.type === "string" ? fm.type : undefined,
+        topics: Array.isArray(fm.topics) ? fm.topics : undefined,
+        published: typeof fm.published === "boolean" ? fm.published : undefined
+      };
+    } catch {
+      return undefined;
+    }
+  }
+
+  private buildTooltip(
+    fm?: { title?: string; emoji?: string; type?: string; topics?: unknown; published?: boolean }
+  ): string | undefined {
+    if (!fm) {
+      return undefined;
+    }
+    const topics = Array.isArray(fm.topics) ? fm.topics.join(", ") : undefined;
+    const lines = [
+      fm.title ? `title: ${fm.title}` : undefined,
+      fm.emoji ? `emoji: ${fm.emoji}` : undefined,
+      fm.type ? `type: ${fm.type}` : undefined,
+      topics ? `topics: [${topics}]` : undefined,
+      typeof fm.published === "boolean" ? `published: ${fm.published}` : undefined
+    ].filter(Boolean);
+    return lines.length ? lines.join("\n") : undefined;
   }
 
   private get rootNodes(): ZennTreeItemDescriptor[] {

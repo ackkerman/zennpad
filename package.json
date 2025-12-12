@@ -50,11 +50,6 @@
           "command": "zennpad.preview",
           "when": "zennpad.activated && zennpad.activeTextEditorPreviewable",
           "group": "navigation"
-        },
-        {
-          "command": "zennpad.linkCopy",
-          "when": "zennpad.activated && zennpad.activeTextEditorPreviewable",
-          "group": "navigation@2"
         }
       ],
       "editor/title/context": [
@@ -62,11 +57,6 @@
           "command": "zennpad.preview",
           "when": "zennpad.activated && zennpad.activeTextEditorPreviewable",
           "group": "navigation"
-        },
-        {
-          "command": "zennpad.linkCopy",
-          "when": "zennpad.activated && zennpad.activeTextEditorPreviewable",
-          "group": "navigation@2"
         }
       ],
       "view/item/context": [
@@ -84,6 +74,36 @@
           "command": "zennpad.newArticle",
           "when": "view == zennPadExplorer && viewItem == articles",
           "group": "inline"
+        },
+        {
+          "command": "zennpad.newArticle",
+          "when": "view == zennPadExplorer && viewItem == drafts",
+          "group": "inline"
+        },
+        {
+          "command": "zennpad.copyZennUrl",
+          "when": "view == zennPadExplorer && (viewItem == article:draft || viewItem == article:published || viewItem == chapter)",
+          "group": "navigation@1"
+        },
+        {
+          "command": "zennpad.copyGithubUrl",
+          "when": "view == zennPadExplorer && (viewItem == article:draft || viewItem == article:published || viewItem == chapter)",
+          "group": "navigation@1"
+        },
+        {
+          "command": "zennpad.renameNode",
+          "when": "view == zennPadExplorer && (viewItem == article:draft || viewItem == article:published || viewItem == chapter)",
+          "group": "navigation@3"
+        },
+        {
+          "command": "zennpad.duplicateNode",
+          "when": "view == zennPadExplorer && (viewItem == article:draft || viewItem == article:published || viewItem == chapter)",
+          "group": "navigation@3"
+        },
+        {
+          "command": "zennpad.deleteNode",
+          "when": "view == zennPadExplorer && (viewItem == article:draft || viewItem == article:published || viewItem == chapter)",
+          "group": "navigation@4"
         }
       ]
     },
@@ -110,27 +130,27 @@
     "commands": [
       {
         "command": "zennpad.newArticle",
-        "title": "ZennPad: New Article",
+        "title": "New Article",
         "icon": "media/icon/plus.svg"
       },
       {
         "command": "zennpad.publish",
-        "title": "ZennPad: Publish Article",
+        "title": "Publish Article",
         "icon": "media/icon/publish.svg"
       },
       {
         "command": "zennpad.unpublish",
-        "title": "ZennPad: Unpublish Article",
+        "title": "Unpublish Article",
         "icon": "media/icon/unpublish.svg"
       },
       {
         "command": "zennpad.openOnZenn",
-        "title": "ZennPad: Open on Zenn",
+        "title": "Open on Zenn",
         "icon": "media/logo-only.svg"
       },
       {
         "command": "zennpad.preview",
-        "title": "ZennPad: Preview",
+        "title": "Preview",
         "icon": {
           "light": "media/icon/preview-light.svg",
           "dark": "media/icon/preview-dark.svg"
@@ -138,31 +158,47 @@
       },
       {
         "command": "zennpad.signIn",
-        "title": "ZennPad: Sign in to GitHub",
+        "title": "Sign in to GitHub",
         "icon": "media/icon/github.svg"
       },
       {
         "command": "zennpad.signOut",
-        "title": "ZennPad: Sign out of GitHub",
+        "title": "Sign out of GitHub",
         "icon": "media/icon/signout.svg"
       },
       {
         "command": "zennpad.authHelp",
-        "title": "ZennPad: Settings",
+        "title": "Settings",
         "icon": "media/icon/settings.svg"
       },
       {
         "command": "zennpad.chooseRepo",
-        "title": "ZennPad: Choose GitHub Repository"
+        "title": "Choose GitHub Repository"
       },
       {
         "command": "zennpad.refresh",
-        "title": "ZennPad: Refresh",
+        "title": "Refresh",
         "icon": "media/icon/refresh.svg"
       },
       {
-        "command": "zennpad.linkCopy",
-        "title": "ZennPad: Copy Zenn Article Link"
+        "command": "zennpad.copyZennUrl",
+        "title": "Copy Zenn URL"
+      },
+      {
+        "command": "zennpad.copyGithubUrl",
+        "title": "Copy GitHub URL"
+      },
+      {
+        "command": "zennpad.renameNode",
+        "title": "Rename"
+      },
+      {
+        "command": "zennpad.duplicateNode",
+        "title": "Duplicate"
+      },
+      {
+        "command": "zennpad.deleteNode",
+        "title": "Delete"
       }
     ]
   },
