@@ -328,5 +328,3 @@ await octokit.repos.createOrUpdateFileContents({
 * M4: 競合検知（409）と退避
 * M5: Zenn 互換プレビュー / Open on Zenn
 * M6: Daily Draft / LRU / 検索・フィルタ
-
-
