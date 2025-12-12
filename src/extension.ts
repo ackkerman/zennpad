@@ -7,6 +7,8 @@ import { PreviewManager } from "./previewManager";
 import { isZennUri } from "./zennPath";
 
 export function activate(context: vscode.ExtensionContext): void {
+  vscode.commands.executeCommand("setContext", "zennpad.activated", true);
+
   const scheme = "zenn";
   const fsProvider = new ZennFsProvider();
   seedScaffoldContent(fsProvider, scheme);
@@ -26,6 +28,7 @@ export function activate(context: vscode.ExtensionContext): void {
     fsProvider
   );
   const previewManager = new PreviewManager(previewWorkspace, context);
+  updatePreviewableContext();
 
   context.subscriptions.push(
     vscode.commands.registerCommand("zennpad.refresh", () => {
@@ -44,6 +47,7 @@ export function activate(context: vscode.ExtensionContext): void {
       treeDataProvider.refresh();
       const document = await vscode.workspace.openTextDocument(uri);
       await vscode.window.showTextDocument(document);
+      updatePreviewableContext();
     }),
     vscode.commands.registerCommand("zennpad.preview", async () => {
       const active = vscode.window.activeTextEditor?.document;
@@ -53,6 +57,7 @@ export function activate(context: vscode.ExtensionContext): void {
       }
       await previewWorkspace.syncDocument(active);
       await previewManager.open(active);
+      updatePreviewableContext();
     }),
     vscode.commands.registerCommand("zennpad.publish", () => {
       vscode.window.showInformationMessage("Publish command triggered (scaffold)");
@@ -73,7 +78,9 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
     fsProvider.onDidMutate(async (mutation: FsMutation) => {
       await previewWorkspace.applyMutation(mutation);
-    })
+    }),
+    vscode.window.onDidChangeActiveTextEditor(() => updatePreviewableContext()),
+    vscode.workspace.onDidOpenTextDocument(() => updatePreviewableContext())
   );
 }
 
@@ -132,4 +139,10 @@ function seedScaffoldContent(fsProvider: ZennFsProvider, scheme: string): void {
       "Book chapter scaffold content.\n"
     )
   );
+}
+
+function updatePreviewableContext(): void {
+  const active = vscode.window.activeTextEditor?.document;
+  const previewable = Boolean(active && isZennUri(active.uri) && active.languageId === "markdown");
+  void vscode.commands.executeCommand("setContext", "zennpad.activeTextEditorPreviewable", previewable);
 }

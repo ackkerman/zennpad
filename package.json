@@ -32,6 +32,22 @@
         }
       ]
     },
+    "menus": {
+      "editor/title": [
+        {
+          "command": "zennpad.preview",
+          "when": "zennpad.activated && zennpad.activeTextEditorPreviewable",
+          "group": "navigation"
+        }
+      ],
+      "editor/title/context": [
+        {
+          "command": "zennpad.preview",
+          "when": "zennpad.activated && zennpad.activeTextEditorPreviewable",
+          "group": "navigation"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "zennpad.newArticle",
@@ -51,7 +67,11 @@
       },
       {
         "command": "zennpad.preview",
-        "title": "ZennPad: Preview"
+        "title": "ZennPad: Preview",
+        "icon": {
+          "light": "media/icon/preview-light.svg",
+          "dark": "media/icon/preview-dark.svg"
+        }
       },
       {
         "command": "zennpad.refresh",
