@@ -117,12 +117,13 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
         const frontmatter = this.readFrontmatter(uri);
         const published = frontmatter?.published;
         return new ZennTreeItem({
-          label: name,
+          label: this.resolveLabel(name, frontmatter?.title, published),
           collapsibleState: vscode.TreeItemCollapsibleState.None,
           contextValue: "article",
           resourceUri: uri,
           published,
-          tooltip: this.buildTooltip(frontmatter)
+          tooltip: this.buildTooltip(frontmatter),
+          description: published === false ? "draft" : undefined
         });
       });
   }
@@ -139,7 +140,7 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
       .sort((a, b) => a.name.localeCompare(b.name))
       .map((entry) => {
         return new ZennTreeItem({
-          label: entry.name,
+          label: this.resolveLabel(entry.name, this.readFrontmatter(entry.uri)?.title, false),
           collapsibleState: vscode.TreeItemCollapsibleState.None,
           contextValue: "article",
           description: "draft",
@@ -177,7 +178,7 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
         const frontmatter = this.readFrontmatter(uri);
         const published = frontmatter?.published;
         return new ZennTreeItem({
-          label: name,
+          label: this.resolveLabel(name, frontmatter?.title, published),
           collapsibleState: vscode.TreeItemCollapsibleState.None,
           contextValue: "chapter",
           resourceUri: uri,
@@ -251,6 +252,14 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
       typeof fm.published === "boolean" ? `published: ${fm.published}` : undefined
     ].filter(Boolean);
     return lines.length ? lines.join("\n") : undefined;
+  }
+
+  private resolveLabel(fileName: string, title?: string, published?: boolean): string {
+    const base = title && title.trim().length > 0 ? title.trim() : fileName;
+    if (published === false) {
+      return `draft · ${base}`;
+    }
+    return base;
   }
 
   private get rootNodes(): ZennTreeItemDescriptor[] {
