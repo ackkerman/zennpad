@@ -7,6 +7,11 @@ repos:
       - id: check-merge-conflict
   - repo: local
     hooks:
+      - id: pnpm-test
+        name: pnpm test
+        entry: pnpm test
+        language: system
+        pass_filenames: false
       - id: pnpm-compile
         name: pnpm compile
         entry: pnpm compile
