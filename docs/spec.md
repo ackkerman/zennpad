@@ -236,7 +236,7 @@ UI は段階導入:
 
 * PAT は VS Code SecretStorage に保存する
 
-  * `context.secrets.store("zenn.githubToken", token)`
+  * `context.secrets.store("zennpad.githubToken", token)`
 * トークン入力は初回または再認証時に促す
 * 最小スコープで運用する（`repo:contents`）
 * トークンをログに出さない（マスク徹底）
@@ -272,24 +272,24 @@ UI は段階導入:
         {
           "id": "zenn",
           "title": "Zenn",
-          "icon": "media/zenn.svg"
+          "icon": "media/logo-only-white.svg"
         }
       ]
     },
     "views": {
       "zenn": [
         {
-          "id": "zennExplorer",
+          "id": "zennPadExplorer",
           "name": "Zenn"
         }
       ]
     },
     "commands": [
-      { "command": "zenn.newArticle", "title": "Zenn: New Article" },
-      { "command": "zenn.publish", "title": "Zenn: Publish Article" },
-      { "command": "zenn.unpublish", "title": "Zenn: Unpublish Article" },
-      { "command": "zenn.openOnZenn", "title": "Zenn: Open on Zenn" },
-      { "command": "zenn.refresh", "title": "Zenn: Refresh" }
+      { "command": "zennpad.newArticle", "title": "Zenn: New Article" },
+      { "command": "zennpad.publish", "title": "Zenn: Publish Article" },
+      { "command": "zennpad.unpublish", "title": "Zenn: Unpublish Article" },
+      { "command": "zennpad.openOnZenn", "title": "Zenn: Open on Zenn" },
+      { "command": "zennpad.refresh", "title": "Zenn: Refresh" }
     ]
   }
 }

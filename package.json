@@ -1,6 +1,7 @@
 {
   "name": "zennpad",
   "displayName": "ZennPad",
+  "publisher": "ackkerman",
   "description": "VS Code extension scaffold for editing Zenn content directly from the sidebar.",
   "version": "0.0.1",
   "engines": {
@@ -9,32 +10,49 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": ["*"],
+  "activationEvents": [
+    "*"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "zenn",
-          "title": "Zenn",
-          "icon": "media/zenn.svg"
+          "id": "zennPad",
+          "title": "ZennPad",
+          "icon": "media/logo-only-white.svg"
         }
       ]
     },
     "views": {
-      "zenn": [
+      "zennPad": [
         {
-          "id": "zennExplorer",
-          "name": "Zenn"
+          "id": "zennPadExplorer",
+          "name": "ZennPad"
         }
       ]
     },
     "commands": [
-      { "command": "zenn.newArticle", "title": "Zenn: New Article" },
-      { "command": "zenn.publish", "title": "Zenn: Publish Article" },
-      { "command": "zenn.unpublish", "title": "Zenn: Unpublish Article" },
-      { "command": "zenn.openOnZenn", "title": "Zenn: Open on Zenn" },
-      { "command": "zenn.refresh", "title": "Zenn: Refresh" }
+      {
+        "command": "zennpad.newArticle",
+        "title": "ZennPad: New Article"
+      },
+      {
+        "command": "zennpad.publish",
+        "title": "ZennPad: Publish Article"
+      },
+      {
+        "command": "zennpad.unpublish",
+        "title": "ZennPad: Unpublish Article"
+      },
+      {
+        "command": "zennpad.openOnZenn",
+        "title": "ZennPad: Open on Zenn"
+      },
+      {
+        "command": "zennpad.refresh",
+        "title": "ZennPad: Refresh"
+      }
     ]
   },
   "scripts": {
@@ -48,6 +66,6 @@
     "@types/node": "^20.12.12",
     "@types/vscode": "^1.85.0",
     "typescript": "^5.4.5",
-    "vsce": "^3.1.0"
+    "vsce": "^2.15.0"
   }
 }
