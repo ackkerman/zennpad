@@ -50,6 +50,10 @@
         "title": "ZennPad: Open on Zenn"
       },
       {
+        "command": "zennpad.preview",
+        "title": "ZennPad: Preview"
+      },
+      {
         "command": "zennpad.refresh",
         "title": "ZennPad: Refresh"
       }
@@ -63,9 +67,17 @@
     "lint": "echo 'Linting is not configured yet'"
   },
   "devDependencies": {
+    "@types/http-proxy": "^1.17.17",
     "@types/node": "^20.12.12",
     "@types/vscode": "^1.85.0",
+    "@types/which": "^3.0.4",
     "typescript": "^5.4.5",
     "vsce": "^2.15.0"
+  },
+  "dependencies": {
+    "get-port": "^7.1.0",
+    "http-proxy": "^1.18.1",
+    "which": "^6.0.0",
+    "yaml": "^2.8.2"
   }
 }

@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { ZennFsProvider } from "./zennFsProvider";
 
 export type ZennNodeType = "articles" | "books" | "drafts" | "chapter" | "book" | "article";
 
@@ -7,6 +8,7 @@ export interface ZennTreeItemDescriptor {
   readonly collapsibleState: vscode.TreeItemCollapsibleState;
   readonly contextValue: ZennNodeType;
   readonly description?: string;
+  readonly resourceUri?: vscode.Uri;
 }
 
 class ZennTreeItem extends vscode.TreeItem {
@@ -14,6 +16,14 @@ class ZennTreeItem extends vscode.TreeItem {
     super(descriptor.label, descriptor.collapsibleState);
     this.contextValue = descriptor.contextValue;
     this.description = descriptor.description;
+    this.resourceUri = descriptor.resourceUri;
+    if (descriptor.resourceUri && descriptor.collapsibleState === vscode.TreeItemCollapsibleState.None) {
+      this.command = {
+        command: "vscode.open",
+        title: "Open Zenn content",
+        arguments: [descriptor.resourceUri]
+      };
+    }
   }
 }
 
@@ -22,11 +32,7 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
   readonly onDidChangeTreeData: vscode.Event<ZennTreeItem | undefined | void> =
     this._onDidChangeTreeData.event;
 
-  private readonly scaffoldNodes: ZennTreeItemDescriptor[] = [
-    { label: "Articles", collapsibleState: vscode.TreeItemCollapsibleState.Collapsed, contextValue: "articles" },
-    { label: "Books", collapsibleState: vscode.TreeItemCollapsibleState.Collapsed, contextValue: "books" },
-    { label: "Drafts / Daily", collapsibleState: vscode.TreeItemCollapsibleState.Collapsed, contextValue: "drafts" }
-  ];
+  constructor(private readonly fsProvider: ZennFsProvider, private readonly scheme = "zenn") {}
 
   refresh(): void {
     this._onDidChangeTreeData.fire();
@@ -38,46 +44,118 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
 
   getChildren(element?: ZennTreeItem): vscode.ProviderResult<ZennTreeItem[]> {
     if (!element) {
-      return this.scaffoldNodes.map((descriptor) => new ZennTreeItem(descriptor));
+      return this.rootNodes.map((descriptor) => new ZennTreeItem(descriptor));
     }
 
     switch (element.descriptor.contextValue) {
       case "articles":
-        return [
-          new ZennTreeItem({
-            label: "sample-article.md",
-            collapsibleState: vscode.TreeItemCollapsibleState.None,
-            contextValue: "article",
-            description: "draft"
-          })
-        ];
+        return this.getArticleItems();
       case "books":
-        return [
-          new ZennTreeItem({
-            label: "example-book",
-            collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-            contextValue: "book"
-          })
-        ];
+        return this.getBookNodes();
       case "book":
-        return [
-          new ZennTreeItem({
-            label: "chapter-1.md",
-            collapsibleState: vscode.TreeItemCollapsibleState.None,
-            contextValue: "chapter"
-          })
-        ];
+        return this.getChapterItems(element);
       case "drafts":
-        return [
-          new ZennTreeItem({
-            label: `${new Date().toISOString().slice(0, 10).replace(/-/g, "")}_daily-draft.md`,
-            collapsibleState: vscode.TreeItemCollapsibleState.None,
-            contextValue: "article",
-            description: "placeholder"
-          })
-        ];
+        return this.getDraftItems();
       default:
         return [];
     }
+  }
+
+  private getArticleItems(): ZennTreeItem[] {
+    return this.readDirectory("/articles")
+      .filter(([, type]) => type === vscode.FileType.File)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([name]) =>
+        new ZennTreeItem({
+          label: name,
+          collapsibleState: vscode.TreeItemCollapsibleState.None,
+          contextValue: "article",
+          resourceUri: this.buildUri(`/articles/${name}`)
+        })
+      );
+  }
+
+  private getDraftItems(): ZennTreeItem[] {
+    const draftPattern = /(draft|daily)/i;
+    return this.readDirectory("/articles")
+      .filter(([name, type]) => type === vscode.FileType.File && draftPattern.test(name))
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([name]) =>
+        new ZennTreeItem({
+          label: name,
+          collapsibleState: vscode.TreeItemCollapsibleState.None,
+          contextValue: "article",
+          description: "draft",
+          resourceUri: this.buildUri(`/articles/${name}`)
+        })
+      );
+  }
+
+  private getBookNodes(): ZennTreeItem[] {
+    return this.readDirectory("/books")
+      .filter(([, type]) => type === vscode.FileType.Directory)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([name]) =>
+        new ZennTreeItem({
+          label: name,
+          collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+          contextValue: "book",
+          resourceUri: this.buildUri(`/books/${name}`)
+        })
+      );
+  }
+
+  private getChapterItems(bookNode: ZennTreeItem): ZennTreeItem[] {
+    const bookPath = bookNode.descriptor.resourceUri?.path;
+    if (!bookPath) {
+      return [];
+    }
+    return this.readDirectory(bookPath)
+      .filter(([, type]) => type === vscode.FileType.File)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([name]) =>
+        new ZennTreeItem({
+          label: name,
+          collapsibleState: vscode.TreeItemCollapsibleState.None,
+          contextValue: "chapter",
+          resourceUri: this.buildUri(`${bookPath}/${name}`)
+        })
+      );
+  }
+
+  private readDirectory(path: string): [string, vscode.FileType][] {
+    try {
+      return this.fsProvider.readDirectory(this.buildUri(path));
+    } catch {
+      return [];
+    }
+  }
+
+  private buildUri(path: string): vscode.Uri {
+    const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+    return vscode.Uri.from({ scheme: this.scheme, path: normalizedPath });
+  }
+
+  private get rootNodes(): ZennTreeItemDescriptor[] {
+    return [
+      {
+        label: "Articles",
+        collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+        contextValue: "articles",
+        resourceUri: vscode.Uri.from({ scheme: this.scheme, path: "/articles" })
+      },
+      {
+        label: "Books",
+        collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+        contextValue: "books",
+        resourceUri: vscode.Uri.from({ scheme: this.scheme, path: "/books" })
+      },
+      {
+        label: "Drafts / Daily",
+        collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+        contextValue: "drafts",
+        resourceUri: vscode.Uri.from({ scheme: this.scheme, path: "/articles" })
+      }
+    ];
   }
 }

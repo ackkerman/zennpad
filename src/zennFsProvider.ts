@@ -12,6 +12,7 @@ export class ZennFsProvider implements vscode.FileSystemProvider {
   private readonly files = new Map<string, StoredFile>();
   private readonly emitter = new vscode.EventEmitter<vscode.FileChangeEvent[]>();
   readonly onDidChangeFile: vscode.Event<vscode.FileChangeEvent[]> = this.emitter.event;
+  private readonly mutationListeners: Array<(mutation: FsMutation) => void> = [];
 
   watch(): vscode.Disposable {
     return new vscode.Disposable(() => undefined);
@@ -26,18 +27,36 @@ export class ZennFsProvider implements vscode.FileSystemProvider {
   }
 
   readDirectory(uri: vscode.Uri): [string, vscode.FileType][] {
-    const entries: [string, vscode.FileType][] = [];
     const prefix = uri.path.endsWith("/") ? uri.path : `${uri.path}/`;
+    const entries = new Map<string, vscode.FileType>();
     for (const [path, entry] of this.files.entries()) {
       if (path.startsWith(prefix)) {
         const relative = path.slice(prefix.length).split("/")[0];
-        entries.push([relative, entry.type]);
+        if (!relative) {
+          continue;
+        }
+        const existingType = entries.get(relative);
+        if (existingType === vscode.FileType.Directory) {
+          continue;
+        }
+        if (entry.type === vscode.FileType.Directory) {
+          entries.set(relative, vscode.FileType.Directory);
+        } else if (!entries.has(relative)) {
+          entries.set(relative, entry.type);
+        }
       }
     }
-    return Array.from(new Map(entries).entries());
+    return Array.from(entries.entries());
   }
 
   createDirectory(uri: vscode.Uri): void {
+    const existing = this.files.get(uri.path);
+    if (existing) {
+      if (existing.type !== vscode.FileType.Directory) {
+        throw vscode.FileSystemError.FileExists(uri);
+      }
+      return;
+    }
     this.files.set(uri.path, {
       type: vscode.FileType.Directory,
       ctime: Date.now(),
@@ -45,6 +64,10 @@ export class ZennFsProvider implements vscode.FileSystemProvider {
       size: 0
     });
     this.emitter.fire([{ type: vscode.FileChangeType.Created, uri }]);
+  }
+
+  has(uri: vscode.Uri): boolean {
+    return this.files.has(uri.path);
   }
 
   readFile(uri: vscode.Uri): Uint8Array {
@@ -74,6 +97,7 @@ export class ZennFsProvider implements vscode.FileSystemProvider {
 
     const changeType = existing ? vscode.FileChangeType.Changed : vscode.FileChangeType.Created;
     this.emitter.fire([{ type: changeType, uri }]);
+    this.notifyMutation({ type: "write", uri, content });
   }
 
   delete(uri: vscode.Uri, options: { recursive: boolean }): void {
@@ -89,6 +113,7 @@ export class ZennFsProvider implements vscode.FileSystemProvider {
     }
     this.files.delete(uri.path);
     this.emitter.fire([{ type: vscode.FileChangeType.Deleted, uri }]);
+    this.notifyMutation({ type: "delete", uri });
   }
 
   rename(oldUri: vscode.Uri, newUri: vscode.Uri, options: { overwrite: boolean }): void {
@@ -105,5 +130,31 @@ export class ZennFsProvider implements vscode.FileSystemProvider {
       { type: vscode.FileChangeType.Deleted, uri: oldUri },
       { type: vscode.FileChangeType.Created, uri: newUri }
     ]);
+    this.notifyMutation({ type: "rename", oldUri, newUri });
+  }
+
+  onDidMutate(listener: (mutation: FsMutation) => void): vscode.Disposable {
+    this.mutationListeners.push(listener);
+    return new vscode.Disposable(() => {
+      const index = this.mutationListeners.indexOf(listener);
+      if (index >= 0) {
+        this.mutationListeners.splice(index, 1);
+      }
+    });
+  }
+
+  private notifyMutation(mutation: FsMutation): void {
+    for (const listener of [...this.mutationListeners]) {
+      try {
+        listener(mutation);
+      } catch (error) {
+        console.error("Failed to handle mutation", error);
+      }
+    }
   }
 }
+
+export type FsMutation =
+  | { type: "write"; uri: vscode.Uri; content: Uint8Array }
+  | { type: "delete"; uri: vscode.Uri }
+  | { type: "rename"; oldUri: vscode.Uri; newUri: vscode.Uri };
