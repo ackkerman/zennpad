@@ -66,7 +66,7 @@
           "group": "inline"
         },
         {
-          "command": "zennpad.unpublish",
+          "command": "zennpad.openOnZenn",
           "when": "view == zennPadExplorer && viewItem == article:published",
           "group": "inline"
         },
@@ -89,6 +89,16 @@
           "command": "zennpad.copyGithubUrl",
           "when": "view == zennPadExplorer && (viewItem == article:draft || viewItem == article:published || viewItem == chapter)",
           "group": "navigation@1"
+        },
+        {
+          "command": "zennpad.publish",
+          "when": "view == zennPadExplorer && viewItem == article:draft",
+          "group": "navigation@2"
+        },
+        {
+          "command": "zennpad.unpublish",
+          "when": "view == zennPadExplorer && viewItem == article:published",
+          "group": "navigation@2"
         },
         {
           "command": "zennpad.renameNode",
