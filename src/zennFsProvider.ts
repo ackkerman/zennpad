@@ -152,6 +152,36 @@ export class ZennFsProvider implements vscode.FileSystemProvider {
       }
     }
   }
+
+  hydrate(entries: { path: string; type: vscode.FileType; ctime: number; mtime: number; size: number; data?: string }[]): void {
+    this.files.clear();
+    for (const entry of entries) {
+      this.files.set(entry.path, {
+        type: entry.type,
+        ctime: entry.ctime,
+        mtime: entry.mtime,
+        size: entry.size,
+        data: entry.data ? Buffer.from(entry.data, "base64") : undefined
+      });
+    }
+    this.emitter.fire([{ type: vscode.FileChangeType.Changed, uri: vscode.Uri.from({ path: "/", scheme: "zenn" }) }]);
+  }
+
+  snapshot(): { path: string; type: vscode.FileType; ctime: number; mtime: number; size: number; data?: string }[] {
+    const entries: { path: string; type: vscode.FileType; ctime: number; mtime: number; size: number; data?: string }[] =
+      [];
+    for (const [path, entry] of this.files.entries()) {
+      entries.push({
+        path,
+        type: entry.type,
+        ctime: entry.ctime,
+        mtime: entry.mtime,
+        size: entry.size,
+        data: entry.data ? Buffer.from(entry.data).toString("base64") : undefined
+      });
+    }
+    return entries;
+  }
 }
 
 export type FsMutation =

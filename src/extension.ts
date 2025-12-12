@@ -8,12 +8,14 @@ import { isZennUri } from "./zennPath";
 import { GitHubSync } from "./githubSync";
 import { signInToGitHub, getOctokit, signOutFromGitHub } from "./githubAuth";
 import { buildZennUrlFromDoc } from "./openOnZenn";
+import { ContentCache } from "./contentCache";
 
 export function activate(context: vscode.ExtensionContext): void {
   vscode.commands.executeCommand("setContext", "zennpad.activated", true);
 
   const scheme = "zenn";
   const fsProvider = new ZennFsProvider();
+  const contentCache = new ContentCache(context.globalStorageUri);
   seedScaffoldContent(fsProvider, scheme);
   context.subscriptions.push(
     vscode.workspace.registerFileSystemProvider(scheme, fsProvider, {
@@ -36,9 +38,20 @@ export function activate(context: vscode.ExtensionContext): void {
 
   void (async () => {
     await updateAuthStatus();
+    const cached = await contentCache.load();
+    if (cached) {
+      fsProvider.hydrate(
+        cached.map((entry) => ({
+          ...entry,
+          type: entry.type as vscode.FileType
+        }))
+      );
+      treeDataProvider.refresh();
+    }
     try {
       await githubSync.pullAll();
       treeDataProvider.refresh();
+      await contentCache.save(fsProvider.snapshot());
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       vscode.window.showWarningMessage(`[ZennPad] GitHub sync skipped: ${message}`);
@@ -207,6 +220,7 @@ export function activate(context: vscode.ExtensionContext): void {
       await previewWorkspace.applyMutation(mutation);
       try {
         await githubSync.pushMutation(mutation);
+        await contentCache.save(fsProvider.snapshot());
       } catch (error) {
         handleAuthError(error, "sync with GitHub");
       }
