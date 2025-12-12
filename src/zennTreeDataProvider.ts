@@ -9,6 +9,9 @@ export interface ZennTreeItemDescriptor {
   readonly contextValue: ZennNodeType;
   readonly description?: string;
   readonly resourceUri?: vscode.Uri;
+  readonly iconPath?: vscode.ThemeIcon;
+  readonly command?: vscode.Command;
+  readonly published?: boolean;
 }
 
 class ZennTreeItem extends vscode.TreeItem {
@@ -24,6 +27,15 @@ class ZennTreeItem extends vscode.TreeItem {
         arguments: [descriptor.resourceUri]
       };
     }
+    if (descriptor.iconPath) {
+      this.iconPath = descriptor.iconPath;
+    }
+    if (descriptor.command) {
+      this.command = descriptor.command;
+    }
+    if (typeof descriptor.published === "boolean" && descriptor.contextValue.startsWith("article")) {
+      this.contextValue = descriptor.published ? "article:published" : "article:draft";
+    }
   }
 }
 
@@ -31,8 +43,16 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
   private readonly _onDidChangeTreeData = new vscode.EventEmitter<ZennTreeItem | undefined | void>();
   readonly onDidChangeTreeData: vscode.Event<ZennTreeItem | undefined | void> =
     this._onDidChangeTreeData.event;
+  private signedIn = false;
+  private hasRepoConfig = false;
 
   constructor(private readonly fsProvider: ZennFsProvider, private readonly scheme = "zenn") {}
+
+  setStatus(status: { signedIn: boolean; hasRepoConfig: boolean }): void {
+    this.signedIn = status.signedIn;
+    this.hasRepoConfig = status.hasRepoConfig;
+    this.refresh();
+  }
 
   refresh(): void {
     this._onDidChangeTreeData.fire();
@@ -44,6 +64,30 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
 
   getChildren(element?: ZennTreeItem): vscode.ProviderResult<ZennTreeItem[]> {
     if (!element) {
+      if (!this.signedIn) {
+        return [
+          new ZennTreeItem({
+            label: "Sign in to GitHub",
+            collapsibleState: vscode.TreeItemCollapsibleState.None,
+            contextValue: "articles",
+            description: "GitHub authentication required",
+            iconPath: new vscode.ThemeIcon("sign-in"),
+            command: { command: "zennpad.signIn", title: "Sign in to GitHub" }
+          })
+        ];
+      }
+      if (!this.hasRepoConfig) {
+        return [
+          new ZennTreeItem({
+            label: "",
+            collapsibleState: vscode.TreeItemCollapsibleState.None,
+            contextValue: "articles",
+            description: "Set githubOwner/repo",
+            iconPath: new vscode.ThemeIcon("gear"),
+            command: { command: "zennpad.openSettings", title: "Open ZennPad Settings" }
+          })
+        ];
+      }
       return this.rootNodes.map((descriptor) => new ZennTreeItem(descriptor));
     }
 
@@ -65,14 +109,17 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
     return this.readDirectory("/articles")
       .filter(([, type]) => type === vscode.FileType.File)
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([name]) =>
-        new ZennTreeItem({
+      .map(([name]) => {
+        const uri = this.buildUri(`/articles/${name}`);
+        const published = this.readPublished(uri);
+        return new ZennTreeItem({
           label: name,
           collapsibleState: vscode.TreeItemCollapsibleState.None,
           contextValue: "article",
-          resourceUri: this.buildUri(`/articles/${name}`)
-        })
-      );
+          resourceUri: uri,
+          published
+        });
+      });
   }
 
   private getDraftItems(): ZennTreeItem[] {
@@ -80,15 +127,18 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
     return this.readDirectory("/articles")
       .filter(([name, type]) => type === vscode.FileType.File && draftPattern.test(name))
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([name]) =>
-        new ZennTreeItem({
+      .map(([name]) => {
+        const uri = this.buildUri(`/articles/${name}`);
+        const published = this.readPublished(uri);
+        return new ZennTreeItem({
           label: name,
           collapsibleState: vscode.TreeItemCollapsibleState.None,
           contextValue: "article",
           description: "draft",
-          resourceUri: this.buildUri(`/articles/${name}`)
-        })
-      );
+          resourceUri: uri,
+          published
+        });
+      });
   }
 
   private getBookNodes(): ZennTreeItem[] {
@@ -113,14 +163,17 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
     return this.readDirectory(bookPath)
       .filter(([, type]) => type === vscode.FileType.File)
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([name]) =>
-        new ZennTreeItem({
+      .map(([name]) => {
+        const uri = this.buildUri(`${bookPath}/${name}`);
+        const published = this.readPublished(uri);
+        return new ZennTreeItem({
           label: name,
           collapsibleState: vscode.TreeItemCollapsibleState.None,
           contextValue: "chapter",
-          resourceUri: this.buildUri(`${bookPath}/${name}`)
-        })
-      );
+          resourceUri: uri,
+          published
+        });
+      });
   }
 
   private readDirectory(path: string): [string, vscode.FileType][] {
@@ -134,6 +187,23 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
   private buildUri(path: string): vscode.Uri {
     const normalizedPath = path.startsWith("/") ? path : `/${path}`;
     return vscode.Uri.from({ scheme: this.scheme, path: normalizedPath });
+  }
+
+  private readPublished(uri: vscode.Uri): boolean | undefined {
+    try {
+      const content = this.fsProvider.readFile(uri).toString();
+      const match = /^---\s*\n([\s\S]*?)\n---/m.exec(content);
+      if (match) {
+        const yaml = match[1];
+        const publishedMatch = /^published:\s*(true|false)\b/m.exec(yaml);
+        if (publishedMatch) {
+          return publishedMatch[1] === "true";
+        }
+      }
+    } catch {
+      // Ignore parse failures.
+    }
+    return undefined;
   }
 
   private get rootNodes(): ZennTreeItemDescriptor[] {

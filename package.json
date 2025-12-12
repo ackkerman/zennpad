@@ -33,11 +33,28 @@
       ]
     },
     "menus": {
+      "view/title": [
+        {
+          "command": "zennpad.refresh",
+          "when": "view == zennPadExplorer",
+          "group": "navigation@0"
+        },
+        {
+          "command": "zennpad.authHelp",
+          "when": "view == zennPadExplorer",
+          "group": "navigation@1"
+        }
+      ],
       "editor/title": [
         {
           "command": "zennpad.preview",
           "when": "zennpad.activated && zennpad.activeTextEditorPreviewable",
           "group": "navigation"
+        },
+        {
+          "command": "zennpad.linkCopy",
+          "when": "zennpad.activated && zennpad.activeTextEditorPreviewable",
+          "group": "navigation@2"
         }
       ],
       "editor/title/context": [
@@ -45,25 +62,71 @@
           "command": "zennpad.preview",
           "when": "zennpad.activated && zennpad.activeTextEditorPreviewable",
           "group": "navigation"
+        },
+        {
+          "command": "zennpad.linkCopy",
+          "when": "zennpad.activated && zennpad.activeTextEditorPreviewable",
+          "group": "navigation@2"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "zennpad.publish",
+          "when": "view == zennPadExplorer && viewItem == article:draft",
+          "group": "inline"
+        },
+        {
+          "command": "zennpad.unpublish",
+          "when": "view == zennPadExplorer && viewItem == article:published",
+          "group": "inline"
+        },
+        {
+          "command": "zennpad.newArticle",
+          "when": "view == zennPadExplorer && viewItem == articles",
+          "group": "inline"
         }
       ]
+    },
+    "configuration": {
+      "title": "ZennPad",
+      "properties": {
+        "zennpad.githubOwner": {
+          "type": "string",
+          "default": "",
+          "description": "GitHub owner (user or organization) for Zenn repository"
+        },
+        "zennpad.githubRepo": {
+          "type": "string",
+          "default": "",
+          "description": "GitHub repository name for Zenn content"
+        },
+        "zennpad.githubBranch": {
+          "type": "string",
+          "default": "main",
+          "description": "Branch name to sync with"
+        }
+      }
     },
     "commands": [
       {
         "command": "zennpad.newArticle",
-        "title": "ZennPad: New Article"
+        "title": "ZennPad: New Article",
+        "icon": "media/icon/plus.svg"
       },
       {
         "command": "zennpad.publish",
-        "title": "ZennPad: Publish Article"
+        "title": "ZennPad: Publish Article",
+        "icon": "media/icon/publish.svg"
       },
       {
         "command": "zennpad.unpublish",
-        "title": "ZennPad: Unpublish Article"
+        "title": "ZennPad: Unpublish Article",
+        "icon": "media/icon/unpublish.svg"
       },
       {
         "command": "zennpad.openOnZenn",
-        "title": "ZennPad: Open on Zenn"
+        "title": "ZennPad: Open on Zenn",
+        "icon": "media/logo-only.svg"
       },
       {
         "command": "zennpad.preview",
@@ -74,8 +137,32 @@
         }
       },
       {
+        "command": "zennpad.signIn",
+        "title": "ZennPad: Sign in to GitHub",
+        "icon": "media/icon/github.svg"
+      },
+      {
+        "command": "zennpad.signOut",
+        "title": "ZennPad: Sign out of GitHub",
+        "icon": "media/icon/signout.svg"
+      },
+      {
+        "command": "zennpad.authHelp",
+        "title": "ZennPad: Settings",
+        "icon": "media/icon/settings.svg"
+      },
+      {
+        "command": "zennpad.chooseRepo",
+        "title": "ZennPad: Choose GitHub Repository"
+      },
+      {
         "command": "zennpad.refresh",
-        "title": "ZennPad: Refresh"
+        "title": "ZennPad: Refresh",
+        "icon": "media/icon/refresh.svg"
+      },
+      {
+        "command": "zennpad.linkCopy",
+        "title": "ZennPad: Copy Zenn Article Link"
       }
     ]
   },
@@ -95,6 +182,7 @@
     "vsce": "^2.15.0"
   },
   "dependencies": {
+    "@octokit/rest": "^22.0.1",
     "get-port": "^7.1.0",
     "http-proxy": "^1.18.1",
     "which": "^6.0.0",

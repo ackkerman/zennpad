@@ -21,18 +21,18 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [x] Frontmatter パース・シリアライズロジック実装
 
 - Github連携
-  - [ ] GitHub 認証（SecretStorage で PAT 保存/読み出し）
-  - [ ] GitHub Contents API との read/write/delete 実装（sha 管理・競合検知）
-  - [ ] 仮想FSと実ストレージの同期（URI → GitHub パス変換、pull/push）
+  - [x] GitHub 認証（SecretStorage で PAT 保存/読み出し）
+  - [x] GitHub Contents API との read/write/delete 実装（sha 管理・競合検知）
+  - [x] 仮想FSと実ストレージの同期（URI → GitHub パス変換、pull/push）
   - [ ] TreeDataProvider を GitHub 上の articles/books 構造から生成（LRU/ステータス表示）
 
 - コマンド実装
-  - [ ] 新規 Article/Book/Chapter 作成ロジック（slug 自動生成、日付ドラフト命名）
-  - [ ] Frontmatter 生成・更新ロジック（title/emoji/topics/published）
-  - [ ] Publish/Unpublish コマンドで frontmatter の published 切替
-  - [ ] Open on Zenn コマンドでブラウザ遷移（公開/下書き URL 判定）
-  - [ ] 競合時のハンドリング（409 時のメッセージと再取得導線）
-  - [ ] Markdown プレビュー（Zenn 互換レンダラー/導線）
+  - [x] 新規 Article/Book/Chapter 作成ロジック（slug 自動生成、日付ドラフト命名）
+  - [x] Frontmatter 生成・更新ロジック（title/emoji/type/topics/published）
+  - [x] Publish/Unpublish コマンドで frontmatter の published 切替
+  - [x] Open on Zenn コマンドでブラウザ遷移（公開/下書き URL 判定）
+  - [x] 競合時のハンドリング（409 時のメッセージと再取得導線）
+  - [x] Markdown プレビュー（Zenn 互換レンダラー/導線）
 
 - プレビュー機能移植（zenn preview + proxy + Webview）
   - ミラー同期レイヤー実装
