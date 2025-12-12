@@ -1,0 +1,53 @@
+{
+  "name": "zennpad",
+  "displayName": "ZennPad",
+  "description": "VS Code extension scaffold for editing Zenn content directly from the sidebar.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": ["*"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "zenn",
+          "title": "Zenn",
+          "icon": "media/zenn.svg"
+        }
+      ]
+    },
+    "views": {
+      "zenn": [
+        {
+          "id": "zennExplorer",
+          "name": "Zenn"
+        }
+      ]
+    },
+    "commands": [
+      { "command": "zenn.newArticle", "title": "Zenn: New Article" },
+      { "command": "zenn.publish", "title": "Zenn: Publish Article" },
+      { "command": "zenn.unpublish", "title": "Zenn: Unpublish Article" },
+      { "command": "zenn.openOnZenn", "title": "Zenn: Open on Zenn" },
+      { "command": "zenn.refresh", "title": "Zenn: Refresh" }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "test": "echo 'No automated tests yet; run npm run compile to verify build'",
+    "lint": "echo 'Linting is not configured yet'"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.4.5",
+    "vsce": "^3.1.0"
+  }
+}
