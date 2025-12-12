@@ -116,6 +116,26 @@ export function activate(context: vscode.ExtensionContext): void {
         await vscode.commands.executeCommand("zennpad.openSettings");
       }
     }),
+    vscode.commands.registerCommand("zennpad.openZennRoot", async () => {
+      const config = vscode.workspace.getConfiguration("zennpad");
+      const owner = config.get<string>("githubOwner")?.trim();
+      if (!owner) {
+        vscode.window.showErrorMessage("Set zennpad.githubOwner to open Zenn.");
+        return;
+      }
+      void vscode.env.openExternal(vscode.Uri.parse(`https://zenn.dev/${owner}`));
+    }),
+    vscode.commands.registerCommand("zennpad.openGithubRoot", async () => {
+      const config = vscode.workspace.getConfiguration("zennpad");
+      const owner = config.get<string>("githubOwner")?.trim();
+      const repo = config.get<string>("githubRepo")?.trim();
+      const branch = config.get<string>("githubBranch")?.trim() || "main";
+      if (!owner || !repo) {
+        vscode.window.showErrorMessage("Set zennpad.githubOwner and zennpad.githubRepo to open GitHub.");
+        return;
+      }
+      void vscode.env.openExternal(vscode.Uri.parse(`https://github.com/${owner}/${repo}/tree/${branch}`));
+    }),
     vscode.commands.registerCommand("zennpad.chooseRepo", async () => {
       try {
         const octokit = await getOctokit();

@@ -117,7 +117,7 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
         const frontmatter = this.readFrontmatter(uri);
         const published = frontmatter?.published;
         return new ZennTreeItem({
-          label: this.resolveLabel(name, frontmatter?.title, published),
+          label: this.resolveLabel(name, frontmatter?.title),
           collapsibleState: vscode.TreeItemCollapsibleState.None,
           contextValue: "article",
           resourceUri: uri,
@@ -140,7 +140,7 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
       .sort((a, b) => a.name.localeCompare(b.name))
       .map((entry) => {
         return new ZennTreeItem({
-          label: this.resolveLabel(entry.name, this.readFrontmatter(entry.uri)?.title, false),
+          label: this.resolveLabel(entry.name, this.readFrontmatter(entry.uri)?.title),
           collapsibleState: vscode.TreeItemCollapsibleState.None,
           contextValue: "article",
           description: "draft",
@@ -152,17 +152,14 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
   }
 
   private getBookNodes(): ZennTreeItem[] {
-    return this.readDirectory("/books")
-      .filter(([, type]) => type === vscode.FileType.Directory)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([name]) =>
-        new ZennTreeItem({
-          label: name,
-          collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-          contextValue: "book",
-          resourceUri: this.buildUri(`/books/${name}`)
-        })
-      );
+    return [
+      new ZennTreeItem({
+        label: "Books (coming soon)",
+        collapsibleState: vscode.TreeItemCollapsibleState.None,
+        contextValue: "book",
+        description: "開発中"
+      })
+    ];
   }
 
   private getChapterItems(bookNode: ZennTreeItem): ZennTreeItem[] {
@@ -178,7 +175,7 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
         const frontmatter = this.readFrontmatter(uri);
         const published = frontmatter?.published;
         return new ZennTreeItem({
-          label: this.resolveLabel(name, frontmatter?.title, published),
+          label: this.resolveLabel(name, frontmatter?.title),
           collapsibleState: vscode.TreeItemCollapsibleState.None,
           contextValue: "chapter",
           resourceUri: uri,
@@ -254,12 +251,11 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
     return lines.length ? lines.join("\n") : undefined;
   }
 
-  private resolveLabel(fileName: string, title?: string, published?: boolean): string {
-    const base = title && title.trim().length > 0 ? title.trim() : fileName;
-    if (published === false) {
-      return `draft · ${base}`;
+  private resolveLabel(fileName: string, title?: string): string {
+    if (title && title.trim().length > 0) {
+      return title.trim();
     }
-    return base;
+    return fileName;
   }
 
   private get rootNodes(): ZennTreeItemDescriptor[] {

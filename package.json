@@ -81,6 +81,21 @@
           "group": "inline"
         },
         {
+          "command": "zennpad.newArticle",
+          "when": "view == zennPadExplorer && viewItem == articles",
+          "group": "navigation@0"
+        },
+        {
+          "command": "zennpad.openZennRoot",
+          "when": "view == zennPadExplorer && (viewItem == articles || viewItem == drafts)",
+          "group": "navigation@1"
+        },
+        {
+          "command": "zennpad.openGithubRoot",
+          "when": "view == zennPadExplorer && (viewItem == articles || viewItem == drafts)",
+          "group": "navigation@1"
+        },
+        {
           "command": "zennpad.copyZennUrl",
           "when": "view == zennPadExplorer && (viewItem == article:draft || viewItem == article:published || viewItem == chapter)",
           "group": "navigation@1"
@@ -189,6 +204,14 @@
         "command": "zennpad.refresh",
         "title": "Refresh",
         "icon": "media/icon/refresh.svg"
+      },
+      {
+        "command": "zennpad.openZennRoot",
+        "title": "Open Zenn Home"
+      },
+      {
+        "command": "zennpad.openGithubRoot",
+        "title": "Open GitHub Repo"
       },
       {
         "command": "zennpad.copyZennUrl",

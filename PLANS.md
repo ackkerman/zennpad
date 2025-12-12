@@ -79,6 +79,14 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [ ] 単体テスト/統合テスト追加（Commands/FS/Tree）
   - [ ] README 改訂（セットアップ・認証手順・ワークフロー更新）
 
+- Books 機能（開発中）
+  - [ ] GitHub 上の books/* 構造から Tree を構築（Book/Chapter 一覧・frontmatter 読込・ソート）
+  - [ ] Book/Chapter 作成コマンド（slug 生成、frontmatter 初期値、章テンプレート）
+  - [ ] Book/Chapter rename/move/delete（衝突・リンク整合性のハンドリング）
+  - [ ] Book の published/非公開状態管理と Open on Zenn (book URL) 生成
+  - [ ] Book/Chapter の preview パス解決（zenn preview 用の urlPath 生成）
+  - [ ] 競合・同期エラー時の復帰導線（Book/Chapter 向け）
+
 - [ ] identifierを`zenn-pad`に変更
 
 ## メモ
