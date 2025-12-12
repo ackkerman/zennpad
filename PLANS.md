@@ -87,6 +87,20 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [ ] Book/Chapter の preview パス解決（zenn preview 用の urlPath 生成）
   - [ ] 競合・同期エラー時の復帰導線（Book/Chapter 向け）
 
+- 時系列ソート（Articles/Books/Drafts）
+  - [ ] GitHub commits API で最新コミット日時を取得し更新日時をソートキーに反映（`GET /repos/:owner/:repo/commits?path=<path>&per_page=1`）
+  - [ ] 作成日時取得（GraphQL `history(last:1, path:"...")` もしくは REST ページネーションで最古コミットを取得）とキャッシュ保存
+  - [ ] メモリ/ローカルキャッシュ（path → {updatedAt, createdAt, sha}）を導入し Refresh 時のみ更新、失敗時は名前ソートにフォールバック
+  - [ ] レート制限/タイムアウト時の扱い（警告表示・フォールバック）
+  - [ ] Tree 表示と並び順を更新日時順に切替（Articles/Books/Drafts）
+
+- GitHub同期キャッシュ（起動高速化）
+  - [ ] `globalStorageUri` 配下に cache.json を保存し、Tree用のメタ（path/type/frontmatter/sha/updatedAtなど）をキャッシュ
+  - [ ] 起動時はキャッシュを即ロードして表示、裏で GitHub pull 実行→成功時にキャッシュを更新して再描画
+  - [ ] キャッシュ失効ポリシー（例: 10分）とバージョン管理（互換性崩れ時は破棄）
+  - [ ] Refresh 時はキャッシュ無視で取得し、成功後キャッシュ更新。失敗時はキャッシュを維持し通知
+  - [ ] パース失敗や不整合時のフォールバック（キャッシュ破棄→通常取得）
+
 - [ ] identifierを`zenn-pad`に変更
 
 ## メモ
