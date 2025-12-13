@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { ZennFsProvider } from "../fs/zennFsProvider";
-import { ZennTreeDataProvider, SortOrder } from "../ui/tree/zennTreeDataProvider";
+import { ZennTreeDataProvider } from "../ui/tree/zennTreeDataProvider";
+import { SortOrder } from "../ui/tree/types";
 import { PreviewWorkspace } from "../preview/previewWorkspace";
 import { PreviewManager } from "../preview/previewManager";
 import { GitHubSync } from "../github/sync";

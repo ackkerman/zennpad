@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
-import { ZennTreeDataProvider, SortOrder } from "../ui/tree/zennTreeDataProvider";
+import { ZennTreeDataProvider } from "../ui/tree/zennTreeDataProvider";
+import { SortOrder } from "../ui/tree/types";
 import { CommandDeps } from "./types";
 
 export function registerSortCommands(

@@ -1,16 +1,9 @@
 import * as vscode from "vscode";
 import { ZennFsProvider } from "../../fs/zennFsProvider";
-import { parseFrontmatter } from "../../utils/frontmatter";
-
-export type ZennNodeType =
-  | "articles"
-  | "books"
-  | "drafts"
-  | "images"
-  | "chapter"
-  | "book"
-  | "article"
-  | "image";
+import { TreeState } from "./treeState";
+import { readFrontmatter, readPublished } from "./frontmatterIO";
+import { buildTooltip, compareEntries, isImageFile, resolveLabel } from "./treeUtils";
+import { BranchInfo, SortOrder, ZennNodeType } from "./types";
 
 export interface ZennTreeItemDescriptor {
   readonly label: string;
@@ -23,8 +16,6 @@ export interface ZennTreeItemDescriptor {
   readonly published?: boolean;
   readonly tooltip?: string;
 }
-
-export type SortOrder = "date" | "title";
 
 class ZennTreeItem extends vscode.TreeItem {
   constructor(public readonly descriptor: ZennTreeItemDescriptor) {
@@ -56,11 +47,7 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
   private readonly _onDidChangeTreeData = new vscode.EventEmitter<ZennTreeItem | undefined | void>();
   readonly onDidChangeTreeData: vscode.Event<ZennTreeItem | undefined | void> =
     this._onDidChangeTreeData.event;
-  private signedIn = false;
-  private hasRepoConfig = false;
-  private dirtyPaths = new Set<string>();
-  private branchInfo: { workBranch: string; mainBranch: string } | undefined;
-  private sortOrder: SortOrder = "date";
+  private readonly state = new TreeState();
 
   constructor(
     private readonly fsProvider: ZennFsProvider,
@@ -69,18 +56,17 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
   ) {}
 
   setStatus(status: { signedIn: boolean; hasRepoConfig: boolean }): void {
-    this.signedIn = status.signedIn;
-    this.hasRepoConfig = status.hasRepoConfig;
+    this.state.setStatus(status);
     this.refresh();
   }
 
   setDirtyPaths(paths: Set<string>): void {
-    this.dirtyPaths = new Set(paths);
+    this.state.setDirtyPaths(paths);
     this.refresh();
   }
 
-  setBranchInfo(branches: { workBranch: string; mainBranch: string }): void {
-    this.branchInfo = branches;
+  setBranchInfo(branches: BranchInfo): void {
+    this.state.setBranchInfo(branches);
     this.refresh();
   }
 
@@ -94,7 +80,7 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
 
   getChildren(element?: ZennTreeItem): vscode.ProviderResult<ZennTreeItem[]> {
     if (!element) {
-      if (!this.signedIn) {
+      if (!this.state.isSignedIn()) {
         return [
           new ZennTreeItem({
             label: "Sign in to GitHub",
@@ -106,7 +92,7 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
           })
         ];
       }
-      if (!this.hasRepoConfig) {
+      if (!this.state.hasRepo()) {
         return [
           new ZennTreeItem({
             label: "",
@@ -138,12 +124,12 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
   }
 
   setSortOrder(order: SortOrder): void {
-    this.sortOrder = order;
+    this.state.setSortOrder(order);
     this.refresh();
   }
 
   getSortOrder(): SortOrder {
-    return this.sortOrder;
+    return this.state.getSortOrder();
   }
 
   private getArticleItems(): ZennTreeItem[] {
@@ -151,13 +137,17 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
       .filter(([, type]) => type === vscode.FileType.File)
       .map(([name]) => {
         const uri = this.buildUri(`/articles/${name}`);
-        const isImage = this.isImageFile(name);
-        const frontmatter = isImage ? undefined : this.readFrontmatter(uri);
+        const isImage = isImageFile(name);
+        const frontmatter = isImage ? undefined : readFrontmatter(this.fsProvider, uri);
         const published = frontmatter?.published;
-        const label = this.resolveLabel(name, frontmatter?.title, published, uri.path);
+        const label = resolveLabel(name, {
+          title: frontmatter?.title,
+          published,
+          isDirty: this.state.isDirty(uri.path)
+        });
         return { name, uri, isImage, frontmatter, published, label };
       })
-      .sort((a, b) => this.compareEntries(a, b));
+      .sort((a, b) => compareEntries(a, b, this.state.getSortOrder()));
 
     return entries.map((entry) => {
       return new ZennTreeItem({
@@ -166,7 +156,7 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
         contextValue: entry.isImage ? "image" : "article",
         resourceUri: entry.uri,
         published: entry.published,
-        tooltip: entry.isImage ? `/images/${entry.name}` : this.buildTooltip(entry.frontmatter),
+        tooltip: entry.isImage ? `/images/${entry.name}` : buildTooltip(entry.frontmatter),
         description: !entry.isImage && entry.published === false ? "draft" : undefined
       });
     });
@@ -177,29 +167,28 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
       .filter(([, type]) => type === vscode.FileType.File)
       .map(([name]) => {
         const uri = this.buildUri(`/articles/${name}`);
-        if (this.isImageFile(name)) {
+        if (isImageFile(name)) {
           return { name, uri, published: undefined, kind: "image" as const, frontmatter: undefined };
         }
-        const published = this.readPublished(uri);
-        const frontmatter = this.readFrontmatter(uri);
+        const published = readPublished(this.fsProvider, uri);
+        const frontmatter = readFrontmatter(this.fsProvider, uri);
         return { name, uri, published, kind: "article" as const, frontmatter };
       })
       .filter((entry) => entry.kind === "image" || entry.published === false)
-      .sort((a, b) => this.compareEntries(a, b))
+      .sort((a, b) => compareEntries(a, b, this.state.getSortOrder()))
       .map((entry) => {
         return new ZennTreeItem({
-          label: this.resolveLabel(
-            entry.name,
-            entry.kind === "image" ? undefined : entry.frontmatter?.title,
-            entry.published,
-            entry.uri.path
-          ),
+          label: resolveLabel(entry.name, {
+            title: entry.kind === "image" ? undefined : entry.frontmatter?.title,
+            published: entry.published,
+            isDirty: this.state.isDirty(entry.uri.path)
+          }),
           collapsibleState: vscode.TreeItemCollapsibleState.None,
           contextValue: entry.kind === "image" ? "image" : "article",
           description: entry.kind === "image" ? undefined : "draft",
           resourceUri: entry.uri,
           published: entry.published,
-          tooltip: entry.kind === "image" ? `/images/${entry.name}` : this.buildTooltip(entry.frontmatter)
+          tooltip: entry.kind === "image" ? `/images/${entry.name}` : buildTooltip(entry.frontmatter)
         });
       });
     return drafts;
@@ -226,108 +215,27 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([name]) => {
         const uri = this.buildUri(`${bookPath}/${name}`);
-        const isImage = this.isImageFile(name);
-        const frontmatter = isImage ? undefined : this.readFrontmatter(uri);
+        const isImage = isImageFile(name);
+        const frontmatter = isImage ? undefined : readFrontmatter(this.fsProvider, uri);
         const published = frontmatter?.published;
         return new ZennTreeItem({
-          label: this.resolveLabel(name, frontmatter?.title, published, uri.path),
+          label: resolveLabel(name, {
+            title: frontmatter?.title,
+            published,
+            isDirty: this.state.isDirty(uri.path)
+          }),
           collapsibleState: vscode.TreeItemCollapsibleState.None,
           contextValue: isImage ? "image" : "chapter",
           resourceUri: uri,
           published,
-          tooltip: isImage ? `/images/${name}` : this.buildTooltip(frontmatter)
+          tooltip: isImage ? `/images/${name}` : buildTooltip(frontmatter)
         });
       });
   }
 
-  private readDirectory(path: string): [string, vscode.FileType][] {
-    try {
-      return this.fsProvider.readDirectory(this.buildUri(path));
-    } catch {
-      return [];
-    }
-  }
-
-  private buildUri(path: string): vscode.Uri {
-    const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-    return vscode.Uri.from({ scheme: this.scheme, path: normalizedPath });
-  }
-
-  private readPublished(uri: vscode.Uri): boolean | undefined {
-    try {
-      const content = this.fsProvider.readFile(uri).toString();
-      const match = /^---\s*\n([\s\S]*?)\n---/m.exec(content);
-      if (match) {
-        const yaml = match[1];
-        const publishedMatch = /^published:\s*(true|false)\b/m.exec(yaml);
-        if (publishedMatch) {
-          return publishedMatch[1] === "true";
-        }
-      }
-    } catch {
-      // Ignore parse failures.
-    }
-    return undefined;
-  }
-
-  private readFrontmatter(
-    uri: vscode.Uri
-  ): { title?: string; emoji?: string; type?: string; topics?: unknown; published?: boolean } | undefined {
-    try {
-      const content = this.fsProvider.readFile(uri).toString();
-      const parsed = parseFrontmatter(content);
-      const fm = parsed.frontmatter;
-      return {
-        title: typeof fm.title === "string" ? fm.title : undefined,
-        emoji: typeof fm.emoji === "string" ? fm.emoji : undefined,
-        type: typeof fm.type === "string" ? fm.type : undefined,
-        topics: Array.isArray(fm.topics) ? fm.topics : undefined,
-        published: typeof fm.published === "boolean" ? fm.published : undefined
-      };
-    } catch {
-      return undefined;
-    }
-  }
-
-  private buildTooltip(
-    fm?: { title?: string; emoji?: string; type?: string; topics?: unknown; published?: boolean }
-  ): string | undefined {
-    if (!fm) {
-      return undefined;
-    }
-    const topics = Array.isArray(fm.topics) ? fm.topics.join(", ") : undefined;
-    const lines = [
-      fm.title ? `title: ${fm.title}` : undefined,
-      fm.emoji ? `emoji: ${fm.emoji}` : undefined,
-      fm.type ? `type: ${fm.type}` : undefined,
-      topics ? `topics: [${topics}]` : undefined,
-      typeof fm.published === "boolean" ? `published: ${fm.published}` : undefined
-    ].filter(Boolean);
-    return lines.length ? lines.join("\n") : undefined;
-  }
-
-  private resolveLabel(fileName: string, title?: string, published?: boolean, resourcePath?: string): string {
-    const base = title && title.trim().length > 0 ? title.trim() : fileName;
-    const status = resourcePath ? (this.dirtyPaths.has(resourcePath) ? "● " : "✓ ") : "";
-    if (published === false) {
-      return `${status}🔒 ${base}`;
-    }
-    return `${status}${base}`;
-  }
-
-  private isImageFile(name: string): boolean {
-    return /\.(png|jpe?g|gif|webp)$/i.test(name);
-  }
-
-
   private get rootNodes(): ZennTreeItemDescriptor[] {
-    // Return the root nodes for the tree view.
-    // Labels, icons, and descriptions can be customized here.
-    // iconPath:
-    //    - ref: https://code.visualstudio.com/api/references/icons-in-labels#icon-listing
-    const branchDescription = this.branchInfo
-      ? `${this.branchInfo.workBranch} → ${this.branchInfo.mainBranch}`
-      : undefined;
+    const branchInfo = this.state.getBranchInfo();
+    const branchDescription = branchInfo ? `${branchInfo.workBranch} → ${branchInfo.mainBranch}` : undefined;
     return [
       {
         label: "Drafts / Daily",
@@ -378,42 +286,23 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
       });
   }
 
+  private readDirectory(path: string): [string, vscode.FileType][] {
+    try {
+      return this.fsProvider.readDirectory(this.buildUri(path));
+    } catch {
+      return [];
+    }
+  }
+
+  private buildUri(path: string): vscode.Uri {
+    const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+    return vscode.Uri.from({ scheme: this.scheme, path: normalizedPath });
+  }
+
   private buildIconPath(name: string): { light: vscode.Uri; dark: vscode.Uri } {
     return {
       light: vscode.Uri.joinPath(this.extensionUri, "media", "icon", `${name}-light.svg`),
       dark: vscode.Uri.joinPath(this.extensionUri, "media", "icon", `${name}-dark.svg`)
     };
-  }
-
-  private compareEntries(
-    a: { name: string; frontmatter?: { title?: string } },
-    b: { name: string; frontmatter?: { title?: string } }
-  ): number {
-    if (this.sortOrder === "title") {
-      return this.buildTitleKey(a).localeCompare(this.buildTitleKey(b));
-    }
-    return this.compareByDateThenName(a.name, b.name);
-  }
-
-  private buildTitleKey(entry: { name: string; frontmatter?: { title?: string } }): string {
-    return (entry.frontmatter?.title ?? entry.name).toLowerCase();
-  }
-
-  private compareByDateThenName(aName: string, bName: string): number {
-    const aDate = this.extractDateKey(aName);
-    const bDate = this.extractDateKey(bName);
-    if (aDate !== bDate) {
-      return (bDate ?? 0) - (aDate ?? 0);
-    }
-    return aName.localeCompare(bName);
-  }
-
-  private extractDateKey(name: string): number | undefined {
-    const match = name.match(/^(\d{4})(\d{2})(\d{2})/);
-    if (!match) {
-      return undefined;
-    }
-    const [, y, m, d] = match;
-    return Number(`${y}${m}${d}`);
   }
 }

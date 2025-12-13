@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { getOctokit, signInToGitHub, signOutFromGitHub } from "../github/auth";
 import { getMainBranch, getRepoConfigSummary, getZennOwner } from "../config";
-import { showSettingsPanel } from "../ui/settingsPanel";
+import { showSettingsPanel } from "../ui/settings/panel";
 import { CommandDeps } from "./types";
 
 export function registerAuthCommands(context: vscode.ExtensionContext, deps: CommandDeps): vscode.Disposable[] {

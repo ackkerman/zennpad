@@ -1,5 +1,13 @@
 import * as vscode from "vscode";
-import { GitHubSync } from "../github/sync";
+import { GitHubSync } from "../../github/sync";
+import {
+  loadSettings,
+  updateMainBranch,
+  updateOwner,
+  updateRepo,
+  updateWorkBranch,
+  updateZennAccount
+} from "./configService";
 
 type SettingsItem = vscode.QuickPickItem & { run: () => Promise<void> };
 
@@ -13,90 +21,79 @@ export async function showSettingsPanel(
   quickPick.matchOnDetail = true;
 
   const refreshItems = async (): Promise<void> => {
-    const config = vscode.workspace.getConfiguration("zennpad");
-    const owner = config.get<string>("githubOwner")?.trim() ?? "";
-    const repo = config.get<string>("githubRepo")?.trim() ?? "";
-    const mainBranch = getMainBranch(config);
-    const workBranch = config.get<string>("workBranch")?.trim() || "zenn-work";
-    const zennAccount = config.get<string>("zennAccount")?.trim() ?? "";
-    const session = await vscode.authentication.getSession("github", ["repo"], {
-      createIfNone: false,
-      silent: true
-    });
-    const accountLabel = session?.account?.label ?? "未サインイン";
-    const repoSummary = owner && repo ? `${owner}/${repo}@${mainBranch} (work:${workBranch})` : "リポジトリ未設定";
+    const snapshot = await loadSettings();
     const autoSyncPaused = githubSync.isAutoSyncPaused();
 
     quickPick.items = [
       {
         label: "$(account) サインイン状態",
-        description: accountLabel,
-        detail: repoSummary,
+        description: snapshot.accountLabel,
+        detail: snapshot.repoSummary,
         run: async () => {}
       },
       {
         label: "$(person) GitHub owner を設定",
-        description: owner || "未設定（GitHub認証アカウントがデフォルト）",
+        description: snapshot.owner || "未設定（GitHub認証アカウントがデフォルト）",
         run: async () => {
           const value = await vscode.window.showInputBox({
             prompt: "GitHub owner (user or organization)",
-            value: owner || accountLabel,
+            value: snapshot.owner || snapshot.accountLabel,
             ignoreFocusOut: true
           });
           if (!value) return;
-          await config.update("githubOwner", value.trim(), vscode.ConfigurationTarget.Global);
+          await updateOwner(value);
         }
       },
       {
         label: "$(repo) GitHub repo を設定",
-        description: repo || "未設定",
+        description: snapshot.repo || "未設定",
         run: async () => {
           const value = await vscode.window.showInputBox({
             prompt: "GitHub repository name for Zenn content",
-            value: repo,
+            value: snapshot.repo,
             ignoreFocusOut: true
           });
           if (!value) return;
-          await config.update("githubRepo", value.trim(), vscode.ConfigurationTarget.Global);
+          await updateRepo(value);
         }
       },
       {
         label: "$(git-branch) main ブランチ名を設定",
-        description: mainBranch || "main",
+        description: snapshot.mainBranch || "main",
         run: async () => {
           const value = await vscode.window.showInputBox({
             prompt: "Branch to deploy articles from",
-            value: mainBranch,
+            value: snapshot.mainBranch,
             ignoreFocusOut: true
           });
           if (!value) return;
-          await config.update("githubBranch", value.trim(), vscode.ConfigurationTarget.Global);
+          await updateMainBranch(value);
         }
       },
       {
         label: "$(git-branch) work ブランチ名を設定",
-        description: workBranch,
+        description: snapshot.workBranch,
         run: async () => {
           const value = await vscode.window.showInputBox({
             prompt: "Work branch for auto sync",
-            value: workBranch,
+            value: snapshot.workBranch,
             ignoreFocusOut: true
           });
           if (!value) return;
-          await config.update("workBranch", value.trim(), vscode.ConfigurationTarget.Global);
+          await updateWorkBranch(value);
         }
       },
       {
         label: "$(globe) Zenn アカウントを設定",
-        description: zennAccount || "未設定（GitHub owner を使用）",
+        description: snapshot.zennAccount || "未設定（GitHub owner を使用）",
         run: async () => {
           const value = await vscode.window.showInputBox({
             prompt: "zenn.dev/{username} で使うユーザー名（空欄なら GitHub owner を使用）",
-            value: zennAccount,
+            value: snapshot.zennAccount,
             ignoreFocusOut: true
           });
           if (value === undefined) return;
-          await config.update("zennAccount", value.trim(), vscode.ConfigurationTarget.Global);
+          await updateZennAccount(value);
         }
       },
       {
@@ -111,10 +108,10 @@ export async function showSettingsPanel(
         }
       },
       {
-        label: session ? "$(sign-out) GitHub からサインアウト" : "$(sign-in) GitHub にサインイン",
-        description: session ? session.account.label : "GitHub 認証が必要です",
+        label: snapshot.accountLabel !== "未サインイン" ? "$(sign-out) GitHub からサインアウト" : "$(sign-in) GitHub にサインイン",
+        description: snapshot.accountLabel !== "未サインイン" ? snapshot.accountLabel : "GitHub 認証が必要です",
         run: async () => {
-          if (session) {
+          if (snapshot.accountLabel !== "未サインイン") {
             await vscode.commands.executeCommand("zennpad.signOut");
           } else {
             await vscode.commands.executeCommand("zennpad.signIn");
@@ -146,8 +143,4 @@ export async function showSettingsPanel(
   quickPick.onDidHide(() => quickPick.dispose());
   await refreshItems();
   quickPick.show();
-}
-
-function getMainBranch(config: vscode.WorkspaceConfiguration): string {
-  return config.get<string>("githubBranch")?.trim() || config.get<string>("mainBranch")?.trim() || "main";
 }
