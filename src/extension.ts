@@ -30,6 +30,8 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     vscode.window.registerTreeDataProvider("zennPadExplorer", treeDataProvider)
   );
+  applyBranchInfo(treeDataProvider);
+  validateRepoConfig();
 
   const previewWorkspace = new PreviewWorkspace(
     vscode.Uri.joinPath(context.globalStorageUri, "preview-workspace"),
@@ -232,12 +234,7 @@ export function activate(context: vscode.ExtensionContext): void {
       }
     }),
     vscode.commands.registerCommand("zennpad.deployToZenn", async () => {
-      try {
-        await githubSync.flushPendingUnsafe();
-        vscode.window.showInformationMessage("Pending ZennPad changes deployed immediately.");
-      } catch (error) {
-        handleAuthError(error, "deploy pending changes");
-      }
+      await deployToZenn(githubSync);
     }),
     vscode.commands.registerCommand("zennpad.toggleAutoSync", async () => {
       const paused = githubSync.toggleAutoSync();
@@ -267,6 +264,12 @@ export function activate(context: vscode.ExtensionContext): void {
       if (e.provider.id === "github") {
         await updateAuthStatus();
       }
+    }),
+    vscode.workspace.onDidChangeConfiguration((event) => {
+      if (event.affectsConfiguration("zennpad")) {
+        applyBranchInfo(treeDataProvider);
+        validateRepoConfig();
+      }
     })
   );
 }
@@ -290,6 +293,13 @@ function seedScaffoldContent(fsProvider: ZennFsProvider, scheme: string): void {
   ensureDirectory("/books");
   ensureDirectory("/books/example-book");
   ensureDirectory("/images");
+}
+
+function applyBranchInfo(treeDataProvider: ZennTreeDataProvider): void {
+  const config = vscode.workspace.getConfiguration("zennpad");
+  const mainBranch = config.get<string>("githubBranch")?.trim() || "main";
+  const workBranch = config.get<string>("workBranch")?.trim() || "zenn-work";
+  treeDataProvider.setBranchInfo({ workBranch, mainBranch });
 }
 
 async function copyZennUrl(resource?: vscode.Uri | { resourceUri?: vscode.Uri }): Promise<void> {
@@ -326,6 +336,41 @@ async function copyGithubUrl(resource?: vscode.Uri | { resourceUri?: vscode.Uri 
   const url = `https://github.com/${owner}/${repo}/blob/${branch}/${path}`;
   await vscode.env.clipboard.writeText(url);
   vscode.window.showInformationMessage("Copied GitHub URL to clipboard.");
+}
+
+async function deployToZenn(githubSync: GitHubSync): Promise<void> {
+  const config = vscode.workspace.getConfiguration("zennpad");
+  const mainBranch = config.get<string>("githubBranch")?.trim() || "main";
+  const workBranch = config.get<string>("workBranch")?.trim() || "zenn-work";
+  const choice = await vscode.window.showWarningMessage(
+    `work ブランチ (${workBranch}) の内容を main (${mainBranch}) に反映して Zenn にデプロイしますか？`,
+    { modal: true },
+    "Deploy"
+  );
+  if (choice !== "Deploy") {
+    return;
+  }
+  try {
+    await githubSync.flushPendingUnsafe();
+    await githubSync.deployWorkToMain();
+    vscode.window.showInformationMessage(`Deployed ${workBranch} to ${mainBranch} and pushed for Zenn.`);
+  } catch (error) {
+    handleAuthError(error, "deploy work branch to main");
+  }
+}
+
+function validateRepoConfig(): void {
+  const config = vscode.workspace.getConfiguration("zennpad");
+  const owner = config.get<string>("githubOwner")?.trim();
+  const repo = config.get<string>("githubRepo")?.trim();
+  const mainBranch = config.get<string>("githubBranch")?.trim() || "main";
+  const workBranch = config.get<string>("workBranch")?.trim() || "zenn-work";
+  if (!owner || !repo) {
+    vscode.window.showErrorMessage("zennpad.githubOwner と zennpad.githubRepo を設定してください。");
+  }
+  if (workBranch === mainBranch) {
+    vscode.window.showWarningMessage("workBranch が main と同じです。分離してデプロイ回数を抑制してください。");
+  }
 }
 
 async function copyPath(resource?: vscode.Uri | { resourceUri?: vscode.Uri }, relative = false): Promise<void> {
@@ -596,10 +641,11 @@ function getRepoConfigSummary(): string | undefined {
   const owner = config.get<string>("githubOwner")?.trim();
   const repo = config.get<string>("githubRepo")?.trim();
   const branch = config.get<string>("githubBranch")?.trim() || "main";
+  const workBranch = config.get<string>("workBranch")?.trim() || "zenn-work";
   if (!owner || !repo) {
     return undefined;
   }
-  return `${owner}/${repo}@${branch}`;
+  return `${owner}/${repo}@${branch} (work:${workBranch})`;
 }
 
 function handleAuthError(error: unknown, action: string): void {

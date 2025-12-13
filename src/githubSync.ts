@@ -9,12 +9,11 @@ import { SyncScheduler, type Clock } from "./syncScheduler";
 interface RepoConfig {
   owner: string;
   repo: string;
-  branch: string;
+  mainBranch: string;
+  workBranch: string;
 }
 
-interface ShaMap {
-  [path: string]: string;
-}
+type ShaMap = Record<string, string>;
 
 interface PendingWrite {
   path: string;
@@ -25,10 +24,11 @@ interface PendingWrite {
 const DEFAULT_DEBOUNCE_MS = 30_000;
 const DEFAULT_MIN_INTERVAL_MS = 10 * 60 * 1000;
 const COMMIT_MESSAGE = "ZennPad sync";
+const DEPLOY_MESSAGE = "ZennPad deploy work -> main";
 
 export class GitHubSync {
-  private shaMap: ShaMap = {};
-  private lastHashes: ShaMap = {};
+  private shaMapByBranch: Map<string, ShaMap> = new Map();
+  private lastHashesByBranch: Map<string, ShaMap> = new Map();
   private pulling = false;
   private pendingWrites = new Map<string, PendingWrite>();
   private pendingDeletes = new Set<string>();
@@ -59,10 +59,11 @@ export class GitHubSync {
     const octokit = await getOctokit();
     this.pulling = true;
     try {
+      await this.ensureWorkBranch(octokit, repoConfig);
       await this.ensureDirectories();
-      await this.pullDirectory(octokit, repoConfig, "articles");
-      await this.pullDirectory(octokit, repoConfig, "books");
-      await this.pullDirectory(octokit, repoConfig, "images");
+      await this.pullDirectory(octokit, repoConfig, "articles", repoConfig.workBranch);
+      await this.pullDirectory(octokit, repoConfig, "books", repoConfig.workBranch);
+      await this.pullDirectory(octokit, repoConfig, "images", repoConfig.workBranch);
       this.notifyPendingChange();
     } finally {
       this.pulling = false;
@@ -113,8 +114,10 @@ export class GitHubSync {
     if (!path) {
       return false;
     }
+    const { workBranch } = this.getRepoConfig();
+    const hashes = this.getBranchHashMap(workBranch);
     const hash = hashContent(content);
-    if (this.lastHashes[path] === hash && !this.pendingDeletes.has(path)) {
+    if (hashes[path] === hash && !this.pendingDeletes.has(path)) {
       return false;
     }
     this.pendingDeletes.delete(path);
@@ -167,7 +170,8 @@ export class GitHubSync {
     try {
       const repoConfig = this.getRepoConfig();
       const octokit = await getOctokit();
-      const { headSha, treeSha } = await this.getHeadRefs(octokit, repoConfig);
+      await this.ensureWorkBranch(octokit, repoConfig);
+      const { headSha, treeSha } = await this.getHeadRefs(repoConfig.workBranch, octokit, repoConfig);
 
       const writesSnapshot = Array.from(this.pendingWrites.entries());
       const deletesSnapshot = Array.from(this.pendingDeletes.values());
@@ -191,7 +195,7 @@ export class GitHubSync {
       await octokit.git.updateRef({
         owner: repoConfig.owner,
         repo: repoConfig.repo,
-        ref: `heads/${repoConfig.branch}`,
+        ref: `heads/${repoConfig.workBranch}`,
         sha: commit.data.sha
       });
       this.applyCommitResult(treeEntries, writesSnapshot, deletesSnapshot);
@@ -203,14 +207,39 @@ export class GitHubSync {
     }
   }
 
+  async deployWorkToMain(): Promise<void> {
+    const repoConfig = this.getRepoConfig();
+    const octokit = await getOctokit();
+    await this.ensureWorkBranch(octokit, repoConfig);
+    try {
+      await octokit.repos.merge({
+        owner: repoConfig.owner,
+        repo: repoConfig.repo,
+        base: repoConfig.mainBranch,
+        head: repoConfig.workBranch,
+        commit_message: DEPLOY_MESSAGE
+      });
+    } catch (error) {
+      if (isNotFoundError(error)) {
+        throw new Error("指定されたブランチが存在しません。設定を確認してください。");
+      }
+      const status = (error as { status?: number }).status;
+      if (status === 409) {
+        throw new Error("work → main のマージでコンフリクトが発生しました。GitHub上で解消してください。");
+      }
+      throw error;
+    }
+  }
+
   private async getHeadRefs(
+    branch: string,
     octokit: Octokit,
     repoConfig: RepoConfig
   ): Promise<{ headSha: string; treeSha: string }> {
     const head = await octokit.git.getRef({
       owner: repoConfig.owner,
       repo: repoConfig.repo,
-      ref: `heads/${repoConfig.branch}`
+      ref: `heads/${branch}`
     });
     const headSha = head.data.object.sha;
     const commit = await octokit.git.getCommit({
@@ -248,17 +277,20 @@ export class GitHubSync {
     writesSnapshot: Array<[string, PendingWrite]>,
     deletesSnapshot: string[]
   ): void {
+    const repoConfig = this.getRepoConfig();
+    const shaMap = this.getBranchShaMap(repoConfig.workBranch);
+    const hashes = this.getBranchHashMap(repoConfig.workBranch);
     for (const [path, write] of writesSnapshot) {
       const treeEntry = treeEntries.find((entry) => entry.path === path && entry.sha);
       if (treeEntry?.sha) {
-        this.shaMap[path] = treeEntry.sha;
-        this.lastHashes[path] = write.hash;
+        shaMap[path] = treeEntry.sha;
+        hashes[path] = write.hash;
       }
       this.pendingWrites.delete(path);
     }
     for (const path of deletesSnapshot) {
-      delete this.shaMap[path];
-      delete this.lastHashes[path];
+      delete shaMap[path];
+      delete hashes[path];
       this.pendingDeletes.delete(path);
     }
   }
@@ -266,23 +298,24 @@ export class GitHubSync {
   private async pullDirectory(
     octokit: Octokit,
     repoConfig: RepoConfig,
-    remotePath: string
+    remotePath: string,
+    branch: string
   ): Promise<void> {
     try {
       const contents = await octokit.repos.getContent({
         owner: repoConfig.owner,
         repo: repoConfig.repo,
         path: remotePath,
-        ref: repoConfig.branch
+        ref: branch
       });
       if (!Array.isArray(contents.data)) {
         return;
       }
       for (const item of contents.data) {
         if (item.type === "file") {
-          await this.pullFile(octokit, repoConfig, item.path);
+          await this.pullFile(octokit, repoConfig, item.path, branch);
         } else if (item.type === "dir") {
-          await this.pullDirectory(octokit, repoConfig, item.path);
+          await this.pullDirectory(octokit, repoConfig, item.path, branch);
         }
       }
     } catch (error) {
@@ -293,19 +326,26 @@ export class GitHubSync {
     }
   }
 
-  private async pullFile(octokit: Octokit, repoConfig: RepoConfig, path: string): Promise<void> {
+  private async pullFile(
+    octokit: Octokit,
+    repoConfig: RepoConfig,
+    path: string,
+    branch: string
+  ): Promise<void> {
     const file = await octokit.repos.getContent({
       owner: repoConfig.owner,
       repo: repoConfig.repo,
       path,
-      ref: repoConfig.branch
+      ref: branch
     });
     if (!("content" in file.data) || !file.data.content) {
       return;
     }
     const buffer = Buffer.from(file.data.content, "base64");
-    this.shaMap[path] = file.data.sha;
-    this.lastHashes[path] = hashContent(buffer);
+    const shaMap = this.getBranchShaMap(branch);
+    const hashes = this.getBranchHashMap(branch);
+    shaMap[path] = file.data.sha;
+    hashes[path] = hashContent(buffer);
     const uri = vscode.Uri.from({ scheme: "zenn", path: `/${path}` });
     this.fsProvider.writeFile(uri, buffer, { create: true, overwrite: true });
   }
@@ -326,11 +366,12 @@ export class GitHubSync {
     const config = vscode.workspace.getConfiguration("zennpad");
     const owner = config.get<string>("githubOwner")?.trim();
     const repo = config.get<string>("githubRepo")?.trim();
-    const branch = config.get<string>("githubBranch")?.trim() || "main";
+    const mainBranch = config.get<string>("githubBranch")?.trim() || "main";
+    const workBranch = config.get<string>("workBranch")?.trim() || "zenn-work";
     if (!owner || !repo) {
       throw new Error("zennpad.githubOwner と zennpad.githubRepo を設定してください。");
     }
-    return { owner, repo, branch };
+    return { owner, repo, mainBranch, workBranch };
   }
 
   private notifyPendingChange(): void {
@@ -342,6 +383,47 @@ export class GitHubSync {
       paths.add(`/${path}`);
     }
     this.pendingEmitter.fire(paths);
+  }
+
+  private getBranchShaMap(branch: string): ShaMap {
+    if (!this.shaMapByBranch.has(branch)) {
+      this.shaMapByBranch.set(branch, {});
+    }
+    return this.shaMapByBranch.get(branch)!;
+  }
+
+  private getBranchHashMap(branch: string): ShaMap {
+    if (!this.lastHashesByBranch.has(branch)) {
+      this.lastHashesByBranch.set(branch, {});
+    }
+    return this.lastHashesByBranch.get(branch)!;
+  }
+
+  private async ensureWorkBranch(octokit: Octokit, repoConfig: RepoConfig): Promise<void> {
+    try {
+      await octokit.git.getRef({
+        owner: repoConfig.owner,
+        repo: repoConfig.repo,
+        ref: `heads/${repoConfig.workBranch}`
+      });
+      return;
+    } catch (error) {
+      if (!isNotFoundError(error)) {
+        throw error;
+      }
+    }
+    // Create work branch from main if missing
+    const mainHead = await octokit.git.getRef({
+      owner: repoConfig.owner,
+      repo: repoConfig.repo,
+      ref: `heads/${repoConfig.mainBranch}`
+    });
+    await octokit.git.createRef({
+      owner: repoConfig.owner,
+      repo: repoConfig.repo,
+      ref: `refs/heads/${repoConfig.workBranch}`,
+      sha: mainHead.data.object.sha
+    });
   }
 }
 

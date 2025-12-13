@@ -125,12 +125,12 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [x] Tree で未同期ステータス表示（例: ● 未同期 / ✓ 同期済み）
   - [ ] レート制限/タイムアウト時のフォールバックとリトライ導線を実装
 
-- [ ] ブランチ戦略（work/main 分離）
-  - [ ] `zennpad.workBranch` 設定を追加（デフォルト zenn-work）し、通常の保存・自動同期は work ブランチに対して行う
-  - [ ] Publish 時のみ work → main に反映する仕組みを追加（Contents API か Git Data API でブランチを切り替え/マージ）
-  - [ ] Zenn 側の監視ブランチは main 固定とし、デプロイ回数を Publish 回数に収束させる
-  - [ ] UI/通知で現在のターゲットブランチを明示し、Publish 実行時の確認ダイアログを挟む
-  - [ ] 設定変更時のガード（owner/repo/branch 未設定や不一致時の警告）
+- [x] ブランチ戦略（work/main 分離）
+  - [x] `zennpad.workBranch` 設定を追加（デフォルト zenn-work）し、通常の保存・自動同期は work ブランチに対して行う
+  - [x] Publish 時のみ work → main に反映する仕組みを追加（Contents API か Git Data API でブランチを切り替え/マージ）
+  - [x] Zenn 側の監視ブランチは main 固定とし、デプロイ回数を Publish 回数に収束させる
+  - [x] UI/通知で現在のターゲットブランチを明示し、Publish 実行時の確認ダイアログを挟む
+  - [x] 設定変更時のガード（owner/repo/branch 未設定や不一致時の警告）
 
 - [ ] フロントマッター emoji のランダム生成
   - [ ] 候補絵文字セットを用意し、frontmatter 初期値生成時にランダム選択するユーティリティを追加

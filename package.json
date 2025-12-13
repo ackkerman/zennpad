@@ -168,6 +168,11 @@
           "type": "string",
           "default": "main",
           "description": "Branch name to sync with"
+        },
+        "zennpad.workBranch": {
+          "type": "string",
+          "default": "zenn-work",
+          "description": "Work branch for auto sync before deploying to main"
         }
       }
     },

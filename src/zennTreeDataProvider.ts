@@ -57,6 +57,7 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
   private signedIn = false;
   private hasRepoConfig = false;
   private dirtyPaths = new Set<string>();
+  private branchInfo: { workBranch: string; mainBranch: string } | undefined;
 
   constructor(private readonly fsProvider: ZennFsProvider, private readonly scheme = "zenn") {}
 
@@ -68,6 +69,11 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
 
   setDirtyPaths(paths: Set<string>): void {
     this.dirtyPaths = new Set(paths);
+    this.refresh();
+  }
+
+  setBranchInfo(branches: { workBranch: string; mainBranch: string }): void {
+    this.branchInfo = branches;
     this.refresh();
   }
 
@@ -287,18 +293,23 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
   }
 
   private get rootNodes(): ZennTreeItemDescriptor[] {
+    const branchDescription = this.branchInfo
+      ? `${this.branchInfo.workBranch} → ${this.branchInfo.mainBranch}`
+      : undefined;
     return [
       {
         label: "Drafts / Daily",
         collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
         contextValue: "drafts",
-        resourceUri: vscode.Uri.from({ scheme: this.scheme, path: "/articles" })
+        resourceUri: vscode.Uri.from({ scheme: this.scheme, path: "/articles" }),
+        description: branchDescription
       },
       {
         label: "Articles",
         collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
         contextValue: "articles",
-        resourceUri: vscode.Uri.from({ scheme: this.scheme, path: "/articles" })
+        resourceUri: vscode.Uri.from({ scheme: this.scheme, path: "/articles" }),
+        description: branchDescription
       },
       {
         label: "Books",
