@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { PreviewBackend } from "./previewBackend";
 import { PreviewView } from "./previewView";
 import { PreviewWorkspace } from "./previewWorkspace";
-import { toPreviewUrlPath, toRelativeZennPath } from "../zennPath";
+import { toPreviewUrlPath, toRelativeZennPath } from "../utils/zennPath";
 
 export class PreviewManager {
   private backend: PreviewBackend | undefined;

@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { parseFrontmatter } from "./frontmatter";
+import { parseFrontmatter } from "../utils/frontmatter";
 
 export function buildZennUrl(owner: string, path: string, published: boolean): string | undefined {
   const segments = path.split("/").filter(Boolean);

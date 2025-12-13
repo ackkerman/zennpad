@@ -1,12 +1,12 @@
 import * as vscode from "vscode";
-import { ZennTreeDataProvider } from "./zennTreeDataProvider";
-import { FsMutation, ZennFsProvider } from "./zennFsProvider";
+import { ZennTreeDataProvider } from "./ui/tree/zennTreeDataProvider";
+import { FsMutation, ZennFsProvider } from "./fs/zennFsProvider";
 import { PreviewWorkspace } from "./preview/previewWorkspace";
 import { PreviewManager } from "./preview/previewManager";
-import { isZennUri } from "./zennPath";
+import { isZennUri } from "./utils/zennPath";
 import { GitHubSync } from "./github/sync";
-import { ContentCache } from "./contentCache";
-import { registerImageInsertionProviders } from "./imageInsertion";
+import { ContentCache } from "./utils/contentCache";
+import { registerImageInsertionProviders } from "./utils/imageInsertion";
 import { registerCommands } from "./commands/registerCommands";
 import { setAutoSyncContext, setSortOrderContext, updatePreviewableContext } from "./context";
 import { getMainBranch, getRepoConfigSummary, validateRepoConfig } from "./config";

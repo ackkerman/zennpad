@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
-import { ZennFsProvider } from "./zennFsProvider";
-import { parseFrontmatter } from "./frontmatter";
+import { ZennFsProvider } from "../../fs/zennFsProvider";
+import { parseFrontmatter } from "../../utils/frontmatter";
 
 export type ZennNodeType =
   | "articles"

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { parseFrontmatter, serializeFrontmatter } from "../frontmatter";
+import { parseFrontmatter, serializeFrontmatter } from "../utils/frontmatter";
 
 test("parseFrontmatter extracts frontmatter and body", () => {
   const input = [

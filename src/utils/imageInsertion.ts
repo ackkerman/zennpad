@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { ZennFsProvider } from "./zennFsProvider";
+import { ZennFsProvider } from "../fs/zennFsProvider";
 import path from "path";
 
 const IMAGE_MIME_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp"];
