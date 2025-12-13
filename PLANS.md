@@ -116,13 +116,13 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [ ] 大きな画像や非対応 MIME の扱い（警告／スキップ）
 
 - [ ] GitHub同期のデプロイ回数抑制（main固定・Zenn 150回/日制限対応）
-  - [ ] writeFile では即 push せず dirty キューに積む
-  - [ ] Debounce（例: 30秒無操作）でまとめコミットするスケジューラ実装
-  - [ ] 最小同期間隔（例: 10分）を設け commit/push を間引く
-  - [ ] 内容ハッシュ一致時はスキップし、無駄コミットを抑止
-  - [ ] 手動フラッシュコマンド（例: `ZennPad: Flush Pending Sync`）を追加
-  - [ ] 手動で main へ反映する `ZennPad: DeployToZenn` コマンドを追加（デプロイ回数を Publish 時に限定）
-  - [ ] Tree で未同期ステータス表示（例: ● 未同期 / ✓ 同期済み）
+  - [x] writeFile では即 push せず dirty キューに積む
+  - [x] Debounce（例: 30秒無操作）でまとめコミットするスケジューラ実装
+  - [x] 最小同期間隔（例: 10分）を設け commit/push を間引く
+  - [x] 内容ハッシュ一致時はスキップし、無駄コミットを抑止
+  - [x] 手動フラッシュコマンド（例: `ZennPad: Flush Pending Sync`）を追加
+  - [x] 手動で main へ反映する `ZennPad: DeployToZenn` コマンドを追加（デプロイ回数を Publish 時に限定）
+  - [x] Tree で未同期ステータス表示（例: ● 未同期 / ✓ 同期済み）
   - [ ] レート制限/タイムアウト時のフォールバックとリトライ導線を実装
 
 - [ ] ブランチ戦略（work/main 分離）

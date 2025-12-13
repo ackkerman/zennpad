@@ -115,12 +115,12 @@
           "group": "navigation@1"
         },
         {
-          "command": "copyPath",
+          "command": "zennpad.copyPath",
           "when": "view == zennPadExplorer && viewItem == image",
           "group": "navigation@1"
         },
         {
-          "command": "copyRelativePath",
+          "command": "zennpad.copyRelativePath",
           "when": "view == zennPadExplorer && viewItem == image",
           "group": "navigation@1"
         },
@@ -174,27 +174,27 @@
     "commands": [
       {
         "command": "zennpad.newArticle",
-        "title": "New Article",
+        "title": "ZennPad: New Article",
         "icon": "media/icon/plus.svg"
       },
       {
         "command": "zennpad.publish",
-        "title": "Publish Article",
+        "title": "ZennPad: Publish Article",
         "icon": "media/icon/publish.svg"
       },
       {
         "command": "zennpad.unpublish",
-        "title": "Unpublish Article",
+        "title": "ZennPad: Unpublish Article",
         "icon": "media/icon/unpublish.svg"
       },
       {
         "command": "zennpad.openOnZenn",
-        "title": "Open on Zenn",
+        "title": "ZennPad: Open on Zenn",
         "icon": "media/logo-only.svg"
       },
       {
         "command": "zennpad.preview",
-        "title": "Preview",
+        "title": "ZennPad: Preview",
         "icon": {
           "light": "media/icon/preview-light.svg",
           "dark": "media/icon/preview-dark.svg"
@@ -202,68 +202,88 @@
       },
       {
         "command": "zennpad.signIn",
-        "title": "Sign in to GitHub",
+        "title": "ZennPad: Sign in to GitHub",
         "icon": "media/icon/github.svg"
       },
       {
         "command": "zennpad.signOut",
-        "title": "Sign out of GitHub",
+        "title": "ZennPad: Sign out of GitHub",
         "icon": "media/icon/signout.svg"
       },
       {
         "command": "zennpad.authHelp",
-        "title": "Settings",
+        "title": "ZennPad: Settings",
         "icon": "media/icon/settings.svg"
       },
       {
         "command": "zennpad.chooseRepo",
-        "title": "Choose GitHub Repository"
+        "title": "ZennPad: Choose GitHub Repository"
       },
       {
         "command": "zennpad.refresh",
-        "title": "Refresh",
+        "title": "ZennPad: Refresh",
         "icon": "media/icon/refresh.svg"
       },
       {
         "command": "zennpad.openZennRoot",
-        "title": "Open Zenn Home"
+        "title": "ZennPad: Open Zenn Home"
       },
       {
         "command": "zennpad.openGithubRoot",
-        "title": "Open GitHub Repo"
+        "title": "ZennPad: Open GitHub Repo"
       },
       {
         "command": "zennpad.copyZennUrl",
-        "title": "Copy Zenn URL"
+        "title": "ZennPad: Copy Zenn URL"
       },
       {
         "command": "zennpad.copyGithubUrl",
-        "title": "Copy GitHub URL"
+        "title": "ZennPad: Copy GitHub URL"
       },
       {
         "command": "zennpad.renameNode",
-        "title": "Rename"
+        "title": "ZennPad: Rename"
       },
       {
         "command": "zennpad.duplicateNode",
-        "title": "Duplicate"
+        "title": "ZennPad: Duplicate"
       },
       {
         "command": "zennpad.deleteNode",
-        "title": "Delete"
+        "title": "ZennPad: Delete"
       },
       {
         "command": "zennpad.insertImageFromFile",
-        "title": "Insert Image from File"
+        "title": "ZennPad: Insert Image from File"
+      },
+      {
+        "command": "zennpad.flushPendingSync",
+        "title": "ZennPad: Flush Pending Sync"
+      },
+      {
+        "command": "zennpad.deployToZenn",
+        "title": "ZennPad: Deploy Pending Changes to Zenn"
+      },
+      {
+        "command": "zennpad.toggleAutoSync",
+        "title": "ZennPad: Pause/Resume Auto Sync"
+      },
+      {
+        "command": "zennpad.copyPath",
+        "title": "ZennPad: Copy Path"
+      },
+      {
+        "command": "zennpad.copyRelativePath",
+        "title": "ZennPad: Copy Relative Path"
       },
       {
         "command": "zennpad.sortArticlesByDate",
-        "title": "Sort Articles by Date",
+        "title": "ZennPad: Sort Articles by Date",
         "icon": "media/icon/sort-by-date.svg"
       },
       {
         "command": "zennpad.sortArticlesByTitle",
-        "title": "Sort Articles by Title",
+        "title": "ZennPad: Sort Articles by Title",
         "icon": "media/icon/sort-by-title.svg"
       }
     ]
@@ -272,7 +292,7 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "test": "echo 'No automated tests yet; run npm run compile to verify build'",
+    "test": "npm run compile && node --test out/__tests__/*.js",
     "lint": "echo 'Linting is not configured yet'"
   },
   "devDependencies": {

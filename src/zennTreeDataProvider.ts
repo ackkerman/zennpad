@@ -56,12 +56,18 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
     this._onDidChangeTreeData.event;
   private signedIn = false;
   private hasRepoConfig = false;
+  private dirtyPaths = new Set<string>();
 
   constructor(private readonly fsProvider: ZennFsProvider, private readonly scheme = "zenn") {}
 
   setStatus(status: { signedIn: boolean; hasRepoConfig: boolean }): void {
     this.signedIn = status.signedIn;
     this.hasRepoConfig = status.hasRepoConfig;
+    this.refresh();
+  }
+
+  setDirtyPaths(paths: Set<string>): void {
+    this.dirtyPaths = new Set(paths);
     this.refresh();
   }
 
@@ -128,7 +134,7 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
         const frontmatter = isImage ? undefined : this.readFrontmatter(uri);
         const published = frontmatter?.published;
         return new ZennTreeItem({
-          label: this.resolveLabel(name, frontmatter?.title, published),
+          label: this.resolveLabel(name, frontmatter?.title, published, uri.path),
           collapsibleState: vscode.TreeItemCollapsibleState.None,
           contextValue: isImage ? "image" : "article",
           resourceUri: uri,
@@ -155,7 +161,7 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
       .map((entry) => {
         const frontmatter = entry.kind === "image" ? undefined : this.readFrontmatter(entry.uri);
         return new ZennTreeItem({
-          label: this.resolveLabel(entry.name, frontmatter?.title, entry.published),
+          label: this.resolveLabel(entry.name, frontmatter?.title, entry.published, entry.uri.path),
           collapsibleState: vscode.TreeItemCollapsibleState.None,
           contextValue: entry.kind === "image" ? "image" : "article",
           description: entry.kind === "image" ? undefined : "draft",
@@ -191,7 +197,7 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
         const frontmatter = isImage ? undefined : this.readFrontmatter(uri);
         const published = frontmatter?.published;
         return new ZennTreeItem({
-          label: this.resolveLabel(name, frontmatter?.title, published),
+          label: this.resolveLabel(name, frontmatter?.title, published, uri.path),
           collapsibleState: vscode.TreeItemCollapsibleState.None,
           contextValue: isImage ? "image" : "chapter",
           resourceUri: uri,
@@ -267,12 +273,13 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
     return lines.length ? lines.join("\n") : undefined;
   }
 
-  private resolveLabel(fileName: string, title?: string, published?: boolean): string {
+  private resolveLabel(fileName: string, title?: string, published?: boolean, resourcePath?: string): string {
     const base = title && title.trim().length > 0 ? title.trim() : fileName;
+    const status = resourcePath ? (this.dirtyPaths.has(resourcePath) ? "● " : "✓ ") : "";
     if (published === false) {
-      return `🔒 ${base}`;
+      return `${status}🔒 ${base}`;
     }
-    return base;
+    return `${status}${base}`;
   }
 
   private isImageFile(name: string): boolean {

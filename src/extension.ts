@@ -37,6 +37,9 @@ export function activate(context: vscode.ExtensionContext): void {
   );
   const previewManager = new PreviewManager(previewWorkspace, context);
   const githubSync = new GitHubSync(fsProvider);
+  githubSync.onPendingChange((paths) => {
+    treeDataProvider.setDirtyPaths(paths);
+  });
   registerImageInsertionProviders(context, fsProvider, scheme);
 
   void (async () => {
@@ -202,6 +205,12 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand("zennpad.copyGithubUrl", async (resource?: vscode.Uri) => {
       await copyGithubUrl(resource);
     }),
+    vscode.commands.registerCommand("zennpad.copyPath", async (resource?: vscode.Uri) => {
+      await copyPath(resource, false);
+    }),
+    vscode.commands.registerCommand("zennpad.copyRelativePath", async (resource?: vscode.Uri) => {
+      await copyPath(resource, true);
+    }),
     vscode.commands.registerCommand("zennpad.renameNode", async (resource?: vscode.Uri) => {
       await renameNode(resource, fsProvider, treeDataProvider);
     }),
@@ -213,6 +222,26 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
     vscode.commands.registerCommand("zennpad.insertImageFromFile", async () => {
       await insertImageFromFile(fsProvider, scheme);
+    }),
+    vscode.commands.registerCommand("zennpad.flushPendingSync", async () => {
+      try {
+        await githubSync.flushPending();
+        vscode.window.showInformationMessage("Pending ZennPad changes flushed (respecting minimum interval).");
+      } catch (error) {
+        handleAuthError(error, "flush pending sync");
+      }
+    }),
+    vscode.commands.registerCommand("zennpad.deployToZenn", async () => {
+      try {
+        await githubSync.flushPendingUnsafe();
+        vscode.window.showInformationMessage("Pending ZennPad changes deployed immediately.");
+      } catch (error) {
+        handleAuthError(error, "deploy pending changes");
+      }
+    }),
+    vscode.commands.registerCommand("zennpad.toggleAutoSync", async () => {
+      const paused = githubSync.toggleAutoSync();
+      vscode.window.showInformationMessage(paused ? "Auto sync paused." : "Auto sync resumed.");
     })
   );
 
@@ -224,11 +253,12 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
     fsProvider.onDidMutate(async (mutation: FsMutation) => {
       await previewWorkspace.applyMutation(mutation);
+      githubSync.handleMutation(mutation);
       try {
-        await githubSync.pushMutation(mutation);
         await contentCache.save(fsProvider.snapshot());
       } catch (error) {
-        handleAuthError(error, "sync with GitHub");
+        const message = error instanceof Error ? error.message : String(error);
+        vscode.window.showWarningMessage(`[ZennPad] Failed to persist cache: ${message}`);
       }
     }),
     vscode.window.onDidChangeActiveTextEditor(() => updatePreviewableContext()),
@@ -296,6 +326,17 @@ async function copyGithubUrl(resource?: vscode.Uri | { resourceUri?: vscode.Uri 
   const url = `https://github.com/${owner}/${repo}/blob/${branch}/${path}`;
   await vscode.env.clipboard.writeText(url);
   vscode.window.showInformationMessage("Copied GitHub URL to clipboard.");
+}
+
+async function copyPath(resource?: vscode.Uri | { resourceUri?: vscode.Uri }, relative = false): Promise<void> {
+  const uri = resolveResourceUri(resource) ?? vscode.window.activeTextEditor?.document?.uri;
+  if (!uri || !isZennUri(uri)) {
+    vscode.window.showWarningMessage("Select a ZennPad item to copy its path.");
+    return;
+  }
+  const path = relative ? uri.path.replace(/^\//, "") : uri.path;
+  await vscode.env.clipboard.writeText(path);
+  vscode.window.showInformationMessage(`Copied ${relative ? "relative" : "absolute"} path to clipboard.`);
 }
 
 async function renameNode(
