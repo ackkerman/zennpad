@@ -77,7 +77,7 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
 
 - [ ] リファクタリング
   - [ ] [HIGH PRIORITY] コード整理（サービス分割、責務分離、命名見直し）
-    - [ ] 構造の例は[参考用のディレクトリ構造](#参考用のディレクトリ構造)　を参照せよ
+    - [x] 構造の例は[参考用のディレクトリ構造](#参考用のディレクトリ構造)　を参照せよ
     - [ ] commands分割：registerCommands.tsを責務別（auth、sync/deploy、copy/clipboard、creation、sort/filter、settings呼び出し等）に小分割し、登録エントリで束ねる
     - [ ] settingsPanel分割：設定取得/更新ロジックとQuickPick UI組立を分離し、configサービス化
     - [ ] ツリー責務分離：zennTreeDataProviderの状態管理・ソート/ラベル生成・frontmatter I/Oを分割し、Books拡張に備える
