@@ -75,8 +75,8 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [ ] スニペット/断片保存と検索（任意機能）
   - [ ] Book/Chapter 紐付け UI（Phase 1: QuickPick/InputBox、Phase 2: Webview Inspector）
 
-- [ ] リファクタリング
-  - [ ] [HIGH PRIORITY] コード整理（サービス分割、責務分離、命名見直し）
+- [x] リファクタリング
+  - [x] [HIGH PRIORITY] コード整理（サービス分割、責務分離、命名見直し）
     - [x] 構造の例は[参考用のディレクトリ構造](#参考用のディレクトリ構造)　を参照せよ
     - [x] commands分割：registerCommands.tsを責務別（auth、sync/deploy、copy/clipboard、creation、sort/filter、settings呼び出し等）に小分割し、登録エントリで束ねる
     - [x] settingsPanel分割：設定取得/更新ロジックとQuickPick UI組立を分離し、configサービス化
@@ -84,7 +84,7 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
     - [x] utils整理：汎用とUI依存をサブフォルダ化（例: utils/markdown, utils/path, ui/imageInsertion）して責務を明確化
     - [x] GitHub同期分割：sync.tsの設定取得・API呼び出し・状態管理(pending/shaMap)をモジュール分けし、エラー/リトライ方針を統一、単体テストを追加
     - [x] プレビュー強化：preview系でバックエンド起動失敗/タイムアウト時のリトライ・クリーンアップ、deactivate時の停止処理を補強
-    - [ ] コンテンツキャッシュ強化：contentCacheをリポ/ブランチキー付きにし、スキーマバージョン管理と衝突回避を行う
+    - [x] コンテンツキャッシュ強化：contentCacheをリポ/ブランチキー付きにし、スキーマバージョン管理と衝突回避を行う
   - [x] 非同期処理の統一的ハンドリング（async/await 統一、エラーハンドリング）
   - [x] 型定義強化（any 排除、インターフェース整備）
 

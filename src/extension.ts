@@ -16,7 +16,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
   const scheme = "zenn";
   const fsProvider = new ZennFsProvider();
-  const contentCache = new ContentCache(context.globalStorageUri);
+  let contentCache = new ContentCache(context.globalStorageUri, buildCacheNamespace());
   const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
   context.subscriptions.push(statusBarItem);
   seedScaffoldContent(fsProvider, scheme);
@@ -112,6 +112,8 @@ export function activate(context: vscode.ExtensionContext): void {
       if (event.affectsConfiguration("zennpad")) {
         applyBranchInfo(treeDataProvider);
         validateRepoConfig();
+        // reload cache with new namespace on config changes
+        contentCache = new ContentCache(context.globalStorageUri, buildCacheNamespace());
       }
     })
   );
@@ -187,3 +189,12 @@ function handleAuthError(error: unknown, action: string): void {
 
 let globalTreeDataProvider: ZennTreeDataProvider | undefined;
 let globalPreviewManager: PreviewManager | undefined;
+
+function buildCacheNamespace(): string {
+  const config = vscode.workspace.getConfiguration("zennpad");
+  const owner = config.get<string>("githubOwner")?.trim() ?? "default";
+  const repo = config.get<string>("githubRepo")?.trim() ?? "workspace";
+  const mainBranch = getMainBranch(config);
+  const workBranch = config.get<string>("workBranch")?.trim() || "zenn-work";
+  return `${owner}_${repo}_${mainBranch}_${workBranch}`;
+}

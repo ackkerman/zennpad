@@ -18,8 +18,9 @@ export class ContentCache {
   private readonly cacheFilePath: string;
   private readonly version = 1;
 
-  constructor(storageUri: vscode.Uri) {
-    this.cacheFilePath = path.join(storageUri.fsPath, "cache.json");
+  constructor(storageUri: vscode.Uri, namespace = "default") {
+    const safeNamespace = sanitizeNamespace(namespace);
+    this.cacheFilePath = path.join(storageUri.fsPath, "cache", `${safeNamespace}.json`);
   }
 
   async load(): Promise<CacheEntry[] | null> {
@@ -40,4 +41,8 @@ export class ContentCache {
     const payload = JSON.stringify({ version: this.version, entries });
     await fs.writeFile(this.cacheFilePath, payload, "utf8");
   }
+}
+
+function sanitizeNamespace(input: string): string {
+  return input.replace(/[^a-zA-Z0-9._-]+/g, "_") || "default";
 }
