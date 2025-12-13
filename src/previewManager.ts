@@ -27,7 +27,7 @@ export class PreviewManager {
 
     try {
       if (!this.backend) {
-        this.backend = await PreviewBackend.start(this.workspace, previewPath);
+        this.backend = await PreviewBackend.start(this.workspace);
       }
     } catch (error) {
       const message =

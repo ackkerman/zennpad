@@ -24,15 +24,15 @@ class FakeClock implements Clock {
 
   advance(ms: number): void {
     const target = this.t + ms;
-    while (true) {
-      this.timers.sort((a, b) => a.at - b.at);
-      const next = this.timers[0];
-      if (!next || next.at > target) {
+    this.timers.sort((a, b) => a.at - b.at);
+    while (this.timers.length && this.timers[0].at <= target) {
+      const next = this.timers.shift();
+      if (!next) {
         break;
       }
       this.t = next.at;
-      this.timers.shift();
       next.fn();
+      this.timers.sort((a, b) => a.at - b.at);
     }
     this.t = target;
   }

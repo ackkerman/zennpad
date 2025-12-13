@@ -2,26 +2,31 @@
 
 ZennPad は Zenn 記事/Book を VS Code のサイドバーから操作するための拡張機能です。docs/spec.md の要件に沿った最小限のスケルトンを提供します。
 
-## 構成
-
-- Activity Bar に Zenn ビューコンテナーを追加し、`Zenn` ツリービューを表示
-- 仮想ファイルシステム `zenn:` スキームを登録
-- 主要コマンドをプレースホルダーとして登録
-
 ## セットアップ
 
-1. コンパイル
+```bash
+pnpm install
+pnpm run compile
+```
 
-    ```bash
-    pnpm install
-    pnpm run compile
-    ```
+VS Code の `Run Extension` 構成でデバッグ起動すると、Activity Bar に ZennPad ビューが出現します。
 
-2. VS Code で拡張を起動
-    - `Run Extension` 構成を使用してデバッグモードで起動
+## GitHub 認証
 
-3. `Zenn` ビューとコマンドを確認
+1. GitHub で Personal Access Token（`repo` 権限）を発行。
+2. ZennPad 設定で `zennpad.githubOwner` / `zennpad.githubRepo` / `zennpad.githubBranch`（監視用 main） / `zennpad.workBranch`（通常保存用、既定は `zenn-work`）を設定。
+3. コマンドパレットで `ZennPad: Sign in to GitHub` を実行し、認証を完了。
 
-## テスト
+## ワークフロー（work/main 分離）
 
-自動テストは未整備です。`npm test` ではプレースホルダー出力のみを実行します。必要に応じて `npm run compile` でビルド確認してください。
+- 編集/保存は work ブランチに自動コミット＆push。
+- Zenn へのデプロイは `ZennPad: Deploy Pending Changes to Zenn` で work → main をマージして実行。
+- 自動同期を一時停止したい場合は `ZennPad: Pause/Resume Auto Sync` を使用。
+
+## 品質タスク
+
+- Lint: `pnpm run lint`（ESLint + @typescript-eslint）
+- Format: `pnpm run format`（Prettier）
+- Test: `pnpm test`（`tsc` コンパイル + `node --test`）
+
+GitHub Actions の `ci` ワークフローで lint/test を自動実行します。

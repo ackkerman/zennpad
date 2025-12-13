@@ -79,7 +79,6 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [ ] 型定義強化（any 排除、インターフェース整備）
 
 - [ ] 品質向上タスク
-  - [ ] UI 変更に伴う screenshot 自動生成フロー（make screenshot-web + scripts/capture_screenshot.py）
   - [ ] Lint/format 導入と CI（GitHub Actions）整備
   - [ ] 単体テスト/統合テスト追加（Commands/FS/Tree）
   - [ ] README 改訂（セットアップ・認証手順・ワークフロー更新）
@@ -107,13 +106,14 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [ ] パース失敗や不整合時のフォールバック（キャッシュ破棄→通常取得）
 
 - [ ] 画像挿入（images/ に保存してリンク挿入）
-  - [ ] markdown 向けに DocumentPasteEditProvider を登録し、クリップボードの image/png/jpeg を検知
-  - [ ] DocumentDropEditProvider を登録し、ドラッグ&ドロップした画像ファイルを検知
-  - [ ] 画像ファイル名の生成（日時+拡張子、重複時は -1, -2 などでリネーム）
-  - [ ] 画像バイナリを `zenn:/images/<name>` に writeFile し、`![](/images/<name>)` を挿入する edit を返す
-  - [ ] 失敗時の通知とフォールバックコマンド（ファイルピッカー経由の `zennpad.insertImageFromFile` を追加）
-  - [ ] GitHub 同期フックで images/ 配下の変更も push/pull 対象に含める
+  - [x] markdown 向けに DocumentPasteEditProvider を登録し、クリップボードの image/png/jpeg を検知
+  - [x] DocumentDropEditProvider を登録し、ドラッグ&ドロップした画像ファイルを検知
+  - [x] 画像ファイル名の生成（日時+拡張子、重複時は -1, -2 などでリネーム）
+  - [x] 画像バイナリを `zenn:/images/<name>` に writeFile し、`![](/images/<name>)` を挿入する edit を返す
+  - [x] 失敗時の通知とフォールバックコマンド（ファイルピッカー経由の `zennpad.insertImageFromFile` を追加）
+  - [x] GitHub 同期フックで images/ 配下の変更も push/pull 対象に含める
   - [ ] 大きな画像や非対応 MIME の扱い（警告／スキップ）
+  - [ ] zennpad.insertImageFromFileコマンドだけでなくCtrl+Vでも上記のように`/images/`以下に画像ファイルを保存し、適切なMarkdownリンクを挿入する
 
 - [ ] GitHub同期のデプロイ回数抑制（main固定・Zenn 150回/日制限対応）
   - [x] writeFile では即 push せず dirty キューに積む

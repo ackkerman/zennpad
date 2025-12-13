@@ -11,7 +11,7 @@ export class PreviewBackend {
     private readonly proxyServer: PreviewProxyServer
   ) {}
 
-  static async start(workspace: PreviewWorkspace, initialPath: string): Promise<PreviewBackend> {
+  static async start(workspace: PreviewWorkspace): Promise<PreviewBackend> {
     await workspace.ensureReady();
     await workspace.syncAll();
 

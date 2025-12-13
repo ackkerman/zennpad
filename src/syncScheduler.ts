@@ -39,7 +39,7 @@ export class SyncScheduler {
   /** Force commit ignoring min interval. */
   async flushUnsafe(): Promise<void> {
     this.pending = true;
-    await this.doCommit(true);
+    await this.doCommit();
   }
 
   private armDebounce(): void {
@@ -66,10 +66,10 @@ export class SyncScheduler {
       }, waitMs);
       return;
     }
-    await this.doCommit(false);
+    await this.doCommit();
   }
 
-  private async doCommit(ignoreInterval: boolean): Promise<void> {
+  private async doCommit(): Promise<void> {
     if (!this.pending) {
       return;
     }
