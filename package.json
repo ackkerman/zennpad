@@ -40,8 +40,8 @@
           "when": "view == zennPadExplorer",
           "group": "navigation@0",
           "icon": {
-            "light": "media/icon/reload.svg",
-            "dark": "media/icon/reload.svg"
+            "light": "media/icon/reload-light.svg",
+            "dark": "media/icon/reload-dark.svg"
           }
         },
         {
@@ -49,8 +49,8 @@
           "when": "view == zennPadExplorer",
           "group": "navigation@1",
           "icon": {
-            "light": "media/icon/settings.svg",
-            "dark": "media/icon/settings.svg"
+            "light": "media/icon/settings-light.svg",
+            "dark": "media/icon/settings-dark.svg"
           }
         }
       ],
@@ -164,7 +164,7 @@
           "default": "",
           "description": "GitHub repository name for Zenn content"
         },
-        "zennpad.mainBranch": {
+        "zennpad.githubBranch": {
           "type": "string",
           "default": "main",
           "description": "Branch name to sync with Zenn"
@@ -180,17 +180,26 @@
       {
         "command": "zennpad.newArticle",
         "title": "ZennPad: New Article",
-        "icon": "media/icon/plus.svg"
+        "icon": {
+          "light": "media/icon/plus-light.svg",
+          "dark": "media/icon/plus-dark.svg"
+        }
       },
       {
         "command": "zennpad.publish",
         "title": "ZennPad: Publish Article",
-        "icon": "media/icon/publish.svg"
+        "icon": {
+          "light": "media/icon/publish-light.svg",
+          "dark": "media/icon/publish-dark.svg"
+        }
       },
       {
         "command": "zennpad.unpublish",
         "title": "ZennPad: Unpublish Article",
-        "icon": "media/icon/unpublish.svg"
+        "icon": {
+          "light": "media/icon/unpublish-light.svg",
+          "dark": "media/icon/unpublish-dark.svg"
+        }
       },
       {
         "command": "zennpad.openOnZenn",
@@ -208,17 +217,26 @@
       {
         "command": "zennpad.signIn",
         "title": "ZennPad: Sign in to GitHub",
-        "icon": "media/icon/github.svg"
+        "icon": {
+          "light": "media/icon/github-light.svg",
+          "dark": "media/icon/github-dark.svg"
+        }
       },
       {
         "command": "zennpad.signOut",
         "title": "ZennPad: Sign out of GitHub",
-        "icon": "media/icon/signout.svg"
+        "icon": {
+          "light": "media/icon/signout-light.svg",
+          "dark": "media/icon/signout-dark.svg"
+        }
       },
       {
         "command": "zennpad.authHelp",
         "title": "ZennPad: Settings",
-        "icon": "media/icon/settings.svg"
+        "icon": {
+          "light": "media/icon/settings-light.svg",
+          "dark": "media/icon/settings-dark.svg"
+        }
       },
       {
         "command": "zennpad.chooseRepo",
@@ -227,7 +245,10 @@
       {
         "command": "zennpad.refresh",
         "title": "ZennPad: Refresh",
-        "icon": "media/icon/refresh.svg"
+        "icon": {
+          "light": "media/icon/refresh-light.svg",
+          "dark": "media/icon/refresh-dark.svg"
+        }
       },
       {
         "command": "zennpad.openZennRoot",
@@ -284,12 +305,18 @@
       {
         "command": "zennpad.sortArticlesByDate",
         "title": "ZennPad: Sort Articles by Date",
-        "icon": "media/icon/sort-by-date.svg"
+        "icon": {
+          "light": "media/icon/sort-by-date-light.svg",
+          "dark": "media/icon/sort-by-date-dark.svg"
+        }
       },
       {
         "command": "zennpad.sortArticlesByTitle",
         "title": "ZennPad: Sort Articles by Title",
-        "icon": "media/icon/sort-by-title.svg"
+        "icon": {
+          "light": "media/icon/sort-by-title-light.svg",
+          "dark": "media/icon/sort-by-title-dark.svg"
+        }
       }
     ]
   },

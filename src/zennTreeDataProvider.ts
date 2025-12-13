@@ -292,7 +292,12 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
     return /\.(png|jpe?g|gif|webp)$/i.test(name);
   }
 
+
   private get rootNodes(): ZennTreeItemDescriptor[] {
+    // Return the root nodes for the tree view.
+    // Labels, icons, and descriptions can be customized here.
+    // iconPath:
+    //    - ref: https://code.visualstudio.com/api/references/icons-in-labels#icon-listing
     const branchDescription = this.branchInfo
       ? `${this.branchInfo.workBranch} → ${this.branchInfo.mainBranch}`
       : undefined;
@@ -302,20 +307,23 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
         collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
         contextValue: "drafts",
         resourceUri: vscode.Uri.from({ scheme: this.scheme, path: "/articles" }),
-        description: branchDescription
+        description: branchDescription,
+        iconPath: new vscode.ThemeIcon("pencil")
       },
       {
         label: "Articles",
         collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
         contextValue: "articles",
         resourceUri: vscode.Uri.from({ scheme: this.scheme, path: "/articles" }),
-        description: branchDescription
+        description: branchDescription,
+        iconPath: new vscode.ThemeIcon("symbol-file")
       },
       {
         label: "Books",
         collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
         contextValue: "books",
-        resourceUri: vscode.Uri.from({ scheme: this.scheme, path: "/books" })
+        resourceUri: vscode.Uri.from({ scheme: this.scheme, path: "/books" }),
+        iconPath: new vscode.ThemeIcon("book")
       },
       {
         label: "Images",
