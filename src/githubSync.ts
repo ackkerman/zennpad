@@ -28,6 +28,7 @@ export class GitHubSync {
       await this.ensureDirectories();
       await this.pullDirectory(octokit, repoConfig, "articles");
       await this.pullDirectory(octokit, repoConfig, "books");
+      await this.pullDirectory(octokit, repoConfig, "images");
     } finally {
       this.pulling = false;
     }
@@ -204,7 +205,7 @@ export class GitHubSync {
   }
 
   private async ensureDirectories(): Promise<void> {
-    const directories = ["/", "/articles", "/books"];
+    const directories = ["/", "/articles", "/books", "/images"];
     for (const dir of directories) {
       const uri = vscode.Uri.from({ scheme: "zenn", path: dir });
       try {

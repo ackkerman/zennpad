@@ -9,6 +9,8 @@ import { GitHubSync } from "./githubSync";
 import { signInToGitHub, getOctokit, signOutFromGitHub } from "./githubAuth";
 import { buildZennUrlFromDoc } from "./openOnZenn";
 import { ContentCache } from "./contentCache";
+import { insertImageFromFile, registerImageInsertionProviders } from "./imageInsertion";
+import { randomEmoji } from "./emojiPool";
 
 export function activate(context: vscode.ExtensionContext): void {
   vscode.commands.executeCommand("setContext", "zennpad.activated", true);
@@ -35,6 +37,7 @@ export function activate(context: vscode.ExtensionContext): void {
   );
   const previewManager = new PreviewManager(previewWorkspace, context);
   const githubSync = new GitHubSync(fsProvider);
+  registerImageInsertionProviders(context, fsProvider, scheme);
 
   void (async () => {
     await updateAuthStatus();
@@ -207,6 +210,9 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
     vscode.commands.registerCommand("zennpad.deleteNode", async (resource?: vscode.Uri) => {
       await deleteNode(resource, fsProvider, treeDataProvider);
+    }),
+    vscode.commands.registerCommand("zennpad.insertImageFromFile", async () => {
+      await insertImageFromFile(fsProvider, scheme);
     })
   );
 
@@ -253,6 +259,7 @@ function seedScaffoldContent(fsProvider: ZennFsProvider, scheme: string): void {
   ensureDirectory("/articles");
   ensureDirectory("/books");
   ensureDirectory("/books/example-book");
+  ensureDirectory("/images");
 }
 
 async function copyZennUrl(resource?: vscode.Uri | { resourceUri?: vscode.Uri }): Promise<void> {
@@ -404,7 +411,7 @@ async function createArticle(fsProvider: ZennFsProvider, treeDataProvider: ZennT
   const path = `/articles/${slug}.md`;
   const uri = vscode.Uri.from({ scheme, path });
   const content = serializeFrontmatter(
-    { title: title ?? "", emoji: "😸", type: "tech", topics: [], published: false },
+    { title: title ?? "", emoji: randomEmoji(), type: "tech", topics: [], published: false },
     "\n"
   );
   fsProvider.writeFile(uri, Buffer.from(content), { create: true, overwrite: true });
@@ -427,7 +434,7 @@ async function createBook(fsProvider: ZennFsProvider, treeDataProvider: ZennTree
   fsProvider.createDirectory(bookRoot);
   const chapterPath = vscode.Uri.from({ scheme, path: `/books/${bookSlug}/chapter-1.md` });
   const content = serializeFrontmatter(
-    { title: "Chapter 1", emoji: "😸", type: "tech", topics: [], published: false },
+    { title: "Chapter 1", emoji: randomEmoji(), type: "tech", topics: [], published: false },
     "\n"
   );
   fsProvider.writeFile(chapterPath, Buffer.from(content), { create: true, overwrite: true });
@@ -460,7 +467,7 @@ async function createChapter(fsProvider: ZennFsProvider, treeDataProvider: ZennT
   const slug = slugify(title || `chapter-${Date.now()}`);
   const uri = vscode.Uri.from({ scheme, path: `/books/${pick.label}/${slug}.md` });
   const content = serializeFrontmatter(
-    { title: title ?? "", emoji: "😸", type: "tech", topics: [], published: false },
+    { title: title ?? "", emoji: randomEmoji(), type: "tech", topics: [], published: false },
     "\n"
   );
   fsProvider.writeFile(uri, Buffer.from(content), { create: true, overwrite: true });

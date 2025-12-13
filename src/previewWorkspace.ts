@@ -23,7 +23,8 @@ export class PreviewWorkspace {
     await this.ensureReady();
     await Promise.all([
       this.syncDirectory("/articles", path.join(this.rootFsPath, "articles")),
-      this.syncDirectory("/books", path.join(this.rootFsPath, "books"))
+      this.syncDirectory("/books", path.join(this.rootFsPath, "books")),
+      this.syncDirectory("/images", path.join(this.rootFsPath, "images"))
     ]);
   }
 

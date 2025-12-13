@@ -28,7 +28,8 @@
       "zennPad": [
         {
           "id": "zennPadExplorer",
-          "name": "ZennPad"
+          "name": "ZennPad",
+          "icon": "media/logo-only.svg"
         }
       ]
     },
@@ -37,12 +38,20 @@
         {
           "command": "zennpad.refresh",
           "when": "view == zennPadExplorer",
-          "group": "navigation@0"
+          "group": "navigation@0",
+          "icon": {
+            "light": "media/icon/reload.svg",
+            "dark": "media/icon/reload.svg"
+          }
         },
         {
           "command": "zennpad.authHelp",
           "when": "view == zennPadExplorer",
-          "group": "navigation@1"
+          "group": "navigation@1",
+          "icon": {
+            "light": "media/icon/settings.svg",
+            "dark": "media/icon/settings.svg"
+          }
         }
       ],
       "editor/title": [
@@ -102,7 +111,17 @@
         },
         {
           "command": "zennpad.copyGithubUrl",
-          "when": "view == zennPadExplorer && (viewItem == article:draft || viewItem == article:published || viewItem == chapter)",
+          "when": "view == zennPadExplorer && (viewItem == article:draft || viewItem == article:published || viewItem == chapter || viewItem == image)",
+          "group": "navigation@1"
+        },
+        {
+          "command": "copyPath",
+          "when": "view == zennPadExplorer && viewItem == image",
+          "group": "navigation@1"
+        },
+        {
+          "command": "copyRelativePath",
+          "when": "view == zennPadExplorer && viewItem == image",
           "group": "navigation@1"
         },
         {
@@ -117,17 +136,17 @@
         },
         {
           "command": "zennpad.renameNode",
-          "when": "view == zennPadExplorer && (viewItem == article:draft || viewItem == article:published || viewItem == chapter)",
+          "when": "view == zennPadExplorer && (viewItem == article:draft || viewItem == article:published || viewItem == chapter || viewItem == image)",
           "group": "navigation@3"
         },
         {
           "command": "zennpad.duplicateNode",
-          "when": "view == zennPadExplorer && (viewItem == article:draft || viewItem == article:published || viewItem == chapter)",
+          "when": "view == zennPadExplorer && (viewItem == article:draft || viewItem == article:published || viewItem == chapter || viewItem == image)",
           "group": "navigation@3"
         },
         {
           "command": "zennpad.deleteNode",
-          "when": "view == zennPadExplorer && (viewItem == article:draft || viewItem == article:published || viewItem == chapter)",
+          "when": "view == zennPadExplorer && (viewItem == article:draft || viewItem == article:published || viewItem == chapter || viewItem == image)",
           "group": "navigation@4"
         }
       ]
@@ -232,6 +251,20 @@
       {
         "command": "zennpad.deleteNode",
         "title": "Delete"
+      },
+      {
+        "command": "zennpad.insertImageFromFile",
+        "title": "Insert Image from File"
+      },
+      {
+        "command": "zennpad.sortArticlesByDate",
+        "title": "Sort Articles by Date",
+        "icon": "media/icon/sort-by-date.svg"
+      },
+      {
+        "command": "zennpad.sortArticlesByTitle",
+        "title": "Sort Articles by Title",
+        "icon": "media/icon/sort-by-title.svg"
       }
     ]
   },
