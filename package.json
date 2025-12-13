@@ -5,6 +5,7 @@
   "description": "VS Code extension scaffold for editing Zenn content directly from the sidebar.",
   "icon": "media/logo/zennpad_icon_transparent_128.png",
   "version": "0.0.1",
+  "packageManager": "pnpm@10.18.3",
   "engines": {
     "vscode": "^1.85.0"
   },
