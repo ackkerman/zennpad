@@ -21,8 +21,8 @@ interface PendingWrite {
   hash: string;
 }
 
-const DEFAULT_DEBOUNCE_MS = 30_000;
-const DEFAULT_MIN_INTERVAL_MS = 10 * 60 * 1000;
+const DEFAULT_DEBOUNCE_MS = 0;
+const DEFAULT_MIN_INTERVAL_MS = 0;
 const COMMIT_MESSAGE = "ZennPad sync";
 const DEPLOY_MESSAGE = "ZennPad deploy work -> main";
 
@@ -80,12 +80,16 @@ export class GitHubSync {
     }
   }
 
-  async flushPending(): Promise<void> {
-    await this.scheduler.flush();
+  async flushPending(): Promise<boolean> {
+    if (!this.hasPending()) {
+      return false;
+    }
+    await this.scheduler.flushUnsafe();
+    return true;
   }
 
-  async flushPendingUnsafe(): Promise<void> {
-    await this.scheduler.flushUnsafe();
+  async flushPendingUnsafe(): Promise<boolean> {
+    return this.flushPending();
   }
 
   toggleAutoSync(): boolean {
@@ -161,6 +165,10 @@ export class GitHubSync {
 
   private hasPending(): boolean {
     return this.pendingWrites.size > 0 || this.pendingDeletes.size > 0;
+  }
+
+  hasPendingChanges(): boolean {
+    return this.hasPending();
   }
 
   private async commitPending(): Promise<void> {
@@ -366,7 +374,7 @@ export class GitHubSync {
     const config = vscode.workspace.getConfiguration("zennpad");
     const owner = config.get<string>("githubOwner")?.trim();
     const repo = config.get<string>("githubRepo")?.trim();
-    const mainBranch = config.get<string>("githubBranch")?.trim() || "main";
+    const mainBranch = config.get<string>("mainBranch")?.trim() || "main";
     const workBranch = config.get<string>("workBranch")?.trim() || "zenn-work";
     if (!owner || !repo) {
       throw new Error("zennpad.githubOwner と zennpad.githubRepo を設定してください。");

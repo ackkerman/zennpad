@@ -150,7 +150,7 @@ export function activate(context: vscode.ExtensionContext): void {
       const config = vscode.workspace.getConfiguration("zennpad");
       const owner = config.get<string>("githubOwner")?.trim();
       const repo = config.get<string>("githubRepo")?.trim();
-      const branch = config.get<string>("githubBranch")?.trim() || "main";
+      const branch = config.get<string>("mainBranch")?.trim() || "main";
       if (!owner || !repo) {
         vscode.window.showErrorMessage("Set zennpad.githubOwner and zennpad.githubRepo to open GitHub.");
         return;
@@ -227,8 +227,12 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
     vscode.commands.registerCommand("zennpad.flushPendingSync", async () => {
       try {
-        await githubSync.flushPending();
-        vscode.window.showInformationMessage("Pending ZennPad changes flushed (respecting minimum interval).");
+        const ran = await githubSync.flushPending();
+        if (ran) {
+          vscode.window.showInformationMessage("Pending ZennPad changes flushed.");
+        } else {
+          vscode.window.showInformationMessage("No pending changes to flush.");
+        }
       } catch (error) {
         handleAuthError(error, "flush pending sync");
       }
@@ -297,7 +301,7 @@ function seedScaffoldContent(fsProvider: ZennFsProvider, scheme: string): void {
 
 function applyBranchInfo(treeDataProvider: ZennTreeDataProvider): void {
   const config = vscode.workspace.getConfiguration("zennpad");
-  const mainBranch = config.get<string>("githubBranch")?.trim() || "main";
+  const mainBranch = config.get<string>("mainBranch")?.trim() || "main";
   const workBranch = config.get<string>("workBranch")?.trim() || "zenn-work";
   treeDataProvider.setBranchInfo({ workBranch, mainBranch });
 }
@@ -327,7 +331,7 @@ async function copyGithubUrl(resource?: vscode.Uri | { resourceUri?: vscode.Uri 
   const config = vscode.workspace.getConfiguration("zennpad");
   const owner = config.get<string>("githubOwner")?.trim();
   const repo = config.get<string>("githubRepo")?.trim();
-  const branch = config.get<string>("githubBranch")?.trim() || "main";
+  const branch = config.get<string>("mainBranch")?.trim() || "main";
   if (!owner || !repo) {
     vscode.window.showErrorMessage("Set zennpad.githubOwner and zennpad.githubRepo to copy GitHub URL.");
     return;
@@ -340,7 +344,7 @@ async function copyGithubUrl(resource?: vscode.Uri | { resourceUri?: vscode.Uri 
 
 async function deployToZenn(githubSync: GitHubSync): Promise<void> {
   const config = vscode.workspace.getConfiguration("zennpad");
-  const mainBranch = config.get<string>("githubBranch")?.trim() || "main";
+  const mainBranch = config.get<string>("mainBranch")?.trim() || "main";
   const workBranch = config.get<string>("workBranch")?.trim() || "zenn-work";
   const choice = await vscode.window.showWarningMessage(
     `work ブランチ (${workBranch}) の内容を main (${mainBranch}) に反映して Zenn にデプロイしますか？`,
@@ -363,7 +367,7 @@ function validateRepoConfig(): void {
   const config = vscode.workspace.getConfiguration("zennpad");
   const owner = config.get<string>("githubOwner")?.trim();
   const repo = config.get<string>("githubRepo")?.trim();
-  const mainBranch = config.get<string>("githubBranch")?.trim() || "main";
+  const mainBranch = config.get<string>("mainBranch")?.trim() || "main";
   const workBranch = config.get<string>("workBranch")?.trim() || "zenn-work";
   if (!owner || !repo) {
     vscode.window.showErrorMessage("zennpad.githubOwner と zennpad.githubRepo を設定してください。");
@@ -640,7 +644,7 @@ function getRepoConfigSummary(): string | undefined {
   const config = vscode.workspace.getConfiguration("zennpad");
   const owner = config.get<string>("githubOwner")?.trim();
   const repo = config.get<string>("githubRepo")?.trim();
-  const branch = config.get<string>("githubBranch")?.trim() || "main";
+  const branch = config.get<string>("mainBranch")?.trim() || "main";
   const workBranch = config.get<string>("workBranch")?.trim() || "zenn-work";
   if (!owner || !repo) {
     return undefined;
