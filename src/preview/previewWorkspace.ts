@@ -2,7 +2,7 @@ import * as fs from "fs/promises";
 import * as path from "path";
 import * as vscode from "vscode";
 import { FsMutation, ZennFsProvider } from "../fs/zennFsProvider";
-import { toRelativeZennPath } from "../utils/zennPath";
+import { toRelativeZennPath } from "../utils/path/zennPath";
 
 export class PreviewWorkspace {
   constructor(private readonly baseUri: vscode.Uri, private readonly fsProvider: ZennFsProvider) {}

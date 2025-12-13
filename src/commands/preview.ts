@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { isZennUri } from "../utils/zennPath";
+import { isZennUri } from "../utils/path/zennPath";
 import { PreviewWorkspace } from "../preview/previewWorkspace";
 import { PreviewManager } from "../preview/previewManager";
 import { updatePreviewableContext } from "../context";

@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { SortOrder } from "./ui/tree/types";
-import { isZennUri } from "./utils/zennPath";
+import { isZennUri } from "./utils/path/zennPath";
 
 export function setSortOrderContext(order: SortOrder): void {
   void vscode.commands.executeCommand("setContext", "zennpad.sortOrder", order);

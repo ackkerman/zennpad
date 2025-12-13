@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { ZennFsProvider } from "../../fs/zennFsProvider";
-import { parseFrontmatter } from "../../utils/frontmatter";
+import { parseFrontmatter } from "../../utils/markdown/frontmatter";
 
 export interface ParsedFrontmatter {
   title?: string;

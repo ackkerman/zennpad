@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { Octokit } from "@octokit/rest";
 import { getOctokit } from "./auth";
-import { toRelativeZennPath } from "../utils/zennPath";
+import { toRelativeZennPath } from "../utils/path/zennPath";
 import { FsMutation, ZennFsProvider } from "../fs/zennFsProvider";
 import { SyncScheduler, type Clock } from "./syncScheduler";
 import { getRepoConfig, type RepoConfig } from "./repoConfig";

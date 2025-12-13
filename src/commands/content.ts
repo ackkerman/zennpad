@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
-import { parseFrontmatter, serializeFrontmatter } from "../utils/frontmatter";
+import { parseFrontmatter, serializeFrontmatter } from "../utils/markdown/frontmatter";
 import { ZennFsProvider } from "../fs/zennFsProvider";
 import { ZennTreeDataProvider } from "../ui/tree/zennTreeDataProvider";
-import { isZennUri } from "../utils/zennPath";
+import { isZennUri } from "../utils/path/zennPath";
 import { randomEmoji } from "../utils/emojiPool";
-import { insertImageFromFile } from "../utils/imageInsertion";
+import { insertImageFromFile } from "../ui/imageInsertion";
 import { buildZennUrlFromDoc } from "./openOnZenn";
 import { getMainBranch, getZennOwner } from "../config";
 import { CommandDeps } from "./types";
