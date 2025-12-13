@@ -30,3 +30,11 @@ VS Code の `Run Extension` 構成でデバッグ起動すると、Activity Bar 
 - Test: `pnpm test`（`tsc` コンパイル + `node --test`）
 
 GitHub Actions の `ci` ワークフローで lint/test を自動実行します。
+
+## 最小テスト項目
+
+- Frontmatter のパース/シリアライズが YAML 断面と本文を正しく分離すること
+- PendingState と SyncScheduler が重複同期を抑制し、リトライ/インターバル制御を行うこと
+- zenn スキームのパス変換（toRelativeZennPath / toPreviewUrlPath）が記事・Book・config を正しく解決すること
+- buildZennUrl が記事の公開/下書き、Book の URL を生成し、対応しないパスは undefined を返すこと
+- ZennFsProvider が write/read/rename/delete を正しく扱い、非再帰削除のガードを持つこと
