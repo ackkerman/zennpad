@@ -361,16 +361,16 @@
         "command": "zennpad.pauseAutoSync",
         "title": "ZennPad: Pause Auto Sync",
         "icon": {
-          "light": "media/icon/sync-off-light.svg",
-          "dark": "media/icon/sync-off-dark.svg"
+          "light": "media/icon/sync-on-light.svg",
+          "dark": "media/icon/sync-on-dark.svg"
         }
       },
       {
         "command": "zennpad.resumeAutoSync",
         "title": "ZennPad: Resume Auto Sync",
         "icon": {
-          "light": "media/icon/sync-on-light.svg",
-          "dark": "media/icon/sync-on-dark.svg"
+          "light": "media/icon/sync-off-light.svg",
+          "dark": "media/icon/sync-off-dark.svg"
         }
       },
       {
@@ -385,16 +385,16 @@
         "command": "zennpad.sortArticlesByDate",
         "title": "ZennPad: Sort Articles by Date",
         "icon": {
-          "light": "media/icon/sort-by-date-light.svg",
-          "dark": "media/icon/sort-by-date-dark.svg"
+          "light": "media/icon/sort-by-title-light.svg",
+          "dark": "media/icon/sort-by-title-dark.svg"
         }
       },
       {
         "command": "zennpad.sortArticlesByTitle",
         "title": "ZennPad: Sort Articles by Title",
         "icon": {
-          "light": "media/icon/sort-by-title-light.svg",
-          "dark": "media/icon/sort-by-title-dark.svg"
+          "light": "media/icon/sort-by-date-light.svg",
+          "dark": "media/icon/sort-by-date-dark.svg"
         }
       }
     ]
