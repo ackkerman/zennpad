@@ -24,7 +24,7 @@ export function registerImageInsertionProviders(
           }
           const baseName = slugFromUri(document.uri) ?? "pasted-image";
           const { link } = await saveImage(file, imageItem.mime, fsProvider, scheme, baseName);
-          const edit: any = new (vscode as any).DocumentPasteEdit(`![](${link})`, "Insert image");
+          const edit = createDocumentPasteEdit(`![](${link})`, "Insert image");
           edit.additionalEdit = new vscode.WorkspaceEdit();
           edit.additionalEdit.insert(document.uri, ranges[0].start, `![](${link})`);
           return [edit];
@@ -109,8 +109,8 @@ async function saveImage(
   scheme: string,
   baseName: string
 ): Promise<{ link: string }> {
-  const raw = await (typeof (file as any).data === "function" ? (file as any).data() : (file as any).data);
-  const buffer = new Uint8Array(raw as ArrayBufferLike);
+  const raw = await readFileData(file);
+  const buffer = new Uint8Array(raw);
   const ext = path.extname(file.name) || guessExt(mime);
   const name = await ensureSequentialName(baseName, ext, fsProvider);
   const link = await saveBuffer(buffer, name, fsProvider, scheme);
@@ -162,4 +162,22 @@ function slugFromUri(uri: vscode.Uri): string | undefined {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "") || undefined;
+}
+
+function createDocumentPasteEdit(text: string, label: string): vscode.DocumentPasteEdit {
+  const ctor = (vscode as typeof vscode & { DocumentPasteEdit?: new (t: string, l: string) => vscode.DocumentPasteEdit })
+    .DocumentPasteEdit;
+  if (!ctor) {
+    throw new Error("DocumentPasteEdit is not available in this VS Code version.");
+  }
+  return new ctor(text, label);
+}
+
+async function readFileData(file: vscode.DataTransferFile): Promise<ArrayBufferLike> {
+  const candidate = file as unknown as { data?: () => ArrayBufferLike | Promise<ArrayBufferLike> };
+  if (typeof candidate.data === "function") {
+    const result = candidate.data();
+    return result instanceof Promise ? await result : result;
+  }
+  throw new Error("DataTransferFile does not expose data()");
 }

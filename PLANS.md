@@ -82,12 +82,11 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
     - [x] settingsPanel分割：設定取得/更新ロジックとQuickPick UI組立を分離し、configサービス化
     - [x] ツリー責務分離：zennTreeDataProviderの状態管理・ソート/ラベル生成・frontmatter I/Oを分割し、Books拡張に備える
     - [x] utils整理：汎用とUI依存をサブフォルダ化（例: utils/markdown, utils/path, ui/imageInsertion）して責務を明確化
-    - [ ] GitHub同期分割：sync.tsの設定取得・API呼び出し・状態管理(pending/shaMap)をモジュール分けし、エラー/リトライ方針を統一、単体テストを追加
+    - [x] GitHub同期分割：sync.tsの設定取得・API呼び出し・状態管理(pending/shaMap)をモジュール分けし、エラー/リトライ方針を統一、単体テストを追加
     - [x] プレビュー強化：preview系でバックエンド起動失敗/タイムアウト時のリトライ・クリーンアップ、deactivate時の停止処理を補強
     - [ ] コンテンツキャッシュ強化：contentCacheをリポ/ブランチキー付きにし、スキーマバージョン管理と衝突回避を行う
-    - [ ] 例外/型の統一：非同期エラーハンドリングと型付けを共通ラッパーで整理し、any排除を進める
-  - [ ] 非同期処理の統一的ハンドリング（async/await 統一、エラーハンドリング）
-  - [ ] 型定義強化（any 排除、インターフェース整備）
+  - [x] 非同期処理の統一的ハンドリング（async/await 統一、エラーハンドリング）
+  - [x] 型定義強化（any 排除、インターフェース整備）
 
 - [x] 品質向上タスク
   - [x] Lint/format 導入と CI（GitHub Actions）整備
