@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { GitHubSync } from "./githubSync";
+import { GitHubSync } from "../github/sync";
 
 type SettingsItem = vscode.QuickPickItem & { run: () => Promise<void> };
 

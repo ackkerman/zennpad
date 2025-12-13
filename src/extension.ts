@@ -4,7 +4,7 @@ import { FsMutation, ZennFsProvider } from "./zennFsProvider";
 import { PreviewWorkspace } from "./preview/previewWorkspace";
 import { PreviewManager } from "./preview/previewManager";
 import { isZennUri } from "./zennPath";
-import { GitHubSync } from "./githubSync";
+import { GitHubSync } from "./github/sync";
 import { ContentCache } from "./contentCache";
 import { registerImageInsertionProviders } from "./imageInsertion";
 import { registerCommands } from "./commands/registerCommands";

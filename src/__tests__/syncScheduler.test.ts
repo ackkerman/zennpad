@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { SyncScheduler, type Clock } from "../syncScheduler";
+import { SyncScheduler, type Clock } from "../github/syncScheduler";
 
 class FakeClock implements Clock {
   private t = 0;

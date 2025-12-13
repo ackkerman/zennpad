@@ -181,6 +181,8 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
 
 - [ ] identifierを`zenn-pad`に変更
 
+- [ ] Marketplaceに公開(https://marketplace.visualstudio.com/)
+
 ## メモ
 
 - 現状は scaffold 状態。GitHub 連携と frontmatter/publish まわりが未着手。

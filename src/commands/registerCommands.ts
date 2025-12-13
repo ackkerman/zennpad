@@ -9,11 +9,11 @@ import { getMainBranch, getRepoConfigSummary, getZennOwner } from "../config";
 import { buildZennUrlFromDoc } from "../openOnZenn";
 import { randomEmoji } from "../emojiPool";
 import { insertImageFromFile } from "../imageInsertion";
-import { getOctokit, signInToGitHub, signOutFromGitHub } from "../githubAuth";
-import { GitHubSync } from "../githubSync";
+import { getOctokit, signInToGitHub, signOutFromGitHub } from "../github/auth";
+import { GitHubSync } from "../github/sync";
 import { withStatusBarSpinner } from "../ui/statusBar";
 import { updatePreviewableContext } from "../context";
-import { showSettingsPanel } from "../settingsPanel";
+import { showSettingsPanel } from "../ui/settingsPanel";
 
 interface CommandDeps {
   fsProvider: ZennFsProvider;

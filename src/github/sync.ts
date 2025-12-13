@@ -1,9 +1,9 @@
 import * as vscode from "vscode";
 import { Octokit } from "@octokit/rest";
 import { createHash } from "crypto";
-import { getOctokit } from "./githubAuth";
-import { toRelativeZennPath } from "./zennPath";
-import { FsMutation, ZennFsProvider } from "./zennFsProvider";
+import { getOctokit } from "./auth";
+import { toRelativeZennPath } from "../zennPath";
+import { FsMutation, ZennFsProvider } from "../zennFsProvider";
 import { SyncScheduler, type Clock } from "./syncScheduler";
 
 interface RepoConfig {
