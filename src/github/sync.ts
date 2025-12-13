@@ -385,7 +385,10 @@ export class GitHubSync {
     const config = vscode.workspace.getConfiguration("zennpad");
     const owner = config.get<string>("githubOwner")?.trim();
     const repo = config.get<string>("githubRepo")?.trim();
-    const mainBranch = config.get<string>("mainBranch")?.trim() || "main";
+    const mainBranch =
+      config.get<string>("githubBranch")?.trim() ||
+      config.get<string>("mainBranch")?.trim() ||
+      "main";
     const workBranch = config.get<string>("workBranch")?.trim() || "zenn-work";
     if (!owner || !repo) {
       throw new Error("zennpad.githubOwner と zennpad.githubRepo を設定してください。");
