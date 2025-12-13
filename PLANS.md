@@ -154,7 +154,7 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [ ] Webview 内でのリンククリックを外部ブラウザで開くように制御
   - [ ] ユーザーが必要に応じてアクセスできるように、Activity Bar に Help ノードを追加
 
-- [ ] UI改善：TreeView アイコンのカスタマイズ
+- [x] UI改善：TreeView アイコンのカスタマイズ
   - [x] Articles ノードにページアイコンを設定
   - [x] Drafts ノードに鉛筆アイコンを設定
   - [x] Books ノードに本アイコンを設定
@@ -182,7 +182,7 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [x] Activity BarのタイトルバーのUI修正
     - [x] SyncPause/SyncOn を1つのボタンに集約し、トグルで状態を切り替えるように。また、状態に合わせたアイコンを表示すること
     - [x] SortByDate/SortByTitle を1つのボタンに集約し、トグルで状態を切り替えるように。また、状態に合わせたアイコンを表示すること
-  - [ ] ステータスバー実装
+  - [x] ステータスバー実装
     - [x] スピナーを表示するヘルパー (StatusBarController.withSpinner) を追加し、deployToZenn と pauseAutoSync / resumeAutoSync 実行中に $(sync~spin) で進行中を示すようにした
     - [x] `Github(<uesr-id>/<repo-name>) -> Zenn(<user-id>)`的なソースとDistがわかりやすくなるような表示をステータスバーに表示したい。
 
