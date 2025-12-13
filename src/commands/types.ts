@@ -5,6 +5,7 @@ import { SortOrder } from "../ui/tree/types";
 import { PreviewWorkspace } from "../preview/previewWorkspace";
 import { PreviewManager } from "../preview/previewManager";
 import { GitHubSync } from "../github/sync";
+import { StatusBarController } from "../ui/statusBar";
 
 export interface CommandDeps {
   fsProvider: ZennFsProvider;
@@ -14,6 +15,7 @@ export interface CommandDeps {
   previewManager: PreviewManager;
   githubSync: GitHubSync;
   statusBarItem: vscode.StatusBarItem;
+  statusBar: StatusBarController;
   updateAuthStatus: () => Promise<void>;
   setAutoSyncContext: (paused: boolean) => void;
   setSortOrderContext: (order: SortOrder) => void;

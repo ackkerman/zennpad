@@ -9,7 +9,8 @@ import { ContentCache } from "./utils/contentCache";
 import { registerImageInsertionProviders } from "./ui/imageInsertion";
 import { registerCommands } from "./commands/registerCommands";
 import { setAutoSyncContext, setSortOrderContext, updatePreviewableContext } from "./context";
-import { getMainBranch, getRepoConfigSummary, validateRepoConfig } from "./config";
+import { getMainBranch, getRepoConfigSummary, getZennOwner, validateRepoConfig } from "./config";
+import { StatusBarController } from "./ui/statusBar";
 
 export function activate(context: vscode.ExtensionContext): void {
   vscode.commands.executeCommand("setContext", "zennpad.activated", true);
@@ -18,6 +19,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const fsProvider = new ZennFsProvider();
   let contentCache = new ContentCache(context.globalStorageUri, buildCacheNamespace());
   const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+  const statusBar = new StatusBarController(statusBarItem);
   context.subscriptions.push(statusBarItem);
   seedScaffoldContent(fsProvider, scheme);
   context.subscriptions.push(
@@ -45,6 +47,7 @@ export function activate(context: vscode.ExtensionContext): void {
   setAutoSyncContext(githubSync.isAutoSyncPaused());
   githubSync.onPendingChange((paths) => {
     treeDataProvider.setDirtyPaths(paths);
+    statusBar.setPendingCount(paths.size);
   });
   registerImageInsertionProviders(context, fsProvider, scheme);
 
@@ -79,6 +82,7 @@ export function activate(context: vscode.ExtensionContext): void {
     previewManager,
     githubSync,
     statusBarItem,
+    statusBar,
     updateAuthStatus,
     setAutoSyncContext,
     setSortOrderContext,
@@ -112,11 +116,14 @@ export function activate(context: vscode.ExtensionContext): void {
       if (event.affectsConfiguration("zennpad")) {
         applyBranchInfo(treeDataProvider);
         validateRepoConfig();
+        updateStatusBar(statusBar, githubSync);
         // reload cache with new namespace on config changes
         contentCache = new ContentCache(context.globalStorageUri, buildCacheNamespace());
       }
     })
   );
+
+  updateStatusBar(statusBar, githubSync);
 }
 
 export function deactivate(): void {
@@ -197,4 +204,10 @@ function buildCacheNamespace(): string {
   const mainBranch = getMainBranch(config);
   const workBranch = config.get<string>("workBranch")?.trim() || "zenn-work";
   return `${owner}_${repo}_${mainBranch}_${workBranch}`;
+}
+
+function updateStatusBar(statusBar: StatusBarController, githubSync: GitHubSync): void {
+  const config = vscode.workspace.getConfiguration("zennpad");
+  statusBar.setRepoSummary(getRepoConfigSummary(), getZennOwner(config));
+  statusBar.setAutoSyncPaused(githubSync.isAutoSyncPaused());
 }

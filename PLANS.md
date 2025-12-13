@@ -183,8 +183,8 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
     - [x] SyncPause/SyncOn を1つのボタンに集約し、トグルで状態を切り替えるように。また、状態に合わせたアイコンを表示すること
     - [x] SortByDate/SortByTitle を1つのボタンに集約し、トグルで状態を切り替えるように。また、状態に合わせたアイコンを表示すること
   - [ ] ステータスバー実装
-    - [x] スピナーを表示するヘルパー withStatusBarSpinner を追加し、deployToZenn と pauseAutoSync / resumeAutoSync 実行中に $(sync~spin) で進行中を示すようにした
-    - [ ] `Github(<uesr-id>/<repo-name>) -> Zenn(<user-id>)`的なソースとDistがわかりやすくなるような表示をステータスバーに表示したい。
+    - [x] スピナーを表示するヘルパー (StatusBarController.withSpinner) を追加し、deployToZenn と pauseAutoSync / resumeAutoSync 実行中に $(sync~spin) で進行中を示すようにした
+    - [x] `Github(<uesr-id>/<repo-name>) -> Zenn(<user-id>)`的なソースとDistがわかりやすくなるような表示をステータスバーに表示したい。
 
 - [ ] identifierを`zenn-pad`に変更
 

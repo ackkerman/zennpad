@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
-import { withStatusBarSpinner } from "../ui/statusBar";
 import { getMainBranch } from "../config";
 import { GitHubSync } from "../github/sync";
 import { CommandDeps } from "./types";
@@ -10,7 +9,7 @@ export function registerSyncCommands(
   deps: CommandDeps,
   treeDataProvider: ZennTreeDataProvider
 ): vscode.Disposable[] {
-  const { githubSync, statusBarItem } = deps;
+  const { githubSync, statusBar } = deps;
   return [
     vscode.commands.registerCommand("zennpad.refresh", () => {
       githubSync
@@ -32,24 +31,27 @@ export function registerSyncCommands(
       }
     }),
     vscode.commands.registerCommand("zennpad.deployToZenn", async () => {
-      await withStatusBarSpinner(statusBarItem, "Deploying to Zenn...", () => deployToZenn(githubSync));
+      await statusBar.withSpinner("Deploying to Zenn...", () => deployToZenn(githubSync));
     }),
     vscode.commands.registerCommand("zennpad.toggleAutoSync", async () => {
       const paused = githubSync.toggleAutoSync();
       deps.setAutoSyncContext(paused);
+      statusBar.setAutoSyncPaused(paused);
       vscode.window.showInformationMessage(paused ? "Auto sync paused." : "Auto sync resumed.");
     }),
     vscode.commands.registerCommand("zennpad.pauseAutoSync", async () => {
-      await withStatusBarSpinner(statusBarItem, "Pausing auto sync...", async () => {
+      await statusBar.withSpinner("Pausing auto sync...", async () => {
         githubSync.setAutoSyncPaused(true);
         deps.setAutoSyncContext(true);
+        statusBar.setAutoSyncPaused(true);
       });
       vscode.window.showInformationMessage("Auto sync paused.");
     }),
     vscode.commands.registerCommand("zennpad.resumeAutoSync", async () => {
-      await withStatusBarSpinner(statusBarItem, "Resuming auto sync...", async () => {
+      await statusBar.withSpinner("Resuming auto sync...", async () => {
         githubSync.setAutoSyncPaused(false);
         deps.setAutoSyncContext(false);
+        statusBar.setAutoSyncPaused(false);
       });
       vscode.window.showInformationMessage("Auto sync resumed.");
     })
