@@ -74,14 +74,14 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [ ] Book/Chapter 紐付け UI（Phase 1: QuickPick/InputBox、Phase 2: Webview Inspector）
 
 - [ ] リファクタリング
-  - [ ] コード整理（サービス分割、責務分離、命名見直し）
+  - [ ] [HIGH PRIORITY] コード整理（サービス分割、責務分離、命名見直し）
   - [ ] 非同期処理の統一的ハンドリング（async/await 統一、エラーハンドリング）
   - [ ] 型定義強化（any 排除、インターフェース整備）
 
-- [ ] 品質向上タスク
-  - [ ] Lint/format 導入と CI（GitHub Actions）整備
-  - [ ] 単体テスト/統合テスト追加（Commands/FS/Tree）
-  - [ ] README 改訂（セットアップ・認証手順・ワークフロー更新）
+- [x] 品質向上タスク
+  - [x] Lint/format 導入と CI（GitHub Actions）整備
+  - [x] 単体テスト/統合テスト追加（Commands/FS/Tree）
+  - [x] README 改訂（セットアップ・認証手順・ワークフロー更新）
 
 - [ ] Books 機能（開発中）
   - [ ] GitHub 上の books/* 構造から Tree を構築（Book/Chapter 一覧・frontmatter 読込・ソート）
@@ -113,9 +113,9 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [x] 失敗時の通知とフォールバックコマンド（ファイルピッカー経由の `zennpad.insertImageFromFile` を追加）
   - [x] GitHub 同期フックで images/ 配下の変更も push/pull 対象に含める
   - [ ] 大きな画像や非対応 MIME の扱い（警告／スキップ）
-  - [ ] zennpad.insertImageFromFileコマンドだけでなくCtrl+Vでも上記のように`/images/`以下に画像ファイルを保存し、適切なMarkdownリンクを挿入する
+  - [ ] [HIGH PRIORITY] zennpad.insertImageFromFileコマンドだけでなくCtrl+Vでも上記のように`/images/`以下に画像ファイルを保存し、適切なMarkdownリンクを挿入する
 
-- [ ] GitHub同期のデプロイ回数抑制（main固定・Zenn 150回/日制限対応）
+- [x] GitHub同期のデプロイ回数抑制（main固定・Zenn 150回/日制限対応）
   - [x] writeFile では即 push せず dirty キューに積む
   - [x] Debounce（例: 30秒無操作）でまとめコミットするスケジューラ実装
   - [x] 最小同期間隔（例: 10分）を設け commit/push を間引く
@@ -154,7 +154,7 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [ ] Pause/Resume SyncボタンをActivity Barに追加し、GitHubとの自動同期を一時停止・再開できるようにする
   - [ ] SortByDateボタン/SortByNameボタンをActivity Barに追加し、TreeViewの表示順を日付順・名前順で切り替えられるようにする
     - [ ] SortByDateとSortByNameの状態をトグル式にし、現在のソート順を視覚的に示す
-  - [ ] SettingsボタンをActivity Barに追加し、以下の要素を含む設定パネルを開けるようにする
+  - [ ] [HIGH PRIORITY] SettingsボタンをActivity Barに追加し、以下の要素を含む設定パネルを開けるようにする
     - GitHubリポジトリ設定（owner/repo/branch）
       - owner：デフォルト: GitHub認証に使用しているアカウント名
       - repo: 認証時に指定　or `<username>-zenn`
