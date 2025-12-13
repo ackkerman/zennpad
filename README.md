@@ -14,7 +14,7 @@ VS Code の `Run Extension` 構成でデバッグ起動すると、Activity Bar 
 ## GitHub 認証
 
 1. GitHub で Personal Access Token（`repo` 権限）を発行。
-2. ZennPad 設定で `zennpad.githubOwner` / `zennpad.githubRepo` / `zennpad.githubBranch`（監視用 main） / `zennpad.workBranch`（通常保存用、既定は `zenn-work`）を設定。
+2. ZennPad 設定で `zennpad.githubOwner` / `zennpad.githubRepo` / `zennpad.githubBranch`（監視用 main） / `zennpad.workBranch`（通常保存用、既定は `zenn-work`）を設定。Zenn のプロフィール URL を固定したい場合は任意で `zennpad.zennAccount` も指定。
 3. コマンドパレットで `ZennPad: Sign in to GitHub` を実行し、認証を完了。
 
 ## ワークフロー（work/main 分離）

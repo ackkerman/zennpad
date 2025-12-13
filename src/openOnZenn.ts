@@ -20,7 +20,8 @@ export function buildZennUrl(owner: string, path: string, published: boolean): s
 export function buildZennUrlFromDoc(doc: vscode.TextDocument): string | undefined {
   if (!doc.uri.path) return undefined;
   const config = vscode.workspace.getConfiguration("zennpad");
-  const owner = config.get<string>("githubOwner")?.trim();
+  const owner =
+    config.get<string>("zennAccount")?.trim() || config.get<string>("githubOwner")?.trim();
   if (!owner) {
     return undefined;
   }

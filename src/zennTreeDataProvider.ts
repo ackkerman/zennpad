@@ -18,11 +18,13 @@ export interface ZennTreeItemDescriptor {
   readonly contextValue: ZennNodeType;
   readonly description?: string;
   readonly resourceUri?: vscode.Uri;
-  readonly iconPath?: vscode.ThemeIcon;
+  readonly iconPath?: vscode.ThemeIcon | vscode.Uri | { light: vscode.Uri; dark: vscode.Uri } | string;
   readonly command?: vscode.Command;
   readonly published?: boolean;
   readonly tooltip?: string;
 }
+
+export type SortOrder = "date" | "title";
 
 class ZennTreeItem extends vscode.TreeItem {
   constructor(public readonly descriptor: ZennTreeItemDescriptor) {
@@ -58,8 +60,13 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
   private hasRepoConfig = false;
   private dirtyPaths = new Set<string>();
   private branchInfo: { workBranch: string; mainBranch: string } | undefined;
+  private sortOrder: SortOrder = "date";
 
-  constructor(private readonly fsProvider: ZennFsProvider, private readonly scheme = "zenn") {}
+  constructor(
+    private readonly fsProvider: ZennFsProvider,
+    private readonly extensionUri: vscode.Uri,
+    private readonly scheme = "zenn"
+  ) {}
 
   setStatus(status: { signedIn: boolean; hasRepoConfig: boolean }): void {
     this.signedIn = status.signedIn;
@@ -130,52 +137,72 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
     }
   }
 
+  setSortOrder(order: SortOrder): void {
+    this.sortOrder = order;
+    this.refresh();
+  }
+
+  getSortOrder(): SortOrder {
+    return this.sortOrder;
+  }
+
   private getArticleItems(): ZennTreeItem[] {
-    return this.readDirectory("/articles")
+    const entries = this.readDirectory("/articles")
       .filter(([, type]) => type === vscode.FileType.File)
-      .sort(([a], [b]) => a.localeCompare(b))
       .map(([name]) => {
         const uri = this.buildUri(`/articles/${name}`);
         const isImage = this.isImageFile(name);
         const frontmatter = isImage ? undefined : this.readFrontmatter(uri);
         const published = frontmatter?.published;
-        return new ZennTreeItem({
-          label: this.resolveLabel(name, frontmatter?.title, published, uri.path),
-          collapsibleState: vscode.TreeItemCollapsibleState.None,
-          contextValue: isImage ? "image" : "article",
-          resourceUri: uri,
-          published,
-          tooltip: isImage ? `/images/${name}` : this.buildTooltip(frontmatter),
-          description: !isImage && published === false ? "draft" : undefined
-        });
+        const label = this.resolveLabel(name, frontmatter?.title, published, uri.path);
+        return { name, uri, isImage, frontmatter, published, label };
+      })
+      .sort((a, b) => this.compareEntries(a, b));
+
+    return entries.map((entry) => {
+      return new ZennTreeItem({
+        label: entry.label,
+        collapsibleState: vscode.TreeItemCollapsibleState.None,
+        contextValue: entry.isImage ? "image" : "article",
+        resourceUri: entry.uri,
+        published: entry.published,
+        tooltip: entry.isImage ? `/images/${entry.name}` : this.buildTooltip(entry.frontmatter),
+        description: !entry.isImage && entry.published === false ? "draft" : undefined
       });
+    });
   }
 
   private getDraftItems(): ZennTreeItem[] {
-    return this.readDirectory("/articles")
+    const drafts = this.readDirectory("/articles")
       .filter(([, type]) => type === vscode.FileType.File)
       .map(([name]) => {
         const uri = this.buildUri(`/articles/${name}`);
         if (this.isImageFile(name)) {
-          return { name, uri, published: undefined, kind: "image" as const };
+          return { name, uri, published: undefined, kind: "image" as const, frontmatter: undefined };
         }
         const published = this.readPublished(uri);
-        return { name, uri, published, kind: "article" as const };
+        const frontmatter = this.readFrontmatter(uri);
+        return { name, uri, published, kind: "article" as const, frontmatter };
       })
       .filter((entry) => entry.kind === "image" || entry.published === false)
-      .sort((a, b) => a.name.localeCompare(b.name))
+      .sort((a, b) => this.compareEntries(a, b))
       .map((entry) => {
-        const frontmatter = entry.kind === "image" ? undefined : this.readFrontmatter(entry.uri);
         return new ZennTreeItem({
-          label: this.resolveLabel(entry.name, frontmatter?.title, entry.published, entry.uri.path),
+          label: this.resolveLabel(
+            entry.name,
+            entry.kind === "image" ? undefined : entry.frontmatter?.title,
+            entry.published,
+            entry.uri.path
+          ),
           collapsibleState: vscode.TreeItemCollapsibleState.None,
           contextValue: entry.kind === "image" ? "image" : "article",
           description: entry.kind === "image" ? undefined : "draft",
           resourceUri: entry.uri,
           published: entry.published,
-          tooltip: entry.kind === "image" ? `/images/${entry.name}` : this.buildTooltip(frontmatter)
+          tooltip: entry.kind === "image" ? `/images/${entry.name}` : this.buildTooltip(entry.frontmatter)
         });
       });
+    return drafts;
   }
 
   private getBookNodes(): ZennTreeItem[] {
@@ -308,7 +335,7 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
         contextValue: "drafts",
         resourceUri: vscode.Uri.from({ scheme: this.scheme, path: "/articles" }),
         description: branchDescription,
-        iconPath: new vscode.ThemeIcon("pencil")
+        iconPath: this.buildIconPath("node-drafts")
       },
       {
         label: "Articles",
@@ -316,21 +343,21 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
         contextValue: "articles",
         resourceUri: vscode.Uri.from({ scheme: this.scheme, path: "/articles" }),
         description: branchDescription,
-        iconPath: new vscode.ThemeIcon("symbol-file")
+        iconPath: this.buildIconPath("node-articles")
       },
       {
         label: "Books",
         collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
         contextValue: "books",
         resourceUri: vscode.Uri.from({ scheme: this.scheme, path: "/books" }),
-        iconPath: new vscode.ThemeIcon("book")
+        iconPath: this.buildIconPath("node-books")
       },
       {
         label: "Images",
         collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
         contextValue: "images",
         resourceUri: vscode.Uri.from({ scheme: this.scheme, path: "/images" }),
-        iconPath: new vscode.ThemeIcon("file-media")
+        iconPath: this.buildIconPath("node-images")
       }
     ];
   }
@@ -349,5 +376,44 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
           tooltip: `/images/${name}`
         });
       });
+  }
+
+  private buildIconPath(name: string): { light: vscode.Uri; dark: vscode.Uri } {
+    return {
+      light: vscode.Uri.joinPath(this.extensionUri, "media", "icon", `${name}-light.svg`),
+      dark: vscode.Uri.joinPath(this.extensionUri, "media", "icon", `${name}-dark.svg`)
+    };
+  }
+
+  private compareEntries(
+    a: { name: string; frontmatter?: { title?: string } },
+    b: { name: string; frontmatter?: { title?: string } }
+  ): number {
+    if (this.sortOrder === "title") {
+      return this.buildTitleKey(a).localeCompare(this.buildTitleKey(b));
+    }
+    return this.compareByDateThenName(a.name, b.name);
+  }
+
+  private buildTitleKey(entry: { name: string; frontmatter?: { title?: string } }): string {
+    return (entry.frontmatter?.title ?? entry.name).toLowerCase();
+  }
+
+  private compareByDateThenName(aName: string, bName: string): number {
+    const aDate = this.extractDateKey(aName);
+    const bDate = this.extractDateKey(bName);
+    if (aDate !== bDate) {
+      return (bDate ?? 0) - (aDate ?? 0);
+    }
+    return aName.localeCompare(bName);
+  }
+
+  private extractDateKey(name: string): number | undefined {
+    const match = name.match(/^(\d{4})(\d{2})(\d{2})/);
+    if (!match) {
+      return undefined;
+    }
+    const [, y, m, d] = match;
+    return Number(`${y}${m}${d}`);
   }
 }

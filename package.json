@@ -3,6 +3,7 @@
   "displayName": "ZennPad",
   "publisher": "ackkerman",
   "description": "VS Code extension scaffold for editing Zenn content directly from the sidebar.",
+  "icon": "media/logo/zennpad_icon_transparent_128.png",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.85.0"
@@ -45,9 +46,54 @@
           }
         },
         {
-          "command": "zennpad.authHelp",
-          "when": "view == zennPadExplorer",
+          "command": "zennpad.pauseAutoSync",
+          "when": "view == zennPadExplorer && (!zennpad.autoSyncPaused || zennpad.autoSyncPaused == false)",
           "group": "navigation@1",
+          "icon": {
+            "light": "media/icon/sync-off-light.svg",
+            "dark": "media/icon/sync-off-dark.svg"
+          }
+        },
+        {
+          "command": "zennpad.resumeAutoSync",
+          "when": "view == zennPadExplorer && zennpad.autoSyncPaused == true",
+          "group": "navigation@1",
+          "icon": {
+            "light": "media/icon/sync-on-light.svg",
+            "dark": "media/icon/sync-on-dark.svg"
+          }
+        },
+        {
+          "command": "zennpad.sortArticlesByTitle",
+          "when": "view == zennPadExplorer && zennpad.sortOrder == 'date'",
+          "group": "navigation@2",
+          "icon": {
+            "light": "media/icon/sort-by-date-light.svg",
+            "dark": "media/icon/sort-by-date-dark.svg"
+          }
+        },
+        {
+          "command": "zennpad.sortArticlesByDate",
+          "when": "view == zennPadExplorer && zennpad.sortOrder == 'title'",
+          "group": "navigation@2",
+          "icon": {
+            "light": "media/icon/sort-by-title-light.svg",
+            "dark": "media/icon/sort-by-title-dark.svg"
+          }
+        },
+        {
+          "command": "zennpad.deployToZenn",
+          "when": "view == zennPadExplorer && zennpad.hasRepoConfig",
+          "group": "navigation@3",
+          "icon": {
+            "light": "media/icon/publish-light.svg",
+            "dark": "media/icon/publish-dark.svg"
+          }
+        },
+        {
+          "command": "zennpad.openSettingsPanel",
+          "when": "view == zennPadExplorer",
+          "group": "navigation@4",
           "icon": {
             "light": "media/icon/settings-light.svg",
             "dark": "media/icon/settings-dark.svg"
@@ -167,12 +213,17 @@
         "zennpad.githubBranch": {
           "type": "string",
           "default": "main",
-          "description": "Branch name to sync with Zenn"
+          "description": "Main branch name to deploy Zenn content"
         },
         "zennpad.workBranch": {
           "type": "string",
           "default": "zenn-work",
           "description": "Work branch for auto sync before deploying to main"
+        },
+        "zennpad.zennAccount": {
+          "type": "string",
+          "default": "",
+          "description": "Optional Zenn account (zenn.dev/{username}); fallback to githubOwner when empty"
         }
       }
     },
@@ -239,6 +290,14 @@
         }
       },
       {
+        "command": "zennpad.openSettingsPanel",
+        "title": "ZennPad: Open Settings Panel",
+        "icon": {
+          "light": "media/icon/settings-light.svg",
+          "dark": "media/icon/settings-dark.svg"
+        }
+      },
+      {
         "command": "zennpad.chooseRepo",
         "title": "ZennPad: Choose GitHub Repository"
       },
@@ -288,11 +347,31 @@
       },
       {
         "command": "zennpad.deployToZenn",
-        "title": "ZennPad: Deploy Pending Changes to Zenn"
+        "title": "ZennPad: Deploy Pending Changes to Zenn",
+        "icon": {
+          "light": "media/icon/publish-light.svg",
+          "dark": "media/icon/publish-dark.svg"
+        }
       },
       {
         "command": "zennpad.toggleAutoSync",
         "title": "ZennPad: Pause/Resume Auto Sync"
+      },
+      {
+        "command": "zennpad.pauseAutoSync",
+        "title": "ZennPad: Pause Auto Sync",
+        "icon": {
+          "light": "media/icon/sync-off-light.svg",
+          "dark": "media/icon/sync-off-dark.svg"
+        }
+      },
+      {
+        "command": "zennpad.resumeAutoSync",
+        "title": "ZennPad: Resume Auto Sync",
+        "icon": {
+          "light": "media/icon/sync-on-light.svg",
+          "dark": "media/icon/sync-on-dark.svg"
+        }
       },
       {
         "command": "zennpad.copyPath",

@@ -100,6 +100,17 @@ export class GitHubSync {
     return this.autoSyncPaused;
   }
 
+  isAutoSyncPaused(): boolean {
+    return this.autoSyncPaused;
+  }
+
+  setAutoSyncPaused(paused: boolean): void {
+    this.autoSyncPaused = paused;
+    if (!paused && this.hasPending()) {
+      this.scheduler.markDirty();
+    }
+  }
+
   private recordMutation(mutation: FsMutation): boolean {
     switch (mutation.type) {
       case "write":

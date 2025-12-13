@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { ZennTreeDataProvider } from "./zennTreeDataProvider";
+import { SortOrder, ZennTreeDataProvider } from "./zennTreeDataProvider";
 import { FsMutation, ZennFsProvider } from "./zennFsProvider";
 import { parseFrontmatter, serializeFrontmatter } from "./frontmatter";
 import { PreviewWorkspace } from "./previewWorkspace";
@@ -11,6 +11,7 @@ import { buildZennUrlFromDoc } from "./openOnZenn";
 import { ContentCache } from "./contentCache";
 import { insertImageFromFile, registerImageInsertionProviders } from "./imageInsertion";
 import { randomEmoji } from "./emojiPool";
+import { showSettingsPanel } from "./settingsPanel";
 
 export function activate(context: vscode.ExtensionContext): void {
   vscode.commands.executeCommand("setContext", "zennpad.activated", true);
@@ -18,6 +19,8 @@ export function activate(context: vscode.ExtensionContext): void {
   const scheme = "zenn";
   const fsProvider = new ZennFsProvider();
   const contentCache = new ContentCache(context.globalStorageUri);
+  const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+  context.subscriptions.push(statusBarItem);
   seedScaffoldContent(fsProvider, scheme);
   context.subscriptions.push(
     vscode.workspace.registerFileSystemProvider(scheme, fsProvider, {
@@ -25,11 +28,12 @@ export function activate(context: vscode.ExtensionContext): void {
     })
   );
 
-  const treeDataProvider = new ZennTreeDataProvider(fsProvider, scheme);
+  const treeDataProvider = new ZennTreeDataProvider(fsProvider, context.extensionUri, scheme);
   globalTreeDataProvider = treeDataProvider;
   context.subscriptions.push(
     vscode.window.registerTreeDataProvider("zennPadExplorer", treeDataProvider)
   );
+  setSortOrderContext(treeDataProvider.getSortOrder());
   applyBranchInfo(treeDataProvider);
   validateRepoConfig();
 
@@ -39,6 +43,7 @@ export function activate(context: vscode.ExtensionContext): void {
   );
   const previewManager = new PreviewManager(previewWorkspace, context);
   const githubSync = new GitHubSync(fsProvider);
+  setAutoSyncContext(githubSync.isAutoSyncPaused());
   githubSync.onPendingChange((paths) => {
     treeDataProvider.setDirtyPaths(paths);
   });
@@ -123,25 +128,16 @@ export function activate(context: vscode.ExtensionContext): void {
       await vscode.commands.executeCommand("workbench.action.openSettings", "@ext:ackkerman.zennpad");
     }),
     vscode.commands.registerCommand("zennpad.authHelp", async () => {
-      const selection = await vscode.window.showInformationMessage(
-        "Authenticate ZennPad with GitHub to sync articles/books.",
-        "Sign in to GitHub",
-        "Sign out",
-        "Open Settings"
-      );
-      if (selection === "Sign in to GitHub") {
-        await vscode.commands.executeCommand("zennpad.signIn");
-      } else if (selection === "Sign out") {
-        await vscode.commands.executeCommand("zennpad.signOut");
-      } else if (selection === "Open Settings") {
-        await vscode.commands.executeCommand("zennpad.openSettings");
-      }
+      await showSettingsPanel(githubSync, (paused) => setAutoSyncContext(paused));
+    }),
+    vscode.commands.registerCommand("zennpad.openSettingsPanel", async () => {
+      await showSettingsPanel(githubSync, (paused) => setAutoSyncContext(paused));
     }),
     vscode.commands.registerCommand("zennpad.openZennRoot", async () => {
       const config = vscode.workspace.getConfiguration("zennpad");
-      const owner = config.get<string>("githubOwner")?.trim();
+      const owner = getZennOwner(config);
       if (!owner) {
-        vscode.window.showErrorMessage("Set zennpad.githubOwner to open Zenn.");
+        vscode.window.showErrorMessage("Set zennpad.githubOwner or zennpad.zennAccount to open Zenn.");
         return;
       }
       void vscode.env.openExternal(vscode.Uri.parse(`https://zenn.dev/${owner}`));
@@ -150,7 +146,7 @@ export function activate(context: vscode.ExtensionContext): void {
       const config = vscode.workspace.getConfiguration("zennpad");
       const owner = config.get<string>("githubOwner")?.trim();
       const repo = config.get<string>("githubRepo")?.trim();
-      const branch = config.get<string>("mainBranch")?.trim() || "main";
+      const branch = getMainBranch(config);
       if (!owner || !repo) {
         vscode.window.showErrorMessage("Set zennpad.githubOwner and zennpad.githubRepo to open GitHub.");
         return;
@@ -238,11 +234,44 @@ export function activate(context: vscode.ExtensionContext): void {
       }
     }),
     vscode.commands.registerCommand("zennpad.deployToZenn", async () => {
-      await deployToZenn(githubSync);
+      await withStatusBarSpinner(statusBarItem, "Deploying to Zenn...", () => deployToZenn(githubSync));
     }),
     vscode.commands.registerCommand("zennpad.toggleAutoSync", async () => {
       const paused = githubSync.toggleAutoSync();
+      setAutoSyncContext(paused);
       vscode.window.showInformationMessage(paused ? "Auto sync paused." : "Auto sync resumed.");
+    }),
+    vscode.commands.registerCommand("zennpad.pauseAutoSync", async () => {
+      await withStatusBarSpinner(statusBarItem, "Pausing auto sync...", async () => {
+        githubSync.setAutoSyncPaused(true);
+        setAutoSyncContext(true);
+      });
+      vscode.window.showInformationMessage("Auto sync paused.");
+    }),
+    vscode.commands.registerCommand("zennpad.resumeAutoSync", async () => {
+      await withStatusBarSpinner(statusBarItem, "Resuming auto sync...", async () => {
+        githubSync.setAutoSyncPaused(false);
+        setAutoSyncContext(false);
+      });
+      vscode.window.showInformationMessage("Auto sync resumed.");
+    }),
+    vscode.commands.registerCommand("zennpad.sortArticlesByDate", async () => {
+      treeDataProvider.setSortOrder("date");
+      setSortOrderContext(treeDataProvider.getSortOrder());
+      vscode.window.showInformationMessage("記事を日付順で表示します。");
+    }),
+    vscode.commands.registerCommand("zennpad.sortArticlesByTitle", async () => {
+      treeDataProvider.setSortOrder("title");
+      setSortOrderContext(treeDataProvider.getSortOrder());
+      vscode.window.showInformationMessage("記事をタイトル順で表示します。");
+    }),
+    vscode.commands.registerCommand("zennpad.toggleSortOrder", async () => {
+      const next: SortOrder = treeDataProvider.getSortOrder() === "date" ? "title" : "date";
+      treeDataProvider.setSortOrder(next);
+      setSortOrderContext(next);
+      vscode.window.showInformationMessage(
+        next === "date" ? "記事を日付順で表示します。" : "記事をタイトル順で表示します。"
+      );
     })
   );
 
@@ -301,7 +330,7 @@ function seedScaffoldContent(fsProvider: ZennFsProvider, scheme: string): void {
 
 function applyBranchInfo(treeDataProvider: ZennTreeDataProvider): void {
   const config = vscode.workspace.getConfiguration("zennpad");
-  const mainBranch = config.get<string>("mainBranch")?.trim() || "main";
+  const mainBranch = getMainBranch(config);
   const workBranch = config.get<string>("workBranch")?.trim() || "zenn-work";
   treeDataProvider.setBranchInfo({ workBranch, mainBranch });
 }
@@ -331,7 +360,7 @@ async function copyGithubUrl(resource?: vscode.Uri | { resourceUri?: vscode.Uri 
   const config = vscode.workspace.getConfiguration("zennpad");
   const owner = config.get<string>("githubOwner")?.trim();
   const repo = config.get<string>("githubRepo")?.trim();
-  const branch = config.get<string>("mainBranch")?.trim() || "main";
+  const branch = getMainBranch(config);
   if (!owner || !repo) {
     vscode.window.showErrorMessage("Set zennpad.githubOwner and zennpad.githubRepo to copy GitHub URL.");
     return;
@@ -344,7 +373,7 @@ async function copyGithubUrl(resource?: vscode.Uri | { resourceUri?: vscode.Uri 
 
 async function deployToZenn(githubSync: GitHubSync): Promise<void> {
   const config = vscode.workspace.getConfiguration("zennpad");
-  const mainBranch = config.get<string>("mainBranch")?.trim() || "main";
+  const mainBranch = getMainBranch(config);
   const workBranch = config.get<string>("workBranch")?.trim() || "zenn-work";
   const choice = await vscode.window.showWarningMessage(
     `work ブランチ (${workBranch}) の内容を main (${mainBranch}) に反映して Zenn にデプロイしますか？`,
@@ -367,7 +396,7 @@ function validateRepoConfig(): void {
   const config = vscode.workspace.getConfiguration("zennpad");
   const owner = config.get<string>("githubOwner")?.trim();
   const repo = config.get<string>("githubRepo")?.trim();
-  const mainBranch = config.get<string>("mainBranch")?.trim() || "main";
+  const mainBranch = getMainBranch(config);
   const workBranch = config.get<string>("workBranch")?.trim() || "zenn-work";
   if (!owner || !repo) {
     vscode.window.showErrorMessage("zennpad.githubOwner と zennpad.githubRepo を設定してください。");
@@ -590,9 +619,9 @@ async function openOnZenn(): Promise<void> {
     return;
   }
   const config = vscode.workspace.getConfiguration("zennpad");
-  const owner = config.get<string>("githubOwner")?.trim();
+  const owner = getZennOwner(config);
   if (!owner) {
-    vscode.window.showErrorMessage("Set zennpad.githubOwner to open on Zenn.");
+    vscode.window.showErrorMessage("Set zennpad.githubOwner or zennpad.zennAccount to open on Zenn.");
     return;
   }
   const url = buildZennUrlFromDoc(doc);
@@ -644,12 +673,32 @@ function getRepoConfigSummary(): string | undefined {
   const config = vscode.workspace.getConfiguration("zennpad");
   const owner = config.get<string>("githubOwner")?.trim();
   const repo = config.get<string>("githubRepo")?.trim();
-  const branch = config.get<string>("mainBranch")?.trim() || "main";
+  const branch = getMainBranch(config);
   const workBranch = config.get<string>("workBranch")?.trim() || "zenn-work";
   if (!owner || !repo) {
     return undefined;
   }
   return `${owner}/${repo}@${branch} (work:${workBranch})`;
+}
+
+function getMainBranch(config: vscode.WorkspaceConfiguration): string {
+  return config.get<string>("githubBranch")?.trim() || config.get<string>("mainBranch")?.trim() || "main";
+}
+
+function setSortOrderContext(order: SortOrder): void {
+  void vscode.commands.executeCommand("setContext", "zennpad.sortOrder", order);
+}
+
+function setAutoSyncContext(paused: boolean): void {
+  void vscode.commands.executeCommand("setContext", "zennpad.autoSyncPaused", paused);
+}
+
+function getZennOwner(config: vscode.WorkspaceConfiguration): string | undefined {
+  const owner = config.get<string>("zennAccount")?.trim();
+  if (owner && owner.length > 0) {
+    return owner;
+  }
+  return config.get<string>("githubOwner")?.trim();
 }
 
 function handleAuthError(error: unknown, action: string): void {
@@ -681,3 +730,18 @@ function handleAuthError(error: unknown, action: string): void {
 }
 
 let globalTreeDataProvider: ZennTreeDataProvider | undefined;
+
+async function withStatusBarSpinner<T>(
+  item: vscode.StatusBarItem,
+  text: string,
+  task: () => Promise<T>
+): Promise<T> {
+  item.text = `$(sync~spin) ${text}`;
+  item.tooltip = text;
+  item.show();
+  try {
+    return await task();
+  } finally {
+    item.hide();
+  }
+}
