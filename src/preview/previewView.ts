@@ -32,6 +32,10 @@ export class PreviewView {
     this.panel.onDidDispose(listener);
   }
 
+  dispose(): void {
+    this.panel.dispose();
+  }
+
   reveal(): void {
     this.panel.reveal(undefined, true);
   }

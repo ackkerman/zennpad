@@ -40,6 +40,7 @@ export function activate(context: vscode.ExtensionContext): void {
     fsProvider
   );
   const previewManager = new PreviewManager(previewWorkspace, context);
+  globalPreviewManager = previewManager;
   const githubSync = new GitHubSync(fsProvider);
   setAutoSyncContext(githubSync.isAutoSyncPaused());
   githubSync.onPendingChange((paths) => {
@@ -117,7 +118,7 @@ export function activate(context: vscode.ExtensionContext): void {
 }
 
 export function deactivate(): void {
-  // Nothing to clean up in the scaffold yet.
+  globalPreviewManager?.dispose();
 }
 
 function seedScaffoldContent(fsProvider: ZennFsProvider, scheme: string): void {
@@ -185,3 +186,4 @@ function handleAuthError(error: unknown, action: string): void {
 }
 
 let globalTreeDataProvider: ZennTreeDataProvider | undefined;
+let globalPreviewManager: PreviewManager | undefined;
