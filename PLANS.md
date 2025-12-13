@@ -144,6 +144,32 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [ ] Webview 内でのリンククリックを外部ブラウザで開くように制御
   - [ ] ユーザーが必要に応じてアクセスできるように、Activity Bar に Help ノードを追加
 
+- [ ] UI改善：TreeView アイコンのカスタマイズ
+  - [x] Articles ノードにページアイコンを設定
+  - [x] Drafts ノードに鉛筆アイコンを設定
+  - [x] Books ノードに本アイコンを設定
+  - [x] Images ノードにメディアアイコンを設定
+  - [ ] @package.json の `icon` プロパティを適切なアイコンファイルに設定し、拡張機能全体のアイコンを改善
+  - [ ] DeployボタンをActivity Barに追加し、ワンクリックでZennへのデプロイを実行できるようにする
+  - [ ] Pause/Resume SyncボタンをActivity Barに追加し、GitHubとの自動同期を一時停止・再開できるようにする
+  - [ ] SortByDateボタン/SortByNameボタンをActivity Barに追加し、TreeViewの表示順を日付順・名前順で切り替えられるようにする
+    - [ ] SortByDateとSortByNameの状態をトグル式にし、現在のソート順を視覚的に示す
+  - [ ] SettingsボタンをActivity Barに追加し、以下の要素を含む設定パネルを開けるようにする
+    - GitHubリポジトリ設定（owner/repo/branch）
+      - owner：デフォルト: GitHub認証に使用しているアカウント名
+      - repo: 認証時に指定　or `<username>-zenn`
+      - mainBranch: main
+      - workBranch: zenn-work
+    - Zennのアカウント設定（Optional）
+      - ここで指定されたアカウントが`zenn.dev/{username}`として、Open on Zennコマンドで使用される
+      - 指定されていない場合は、デフォルトでGitHub認証に使用しているアカウント名を利用する
+      - デフォルト: 空欄（GitHub認証アカウント名を使用）
+    - (<divider />)
+    - 自動同期の有効/無効切替
+    - サインイン/サインアウト
+    - (<divider />)
+    - サインイン中のアカウント名/repo名表示
+
 - [ ] identifierを`zenn-pad`に変更
 
 ## メモ
