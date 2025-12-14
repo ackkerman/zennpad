@@ -31,5 +31,7 @@
   "command.zennpad.sortArticlesByTitle": "Sort Articles by Title",
   "command.zennpad.openHelpGuide": "Open Help Guide",
   "command.zennpad.openHelpGuideExternal": "Open Help Guide in Browser",
-  "command.zennpad.preview.openPath": "Open Preview Path"
+  "command.zennpad.preview.openPath": "Open Preview Path",
+  "command.zennpad.actions.openZennFromTree": "Open Zenn (Actions Tree)",
+  "command.zennpad.actions.openHelpLink": "Open Help Link"
 }

@@ -32,8 +32,7 @@
           "id": "zennpad.actions",
           "name": "Actions",
           "icon": "media/icon/sparcle.svg",
-          "type": "webview",
-          "visibility": "visible"
+          "type": "tree"
         },
         {
           "id": "zennpad.repos",
@@ -46,13 +45,6 @@
           "id": "zennpad.search",
           "name": "Search",
           "icon": "media/icon/search.svg",
-          "type": "webview",
-          "visibility": "collapsed"
-        },
-        {
-          "id": "zennpad.help",
-          "name": "Help",
-          "icon": "media/icon/globe.svg",
           "type": "webview",
           "visibility": "collapsed"
         }
@@ -529,6 +521,16 @@
           "light": "media/icon/globe-light.svg",
           "dark": "media/icon/globe-dark.svg"
         }
+      },
+      {
+        "command": "zennpad.actions.openZennFromTree",
+        "title": "%command.zennpad.actions.openZennFromTree%",
+        "category": "ZennPad"
+      },
+      {
+        "command": "zennpad.actions.openHelpLink",
+        "title": "%command.zennpad.actions.openHelpLink%",
+        "category": "ZennPad"
       }
     ]
   },

@@ -159,7 +159,7 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [x] Refresh 時はキャッシュ無視で取得し、成功後キャッシュ更新。失敗時はキャッシュを維持し通知
   - [ ] パース失敗や不整合時のフォールバック（キャッシュ破棄→通常取得）
 
-- [ ] 画像挿入（images/ に保存してリンク挿入）
+- [x] 画像挿入（images/ に保存してリンク挿入）
   - [x] markdown 向けに DocumentPasteEditProvider を登録し、クリップボードの image/png/jpeg を検知
   - [x] DocumentDropEditProvider を登録し、ドラッグ&ドロップした画像ファイルを検知
   - [x] 画像ファイル名の生成（日時+拡張子、重複時は -1, -2 などでリネーム）
@@ -202,9 +202,10 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
     - [x] Help Webview から previewPath を postMessage し VSCode コマンド経由で受け付ける
     - [x] PreviewManager に navigate API を追加して既存プレビューパネルを開きパス変更する
     - [x] プレビュー未起動時の起動・パネル生成とパスバリデーション（toPreviewUrlPath）を実装
+  - [x] WebviewからTreeビューに変更
 
 - [x] Actionsビューの作成
-  - [x] Webviewタイプのビューを追加
+  - [x] Webviewタイプのビューを追加→Treeビューに変更
   - [x] Githubにサインイン、設定を開くボタンを追加する
   - [x] Zennユーザー名の入力欄の作成。入力欄の右側に「Open Zenn」ボタンを追加
   - [x] リポジトリ切り替え（Activateするリポジトリにはチェックを入れる）

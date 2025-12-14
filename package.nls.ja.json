@@ -31,5 +31,7 @@
   "command.zennpad.sortArticlesByTitle": "タイトル順に並び替え",
   "command.zennpad.openHelpGuide": "ヘルプガイドを開く",
   "command.zennpad.openHelpGuideExternal": "ヘルプガイドをブラウザで開く",
-  "command.zennpad.preview.openPath": "プレビューパスを開く"
+  "command.zennpad.preview.openPath": "プレビューパスを開く",
+  "command.zennpad.actions.openZennFromTree": "Zenn を開く (Actions Tree)",
+  "command.zennpad.actions.openHelpLink": "ヘルプリンクを開く"
 }

@@ -13,7 +13,6 @@ import { getMainBranch, getRepoConfigSummary, getZennOwner, validateRepoConfig }
 import { StatusBarController } from "./ui/statusBar";
 import { SearchViewProvider } from "./ui/searchView";
 import { ActionsViewProvider } from "./ui/actionsView";
-import { HelpGuidePanel, HelpViewProvider } from "./ui/helpGuide";
 
 export function activate(context: vscode.ExtensionContext): void {
   vscode.commands.executeCommand("setContext", "zennpad.activated", true);
@@ -23,7 +22,6 @@ export function activate(context: vscode.ExtensionContext): void {
   let contentCache = new ContentCache(context.globalStorageUri, buildCacheNamespace());
   const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
   const statusBar = new StatusBarController(statusBarItem, context.extensionUri);
-  const helpGuidePanel = new HelpGuidePanel(context.extensionUri);
   context.subscriptions.push(statusBarItem);
   seedScaffoldContent(fsProvider, scheme);
   context.subscriptions.push(
@@ -44,15 +42,9 @@ export function activate(context: vscode.ExtensionContext): void {
     )
   );
   context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider(
+    vscode.window.registerTreeDataProvider(
       ActionsViewProvider.viewId,
-      new ActionsViewProvider(context.extensionUri)
-    )
-  );
-  context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider(
-      HelpViewProvider.viewId,
-      new HelpViewProvider(context.extensionUri, helpGuidePanel)
+      new ActionsViewProvider(context)
     )
   );
   setSortOrderContext(treeDataProvider.getSortOrder());
@@ -108,8 +100,7 @@ export function activate(context: vscode.ExtensionContext): void {
     updateAuthStatus,
     setAutoSyncContext,
     setSortOrderContext,
-    handleAuthError,
-    helpGuidePanel
+    handleAuthError
   });
 
   context.subscriptions.push(

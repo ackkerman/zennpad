@@ -6,7 +6,6 @@ import { PreviewWorkspace } from "../preview/previewWorkspace";
 import { PreviewManager } from "../preview/previewManager";
 import { GitHubSync } from "../github/sync";
 import { StatusBarController } from "../ui/statusBar";
-import { HelpGuidePanel } from "../ui/helpGuide";
 
 export interface CommandDeps {
   fsProvider: ZennFsProvider;
@@ -21,5 +20,4 @@ export interface CommandDeps {
   setAutoSyncContext: (paused: boolean) => void;
   setSortOrderContext: (order: SortOrder) => void;
   handleAuthError: (error: unknown, action: string) => void;
-  helpGuidePanel: HelpGuidePanel;
 }
