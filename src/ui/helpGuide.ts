@@ -1,5 +1,3 @@
-import * as vscode from "vscode";
-
 export type HelpLink = {
   labelJa: string;
   labelEn: string;
@@ -48,28 +46,4 @@ export const PRIMARY_HELP_URL = HELP_LINKS[0]?.url ?? "https://zenn.dev/zenn/art
 
 export function helpLinkLabel(link: HelpLink, locale: string): string {
   return locale.toLowerCase().startsWith("ja") ? link.labelJa : link.labelEn;
-}
-
-export class HelpGuideTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
-  readonly onDidChangeTreeData: vscode.Event<void> = new vscode.EventEmitter<void>().event;
-
-  constructor(private readonly locale: string) {}
-
-  getTreeItem(element: vscode.TreeItem): vscode.TreeItem {
-    return element;
-  }
-
-  getChildren(): vscode.ProviderResult<vscode.TreeItem[]> {
-    return HELP_LINKS.map((link) => {
-      const item = new vscode.TreeItem(helpLinkLabel(link, this.locale));
-      item.description = link.url;
-      item.iconPath = new vscode.ThemeIcon("globe");
-      item.command = {
-        command: "zennpad.actions.openHelpLink",
-        title: "Open Help",
-        arguments: [link]
-      };
-      return item;
-    });
-  }
 }
