@@ -1,3 +1,4 @@
+import path from "path";
 import * as vscode from "vscode";
 import { parseFrontmatter, serializeFrontmatter } from "../utils/markdown/frontmatter";
 import { ZennFsProvider } from "../fs/zennFsProvider";
@@ -252,11 +253,8 @@ async function createFolder(
     vscode.window.showWarningMessage("Folder name is required.");
     return;
   }
-  const newPath = `${targetBase.replace(/\/$/, "")}/${clean}`;
-  const newUri = vscode.Uri.from({
-    scheme: "zenn",
-    path: newPath.startsWith("/") ? newPath : `/${newPath}`
-  });
+  const newPath = path.posix.join(targetBase, clean);
+  const newUri = vscode.Uri.from({ scheme: "zenn", path: newPath });
   try {
     fsProvider.createDirectory(newUri);
     treeDataProvider.refresh();
