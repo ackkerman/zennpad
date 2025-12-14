@@ -73,6 +73,9 @@ export function registerContentCommands(
     vscode.commands.registerCommand("zennpad.deleteNode", async (resource?: vscode.Uri) => {
       await deleteNode(resource, fsProvider, treeDataProvider);
     }),
+    vscode.commands.registerCommand("zennpad.newFolder", async (resource?: vscode.Uri) => {
+      await createFolder(resource, fsProvider, treeDataProvider);
+    }),
     vscode.commands.registerCommand("zennpad.insertImageFromFile", async () => {
       await insertImageFromFile(fsProvider, scheme);
     })
@@ -170,7 +173,7 @@ async function renameNode(
   const currentName = segments.pop() ?? "";
   const basePath = segments.join("/");
   const input = await vscode.window.showInputBox({
-    prompt: "Enter new file name (with .md)",
+    prompt: "Enter new file name",
     value: currentName,
     ignoreFocusOut: true
   });
@@ -209,8 +212,10 @@ async function duplicateNode(
   const segments = uri.path.split("/");
   const filename = segments.pop() ?? "";
   const basePath = segments.join("/");
-  const candidate = filename.replace(/\\.md$/, "");
-  const newName = `${candidate}-copy.md`;
+  const match = filename.match(/^(.*?)(\.[^.]+)?$/);
+  const stem = match?.[1] ?? filename;
+  const ext = match?.[2] ?? "";
+  const newName = `${stem}-copy${ext}`;
   const newUri = vscode.Uri.from({ scheme: uri.scheme, path: `${basePath}/${newName}` });
   try {
     fsProvider.writeFile(newUri, targetContent, { create: true, overwrite: false });
@@ -221,6 +226,40 @@ async function duplicateNode(
     vscode.window.showErrorMessage(
       `[ZennPad] Duplicate failed: ${error instanceof Error ? error.message : String(error)}`
     );
+  }
+}
+
+async function createFolder(
+  resource: vscode.Uri | { resourceUri?: vscode.Uri } | undefined,
+  fsProvider: ZennFsProvider,
+  treeDataProvider: ZennTreeDataProvider
+): Promise<void> {
+  const uri = resolveResourceUri(resource) ?? vscode.window.activeTextEditor?.document?.uri;
+  const basePath = uri && isZennUri(uri) ? uri.path : "/";
+  const targetBase =
+    basePath.endsWith("/") || !basePath.includes(".")
+      ? basePath
+      : basePath.split("/").slice(0, -1).join("/") || "/";
+  const input = await vscode.window.showInputBox({
+    prompt: "Enter new folder name",
+    ignoreFocusOut: true
+  });
+  if (!input) {
+    return;
+  }
+  const clean = input.trim().replace(/^\/+/, "").replace(/\/+$/, "");
+  if (!clean) {
+    vscode.window.showWarningMessage("Folder name is required.");
+    return;
+  }
+  const newPath = `${targetBase.replace(/\/$/, "")}/${clean}`;
+  const newUri = vscode.Uri.from({ scheme: "zenn", path: newPath.startsWith("/") ? newPath : `/${newPath}` });
+  try {
+    fsProvider.createDirectory(newUri);
+    treeDataProvider.refresh();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    vscode.window.showErrorMessage(`[ZennPad] Create folder failed: ${message}`);
   }
 }
 

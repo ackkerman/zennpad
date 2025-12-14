@@ -241,18 +241,23 @@
         },
         {
           "command": "zennpad.renameNode",
-          "when": "view == zennpad.repos && (viewItem == article:draft || viewItem == article:published || viewItem == chapter || viewItem == image)",
+          "when": "view == zennpad.repos && (viewItem == article:draft || viewItem == article:published || viewItem == chapter || viewItem == image || viewItem == file)",
           "group": "z-edit@4"
         },
         {
           "command": "zennpad.duplicateNode",
-          "when": "view == zennpad.repos && (viewItem == article:draft || viewItem == article:published || viewItem == chapter || viewItem == image)",
+          "when": "view == zennpad.repos && (viewItem == article:draft || viewItem == article:published || viewItem == chapter || viewItem == image || viewItem == file)",
           "group": "z-edit@4"
         },
         {
           "command": "zennpad.deleteNode",
-          "when": "view == zennpad.repos && (viewItem == article:draft || viewItem == article:published || viewItem == chapter || viewItem == image)",
+          "when": "view == zennpad.repos && (viewItem == article:draft || viewItem == article:published || viewItem == chapter || viewItem == image || viewItem == file || viewItem == folder)",
           "group": "z-edit@5"
+        },
+        {
+          "command": "zennpad.newFolder",
+          "when": "view == zennpad.repos && (viewItem == articles || viewItem == drafts || viewItem == books || viewItem == images || viewItem == folder)",
+          "group": "z-create@1"
         }
       ]
     },
@@ -438,6 +443,15 @@
         "command": "zennpad.insertImageFromFile",
         "title": "%command.zennpad.insertImageFromFile%",
         "category": "ZennPad"
+      },
+      {
+        "command": "zennpad.newFolder",
+        "title": "%command.zennpad.newFolder%",
+        "category": "ZennPad",
+        "icon": {
+          "light": "media/icon/plus-light.svg",
+          "dark": "media/icon/plus-dark.svg"
+        }
       },
       {
         "command": "zennpad.flushPendingSync",
