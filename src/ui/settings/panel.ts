@@ -28,8 +28,8 @@ export async function showSettingsPanel(
     quickPick.items = [
       {
         label: strings.signInStatus,
-        description: snapshot.accountLabel,
-        detail: snapshot.repoSummary,
+        description: snapshot.accountLabel ?? strings.signedOutLabel,
+        detail: snapshot.repoSummary ?? strings.repoUnset,
         run: async () => {}
       },
       {
@@ -38,7 +38,7 @@ export async function showSettingsPanel(
         run: async () => {
           const value = await vscode.window.showInputBox({
             prompt: strings.ownerPrompt,
-            value: snapshot.owner || snapshot.accountLabel,
+            value: snapshot.owner || snapshot.accountLabel || "",
             ignoreFocusOut: true
           });
           if (!value) return;
@@ -109,16 +109,12 @@ export async function showSettingsPanel(
         }
       },
       {
-        label:
-          snapshot.accountLabel !== strings.signedOutLabel
-            ? strings.signOut
-            : strings.signIn,
-        description:
-          snapshot.accountLabel !== strings.signedOutLabel
-            ? snapshot.accountLabel
-            : strings.signInRequired,
+        label: snapshot.isSignedIn ? strings.signOut : strings.signIn,
+        description: snapshot.isSignedIn
+          ? snapshot.accountLabel ?? strings.signedOutLabel
+          : strings.signInRequired,
         run: async () => {
-          if (snapshot.accountLabel !== strings.signedOutLabel) {
+          if (snapshot.isSignedIn) {
             await vscode.commands.executeCommand("zennpad.signOut");
           } else {
             await vscode.commands.executeCommand("zennpad.signIn");

@@ -7,8 +7,9 @@ export interface SettingsSnapshot {
   mainBranch: string;
   workBranch: string;
   zennAccount: string;
-  accountLabel: string;
-  repoSummary: string;
+  accountLabel?: string;
+  isSignedIn: boolean;
+  repoSummary?: string;
 }
 
 export async function loadSettings(): Promise<SettingsSnapshot> {
@@ -22,10 +23,20 @@ export async function loadSettings(): Promise<SettingsSnapshot> {
     createIfNone: false,
     silent: true
   });
-  const accountLabel = session?.account?.label ?? "未サインイン";
+  const accountLabel = session?.account?.label;
+  const isSignedIn = !!session;
   const repoSummary =
-    owner && repo ? `${owner}/${repo}@${mainBranch} (work:${workBranch})` : "リポジトリ未設定";
-  return { owner, repo, mainBranch, workBranch, zennAccount, accountLabel, repoSummary };
+    owner && repo ? `${owner}/${repo}@${mainBranch} (work:${workBranch})` : undefined;
+  return {
+    owner,
+    repo,
+    mainBranch,
+    workBranch,
+    zennAccount,
+    accountLabel,
+    isSignedIn,
+    repoSummary
+  };
 }
 
 export async function updateOwner(value: string): Promise<void> {
