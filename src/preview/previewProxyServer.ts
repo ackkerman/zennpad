@@ -1,6 +1,8 @@
 import http from "http";
 import httpProxy from "http-proxy";
 import { URL } from "url";
+import * as fs from "fs";
+import * as path from "path";
 
 const INDEX_PREFIX = "/__vscode_zenn_editor_preview_proxy_index/";
 
@@ -12,7 +14,12 @@ export class PreviewProxyServer {
     private readonly proxy: httpProxy
   ) {}
 
-  static async start(host: string, port: number, backendPort: number): Promise<PreviewProxyServer> {
+  static async start(
+    host: string,
+    port: number,
+    backendPort: number,
+    workspaceRoot: string
+  ): Promise<PreviewProxyServer> {
     return new Promise((resolve, reject) => {
       const proxy = httpProxy.createProxyServer({
         target: { host, port: backendPort },
@@ -23,6 +30,12 @@ export class PreviewProxyServer {
         if (!req.url) {
           res.writeHead(400);
           res.end();
+          return;
+        }
+
+        if (req.url.startsWith("/images/")) {
+          const url = new URL(req.url, `http://${host}:${port}`);
+          serveStaticFile(url.pathname, workspaceRoot, res);
           return;
         }
 
@@ -115,4 +128,38 @@ function buildControllerScript(): string {
   });
 })();
 `;
+}
+
+function serveStaticFile(requestPath: string, workspaceRoot: string, res: http.ServerResponse): void {
+  const normalized = path.normalize(requestPath).replace(/^(\.\.(\/|\\|$))+/, "");
+  const absolutePath = path.join(workspaceRoot, normalized);
+  if (!absolutePath.startsWith(workspaceRoot)) {
+    res.writeHead(403);
+    res.end();
+    return;
+  }
+  fs.stat(absolutePath, (statErr, stats) => {
+    if (statErr || !stats.isFile()) {
+      res.writeHead(404);
+      res.end();
+      return;
+    }
+    const stream = fs.createReadStream(absolutePath);
+    stream.on("error", () => {
+      res.writeHead(500);
+      res.end();
+    });
+    res.writeHead(200, { "Content-Type": detectMime(absolutePath) });
+    stream.pipe(res);
+  });
+}
+
+function detectMime(filePath: string): string {
+  const ext = path.extname(filePath).toLowerCase();
+  if (ext === ".png") return "image/png";
+  if (ext === ".jpg" || ext === ".jpeg") return "image/jpeg";
+  if (ext === ".gif") return "image/gif";
+  if (ext === ".webp") return "image/webp";
+  if (ext === ".svg") return "image/svg+xml";
+  return "application/octet-stream";
 }

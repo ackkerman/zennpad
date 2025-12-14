@@ -26,7 +26,12 @@ export class PreviewBackend {
     });
 
     const readyProcess = await waitForPreview(cliProcess, backendPort);
-    const proxyServer = await PreviewProxyServer.start("127.0.0.1", proxyPort, backendPort);
+    const proxyServer = await PreviewProxyServer.start(
+      "127.0.0.1",
+      proxyPort,
+      backendPort,
+      workspace.rootFsPath
+    );
     return new PreviewBackend(readyProcess, proxyServer);
   }
 
