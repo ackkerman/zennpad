@@ -22,8 +22,10 @@ export function registerAuthCommands(
       }
     }),
     vscode.commands.registerCommand("zennpad.signOut", async () => {
-      await signOutFromGitHub();
-      await deps.updateAuthStatus();
+      const success = await signOutFromGitHub();
+      await deps.updateAuthStatus(!success);
+      deps.statusBar.setRepoSummary(getRepoConfigSummary(), getZennOwner(vscode.workspace.getConfiguration("zennpad")));
+      deps.statusBar.setAutoSyncPaused(deps.githubSync.isAutoSyncPaused());
       vscode.window.showInformationMessage("Signed out from GitHub for ZennPad.");
     }),
     vscode.commands.registerCommand("zennpad.openSettings", async () => {

@@ -18,16 +18,17 @@ export async function signInToGitHub(): Promise<void> {
   await vscode.authentication.getSession(providerId, scopes, { createIfNone: true });
 }
 
-export async function signOutFromGitHub(): Promise<void> {
+export async function signOutFromGitHub(): Promise<boolean> {
   try {
     await vscode.commands.executeCommand("github.signout");
+    return true;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     if (message.includes("github.signout")) {
       void vscode.window.showWarningMessage(
         "GitHub sign-out command is unavailable. Please remove the session from VS Code Accounts or reload the GitHub Authentication extension."
       );
-      return;
+      return false;
     }
     throw error;
   }

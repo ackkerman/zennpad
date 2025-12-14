@@ -22,6 +22,7 @@ export function activate(context: vscode.ExtensionContext): void {
   let contentCache = new ContentCache(context.globalStorageUri, buildCacheNamespace());
   const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
   const statusBar = new StatusBarController(statusBarItem, context.extensionUri);
+  globalStatusBar = statusBar;
   context.subscriptions.push(statusBarItem);
   seedScaffoldContent(fsProvider, scheme);
   context.subscriptions.push(
@@ -58,6 +59,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const previewManager = new PreviewManager(previewWorkspace, context);
   globalPreviewManager = previewManager;
   const githubSync = new GitHubSync(fsProvider);
+  globalGithubSync = githubSync;
   setAutoSyncContext(githubSync.isAutoSyncPaused());
   githubSync.onPendingChange((paths) => {
     treeDataProvider.setDirtyPaths(paths);
@@ -174,16 +176,19 @@ function applyBranchInfo(treeDataProvider: ZennTreeDataProvider): void {
   treeDataProvider.setBranchInfo({ workBranch, mainBranch });
 }
 
-async function updateAuthStatus(): Promise<void> {
+async function updateAuthStatus(forceSignedOut = false): Promise<void> {
   const session = await vscode.authentication.getSession("github", ["repo"], {
     createIfNone: false,
     silent: true
   });
-  const hasSession = Boolean(session);
+  const hasSession = forceSignedOut ? false : Boolean(session);
   const hasRepoConfig = Boolean(getRepoConfigSummary());
   void vscode.commands.executeCommand("setContext", "zennpad.isSignedIn", hasSession);
   void vscode.commands.executeCommand("setContext", "zennpad.hasRepoConfig", hasRepoConfig);
   globalTreeDataProvider?.setStatus({ signedIn: hasSession, hasRepoConfig });
+  if (globalStatusBar && globalGithubSync) {
+    updateStatusBar(globalStatusBar, globalGithubSync);
+  }
 }
 
 function handleAuthError(error: unknown, action: string): void {
@@ -223,6 +228,8 @@ function handleAuthError(error: unknown, action: string): void {
 
 let globalTreeDataProvider: ZennTreeDataProvider | undefined;
 let globalPreviewManager: PreviewManager | undefined;
+let globalStatusBar: StatusBarController | undefined;
+let globalGithubSync: GitHubSync | undefined;
 
 function buildCacheNamespace(): string {
   const config = vscode.workspace.getConfiguration("zennpad");

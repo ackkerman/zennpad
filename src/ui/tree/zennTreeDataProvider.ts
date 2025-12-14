@@ -4,6 +4,7 @@ import { TreeState } from "./treeState";
 import { readFrontmatter, readPublished } from "./frontmatterIO";
 import { buildTooltip, compareEntries, isImageFile, resolveLabel } from "./treeUtils";
 import { BranchInfo, SortOrder, ZennNodeType } from "./types";
+import { localizedStrings } from "./zennTreeStrings";
 
 export interface ZennTreeItemDescriptor {
   readonly label: string;
@@ -93,24 +94,25 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
   getChildren(element?: ZennTreeItem): vscode.ProviderResult<ZennTreeItem[]> {
     if (!element) {
       if (!this.state.isSignedIn()) {
+        const labels = localizedStrings(vscode.env.language ?? "en");
         return [
           new ZennTreeItem({
-            label: "GitHub にサインイン",
+            label: labels.signIn,
             collapsibleState: vscode.TreeItemCollapsibleState.None,
             contextValue: "articles",
-            description: "GitHub authentication required",
+            description: labels.signInDesc,
             iconPath: new vscode.ThemeIcon("sign-in"),
-            command: { command: "zennpad.signIn", title: "GitHub にサインイン" },
-            tooltip: "GitHub にサインイン"
+            command: { command: "zennpad.signIn", title: labels.signIn },
+            tooltip: labels.signIn
           }),
           new ZennTreeItem({
-            label: "設定を開く",
+            label: labels.openSettings,
             collapsibleState: vscode.TreeItemCollapsibleState.None,
             contextValue: "articles",
-            description: "Open settings",
+            description: labels.openSettingsDesc,
             iconPath: new vscode.ThemeIcon("gear"),
-            command: { command: "zennpad.openSettingsPanel", title: "設定を開く" },
-            tooltip: "設定を開く"
+            command: { command: "zennpad.openSettingsPanel", title: labels.openSettings },
+            tooltip: labels.openSettings
           })
         ];
       }
@@ -269,29 +271,30 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
     const branchDescription = branchInfo
       ? `${branchInfo.workBranch} → ${branchInfo.mainBranch}`
       : undefined;
+    const labels = localizedStrings(vscode.env.language ?? "en");
     const defaults: ZennTreeItemDescriptor[] = [
       {
-        label: "Drafts / Daily",
+        label: labels.drafts,
         collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
         contextValue: "drafts",
         resourceUri: vscode.Uri.from({ scheme: this.scheme, path: "/articles" }),
         description: branchDescription
       },
       {
-        label: "Articles",
+        label: labels.articles,
         collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
         contextValue: "articles",
         resourceUri: vscode.Uri.from({ scheme: this.scheme, path: "/articles" }),
         description: branchDescription
       },
       {
-        label: "Books",
+        label: labels.books,
         collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
         contextValue: "books",
         resourceUri: vscode.Uri.from({ scheme: this.scheme, path: "/books" })
       },
       {
-        label: "Images",
+        label: labels.images,
         collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
         contextValue: "images",
         resourceUri: vscode.Uri.from({ scheme: this.scheme, path: "/images" })
@@ -321,6 +324,7 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
   }
 
   private getImageItems(): ZennTreeItem[] {
+    const labels = localizedStrings(vscode.env.language ?? "en");
     return this.readDirectory("/images")
       .filter(([, type]) => type === vscode.FileType.File)
       .sort(([a], [b]) => a.localeCompare(b))
@@ -331,7 +335,7 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
           collapsibleState: vscode.TreeItemCollapsibleState.None,
           contextValue: "image",
           resourceUri: uri,
-          tooltip: `/images/${name}`
+          tooltip: `${labels.imagePathPrefix}/${name}`
         });
       });
   }

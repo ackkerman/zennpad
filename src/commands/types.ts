@@ -16,7 +16,7 @@ export interface CommandDeps {
   githubSync: GitHubSync;
   statusBarItem: vscode.StatusBarItem;
   statusBar: StatusBarController;
-  updateAuthStatus: () => Promise<void>;
+  updateAuthStatus: (forceSignedOut?: boolean) => Promise<void>;
   setAutoSyncContext: (paused: boolean) => void;
   setSortOrderContext: (order: SortOrder) => void;
   handleAuthError: (error: unknown, action: string) => void;
