@@ -122,6 +122,11 @@
       ],
       "editor/context": [
         {
+          "command": "zennpad.contextCaption",
+          "when": "zennpad.activeDocIsZenn",
+          "group": "zennpad@-1"
+        },
+        {
           "command": "zennpad.preview",
           "when": "zennpad.activated && zennpad.activeTextEditorPreviewable",
           "group": "zennpad@0"
@@ -155,16 +160,12 @@
           "command": "zennpad.openOnZenn",
           "when": "zennpad.activeDocPublished",
           "group": "zennpad@3"
-        },
+        }
+      ],
+      "commandPalette": [
         {
-          "command": "zennpad.copyGithubUrl",
-          "when": "zennpad.activeDocIsZenn",
-          "group": "zennpad@4"
-        },
-        {
-          "command": "zennpad.copyZennUrl",
-          "when": "zennpad.activeDocPublished",
-          "group": "zennpad@4"
+          "command": "zennpad.contextCaption",
+          "when": "false"
         }
       ],
       "view/item/context": [
@@ -271,6 +272,12 @@
       }
     },
     "commands": [
+      {
+        "command": "zennpad.contextCaption",
+        "title": "%command.zennpad.contextCaption%",
+        "enablement": "false",
+        "category": "ZennPad"
+      },
       {
         "command": "zennpad.newArticle",
         "title": "%command.zennpad.newArticle%",

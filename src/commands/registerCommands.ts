@@ -9,6 +9,7 @@ import { CommandDeps } from "./types";
 
 export function registerCommands(context: vscode.ExtensionContext, deps: CommandDeps): void {
   const disposables: vscode.Disposable[] = [
+    vscode.commands.registerCommand("zennpad.contextCaption", () => undefined),
     ...registerAuthCommands(context, deps),
     ...registerContentCommands(context, deps),
     ...registerPreviewCommands(context, {

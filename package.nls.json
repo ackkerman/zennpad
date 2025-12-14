@@ -1,4 +1,5 @@
 {
+  "command.zennpad.contextCaption": "ZennPad",
   "command.zennpad.newArticle": "New Article",
   "command.zennpad.publish": "Publish Article",
   "command.zennpad.unpublish": "Unpublish Article",
