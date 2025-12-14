@@ -25,3 +25,7 @@ package:
 # pre-commit フックと同等の実行（手動確認用）
 pre-commit:
 	$(PNPM) exec pre-commit run --all-files
+	
+clean:
+	rm -rf out/ *.vsix node_modules
+	
