@@ -207,7 +207,7 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [x] Preview開始ボタンの横(`editor/title`)に「Open on Zenn/ Zennで開く」ボタンを追加する
   - [x] 多言語対応
 
-- [ ] identifierを`zennpad`に変更
+- [x] identifierを`zennpad`に変更
 
 - [ ] Marketplaceに公開(https://marketplace.visualstudio.com/)
   - [ ] VSIXファイルフォーマットに変換
