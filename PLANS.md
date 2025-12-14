@@ -195,7 +195,7 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
     - [x] 現在はすべてのコマンドが並列だが、ディバイダーをいれるなどしてコマンドの種類ごとにある程度整理して提示するようにしたい
   - [x] エディター側のコンテキストウィンドウ
     - [x] 以下のコマンドをコンテキストウィンドウに追加する
-      - [ ] Preview
+      - [x] Preview
       - [x] Insert image
       - [x] Make unpublished(published: trueのみ)
       - [x] Make published(published: falseのみ)
@@ -204,7 +204,7 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
       - [x] Open in Zenn(published: trueのみ)
       - [x] Copy GitHub URL
       - [x] Copy Zenn URL(published: trueのみ)
-  - [ ] Preview開始ボタンの横(`editor/title`)に「Open on Zenn/ Zennで開く」ボタンを追加する
+  - [x] Preview開始ボタンの横(`editor/title`)に「Open on Zenn/ Zennで開く」ボタンを追加する
   - [x] 多言語対応
 
 - [ ] identifierを`zennpad`に変更
