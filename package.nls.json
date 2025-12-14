@@ -30,5 +30,6 @@
   "command.zennpad.sortArticlesByDate": "Sort Articles by Date",
   "command.zennpad.sortArticlesByTitle": "Sort Articles by Title",
   "command.zennpad.openHelpGuide": "Open Help Guide",
-  "command.zennpad.openHelpGuideExternal": "Open Help Guide in Browser"
+  "command.zennpad.openHelpGuideExternal": "Open Help Guide in Browser",
+  "command.zennpad.preview.openPath": "Open Preview Path"
 }

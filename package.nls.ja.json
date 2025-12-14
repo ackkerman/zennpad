@@ -30,5 +30,6 @@
   "command.zennpad.sortArticlesByDate": "日付順に並び替え",
   "command.zennpad.sortArticlesByTitle": "タイトル順に並び替え",
   "command.zennpad.openHelpGuide": "ヘルプガイドを開く",
-  "command.zennpad.openHelpGuideExternal": "ヘルプガイドをブラウザで開く"
+  "command.zennpad.openHelpGuideExternal": "ヘルプガイドをブラウザで開く",
+  "command.zennpad.preview.openPath": "プレビューパスを開く"
 }

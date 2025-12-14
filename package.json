@@ -344,6 +344,11 @@
         }
       },
       {
+        "command": "zennpad.preview.openPath",
+        "title": "%command.zennpad.preview.openPath%",
+        "category": "ZennPad"
+      },
+      {
         "command": "zennpad.signIn",
         "title": "%command.zennpad.signIn%",
         "category": "ZennPad",

@@ -79,7 +79,9 @@ export class PreviewProxyServer {
 }
 
 function buildIndexHtml(initialPath: string): string {
+  const isAbsolute = /^https?:\/\//i.test(initialPath);
   const safePath = initialPath.replace(/^\//, "");
+  const initialSrc = isAbsolute ? initialPath : `/${safePath || ""}`;
   return `
 <!DOCTYPE html>
 <html>
@@ -102,7 +104,7 @@ function buildIndexHtml(initialPath: string): string {
     <script src="${INDEX_PREFIX}controller.js"></script>
   </head>
   <body>
-    <iframe id="zennpad-preview-frame" src="/${safePath}"></iframe>
+    <iframe id="zennpad-preview-frame" src="${initialSrc}"></iframe>
   </body>
 </html>
 `;
@@ -114,17 +116,25 @@ function buildControllerScript(): string {
   const params = new URLSearchParams(window.location.search);
   const frame = document.getElementById("zennpad-preview-frame");
   const initialPath = params.get("path");
-  if (frame && initialPath) {
-    const clean = initialPath.replace(/^\\//, "");
+  const isAbsoluteUrl = (value) => /^https?:\\/\\//i.test(value);
+  const setFrameSrc = (value) => {
+    if (!frame) return;
+    if (isAbsoluteUrl(value)) {
+      frame.setAttribute("src", value);
+      return;
+    }
+    const clean = value.replace(/^\\/+/, "");
     frame.setAttribute("src", "/" + clean);
+  };
+  if (frame && initialPath) {
+    setFrameSrc(initialPath);
   }
   window.addEventListener("message", (event) => {
     const path = event.data && event.data.path;
-    if (typeof path !== "string" || !frame) {
+    if (typeof path !== "string") {
       return;
     }
-    const clean = path.replace(/^\\//, "");
-    frame.setAttribute("src", "/" + clean);
+    setFrameSrc(path);
   });
 })();
 `;

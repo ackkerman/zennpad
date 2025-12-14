@@ -40,19 +40,34 @@ export class PreviewManager {
     }
 
     const entryUrl = this.backend.entrypointUrl(previewPath);
-    if (!this.view) {
-      this.view = new PreviewView(this.context, entryUrl);
-      this.view.onDidDispose(() => {
-        this.backend?.stop();
-        this.backend = undefined;
-        this.view = undefined;
-      });
-    } else {
-      this.view.updateEntry(entryUrl);
-      this.view.reveal();
+    const view = this.ensureView(entryUrl);
+    view.changePath(previewPath);
+  }
+
+  async navigate(rawPath: string): Promise<void> {
+    const normalized = normalizePreviewTarget(rawPath);
+    if (!normalized) {
+      vscode.window.showWarningMessage("[ZennPad Preview] Invalid preview path.");
+      return;
     }
 
-    this.view.changePath(previewPath);
+    await this.workspace.syncAll();
+
+    if (!this.backend) {
+      const started = await this.startWithRetry();
+      if (!started) {
+        return;
+      }
+    }
+
+    if (!this.backend) {
+      return;
+    }
+
+    const target = normalized.type === "absolute" ? normalized.url : normalized.path;
+    const entryUrl = this.backend.entrypointUrl(target);
+    const view = this.ensureView(entryUrl);
+    view.changePath(target);
   }
 
   dispose(): void {
@@ -92,8 +107,71 @@ export class PreviewManager {
     }
     return false;
   }
+
+  private ensureView(entryUrl: string): PreviewView {
+    if (!this.view) {
+      this.view = new PreviewView(this.context, entryUrl);
+      this.view.onDidDispose(() => {
+        this.backend?.stop();
+        this.backend = undefined;
+        this.view = undefined;
+      });
+    } else {
+      this.view.updateEntry(entryUrl);
+      this.view.reveal();
+    }
+    return this.view;
+  }
 }
 
 async function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+type PreviewTarget =
+  | { type: "absolute"; url: string }
+  | { type: "relative"; path: string };
+
+function normalizePreviewTarget(raw: string): PreviewTarget | null {
+  if (typeof raw !== "string") {
+    return null;
+  }
+  const trimmed = raw.trim();
+  if (!trimmed) {
+    return null;
+  }
+  if (/^https?:\/\//i.test(trimmed)) {
+    try {
+      const url = new URL(trimmed);
+      if (url.hostname === "localhost" || url.hostname === "127.0.0.1") {
+        const combined = `${url.pathname}${url.search}${url.hash}`;
+        const cleanLocal = combined.replace(/^\/+/, "");
+        if (cleanLocal) {
+          return { type: "relative", path: cleanLocal };
+        }
+      }
+    } catch {
+      // fall through
+    }
+    return { type: "absolute", url: trimmed };
+  }
+  const clean = trimmed.replace(/^\/+/, "");
+  if (isPreviewPath(clean)) {
+    return { type: "relative", path: clean };
+  }
+  return null;
+}
+
+function isPreviewPath(path: string): boolean {
+  if (path.startsWith("articles/")) {
+    return path.split("/").length === 2;
+  }
+  if (path.startsWith("books/")) {
+    const parts = path.split("/");
+    return parts.length === 2 || parts.length === 3;
+  }
+  if (path.startsWith("guide/")) {
+    return true;
+  }
+  return false;
 }

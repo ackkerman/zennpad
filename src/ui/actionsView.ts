@@ -42,13 +42,6 @@ export class ActionsViewProvider implements vscode.WebviewViewProvider {
         flex-direction: column;
         gap: 0.75rem;
       }
-      .card {
-        border: 1px solid var(--vscode-input-border, rgba(148, 163, 184, 0.28));
-        border-radius: 12px;
-        padding: 0.9rem 1rem;
-        background: var(--vscode-editor-background, #0b1120);
-        box-shadow: 0 10px 26px rgba(0,0,0,0.08);
-      }
       .btn {
         display: inline-flex;
         align-items: center;
@@ -95,7 +88,7 @@ export class ActionsViewProvider implements vscode.WebviewViewProvider {
 </head>
 <body>
   <div class="stack">
-    <section class="card">
+    <section>
       <div style="display:flex; flex-direction:column; gap:0.75rem;">
         <button class="btn" data-action="signIn">✓ ${labels.signIn}</button>
         <button class="btn ghost" data-action="settings">⚙ ${labels.openSettings}</button>

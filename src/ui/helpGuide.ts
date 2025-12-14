@@ -2,24 +2,33 @@ import * as vscode from "vscode";
 
 type GuideVariant = "panel" | "view";
 
-const LINKS: Array<{ labelJa: string; labelEn: string; url: string; icon: string }> = [
+const LINKS: Array<{
+  labelJa: string;
+  labelEn: string;
+  url: string;
+  icon: string;
+  previewPath?: string;
+}> = [
   {
     labelJa: "記事の作成ガイド",
     labelEn: "Article guide",
     url: "http://localhost:8000/guide/zenn-cli-guide#cli-%E3%81%A7%E8%A8%98%E4%BA%8B%EF%BC%88article%EF%BC%89%E3%82%92%E7%AE%A1%E7%90%86%E3%81%99%E3%82%8B",
-    icon: "📝"
+    icon: "📝",
+    previewPath: "http://localhost:8000/guide/zenn-cli-guide#cli-%E3%81%A7%E8%A8%98%E4%BA%8B%EF%BC%88article%EF%BC%89%E3%82%92%E7%AE%A1%E7%90%86%E3%81%99%E3%82%8B"
   },
   {
     labelJa: "本の作成ガイド",
     labelEn: "Book guide",
     url: "http://localhost:8000/guide/zenn-cli-guide#cli-%E3%81%A7%E6%9C%AC%EF%BC%88book%EF%BC%89%E3%82%92%E7%AE%A1%E7%90%86%E3%81%99%E3%82%8B",
-    icon: "📕"
+    icon: "📕",
+    previewPath: "http://localhost:8000/guide/zenn-cli-guide#cli-%E3%81%A7%E6%9C%AC%EF%BC%88book%EF%BC%89%E3%82%92%E7%AE%A1%E7%90%86%E3%81%99%E3%82%8B"
   },
   {
     labelJa: "画像管理ガイド",
     labelEn: "Image guide",
     url: "http://localhost:8000/guide/deploy-github-images",
-    icon: "🖼"
+    icon: "🖼",
+    previewPath: "http://localhost:8000/guide/deploy-github-images"
   },
   {
     labelJa: "マークダウン記法",
@@ -62,12 +71,20 @@ export class HelpGuidePanel {
     panel.webview.html = renderGuideHtml(panel.webview, vscode.env.language ?? "en", "panel");
     const disposable = panel.webview.onDidReceiveMessage((message: unknown) => {
       if (typeof message !== "object" || !message) return;
-      const { type, href } = message as { type?: string; href?: string };
+      const { type, href, previewPath } = message as {
+        type?: string;
+        href?: string;
+        previewPath?: string;
+      };
       if (type === "openExternal" && href) {
         const uri = parseExternalUri(href);
         if (uri) {
           void vscode.env.openExternal(uri);
         }
+        return;
+      }
+      if (type === "openPreview" && previewPath) {
+        void vscode.commands.executeCommand("zennpad.preview.openPath", previewPath);
       }
     });
     panel.onDidDispose(() => {
@@ -97,12 +114,21 @@ export class HelpViewProvider implements vscode.WebviewViewProvider {
     );
     webviewView.webview.onDidReceiveMessage((message: unknown) => {
       if (typeof message !== "object" || !message) return;
-      const { type, href } = message as { type?: string; href?: string };
+      const { type, href, previewPath } = message as {
+        type?: string;
+        href?: string;
+        previewPath?: string;
+      };
       if (type === "openExternal" && href) {
         const uri = parseExternalUri(href);
         if (uri) {
           void vscode.env.openExternal(uri);
         }
+        return;
+      }
+      if (type === "openPreview" && previewPath) {
+        void vscode.commands.executeCommand("zennpad.preview.openPath", previewPath);
+        return;
       }
       if (type === "openPanel") {
         this.guidePanel.show();
@@ -123,7 +149,8 @@ function renderGuideHtml(webview: vscode.Webview, locale: string, variant: Guide
   const linkItems = LINKS.map((link) => {
     const text = locale.toLowerCase().startsWith("ja") ? link.labelJa : link.labelEn;
     const externalMark = link.url.startsWith("http://localhost:8000") ? "" : " ↗";
-    return `<li class="link-row" data-href="${link.url}">
+    const previewAttr = link.previewPath ? ` data-preview-path="${link.previewPath}"` : "";
+    return `<li class="link-row" data-href="${link.url}"${previewAttr}>
       <span class="icon">${link.icon}</span>
       <span class="label">${text}${externalMark}</span>
     </li>`;
@@ -230,7 +257,11 @@ function renderGuideHtml(webview: vscode.Webview, locale: string, variant: Guide
       const row = element ? element.closest('.link-row') : null;
       if (row && row instanceof HTMLElement && row.dataset?.href) {
         event.preventDefault();
-        vscode.postMessage({ type: 'openExternal', href: row.dataset.href });
+        if (row.dataset.previewPath) {
+          vscode.postMessage({ type: 'openPreview', previewPath: row.dataset.previewPath });
+        } else {
+          vscode.postMessage({ type: 'openExternal', href: row.dataset.href });
+        }
       }
     });
     const openPanel = document.querySelector('[data-action="openPanel"]');
