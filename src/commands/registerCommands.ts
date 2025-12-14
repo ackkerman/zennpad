@@ -19,7 +19,7 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
     }),
     ...registerSyncCommands(context, deps, deps.treeDataProvider),
     ...registerSortCommands(context, deps, deps.treeDataProvider),
-    ...registerHelpCommands(context, deps)
+    ...registerHelpCommands()
   ];
 
   disposables.forEach((d) => context.subscriptions.push(d));
