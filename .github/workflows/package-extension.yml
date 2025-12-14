@@ -1,0 +1,50 @@
+name: Build VSIX Artifact
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.3
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Package extension
+        run: |
+          TAG_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || node -p "require('./package.json').version")
+          TAG_CLEAN=${TAG_VERSION#v}
+          pnpm exec vsce package --no-dependencies
+          FILE=$(ls *.vsix | head -n 1)
+          TARGET="zennpad-${TAG_CLEAN}.vsix"
+          mv "$FILE" "$TARGET"
+          echo "PACKAGE_NAME=$TARGET" >> "$GITHUB_ENV"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PACKAGE_NAME }}
+          path: ${{ env.PACKAGE_NAME }}
