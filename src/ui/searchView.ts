@@ -271,7 +271,7 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
         font-size: 0.85rem;
       }
       .toggle[data-active="true"] {
-        background: var(--vscode-inputOption-activeBackground, #cccccc;
+        background: var(--vscode-inputOption-activeBackground, #cccccc);
         color: var(--vscode-inputOption-activeForeground, #1f2937);
         border-color: var(--vscode-inputOption-activeBorder, #4a90e2);
       }

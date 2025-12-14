@@ -25,7 +25,7 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [x] GitHub Contents API との read/write/delete 実装（sha 管理・競合検知）
   - [x] 仮想FSと実ストレージの同期（URI → GitHub パス変換、pull/push）
   - [x] Contents API が1MB超で返さない場合に git.getBlob をフォールバックする同期とユニットテスト
-  - [ ] TreeDataProvider を GitHub 上の articles/books 構造から生成（LRU/ステータス表示）
+  - [x] TreeDataProvider を GitHub 上の articles/books 構造から生成（LRU/ステータス表示）
   - [ ] PAT認証にも対応すること（SecretStorage で PAT 保存/読み出しにより認証できるように）
   - [x] [High Priority] Signoutを実装
   - [ ] Scrap対応？そもそもScrapはGithubに置かれないから編集できない？
@@ -154,7 +154,7 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [ ] カレンダー表示
   - [ ] Githubライクの草マップ表示
 
-- [ ] Scrap機能
+- [ ] Scraps機能
 
 - [x] 時系列ソート（Articles/Books/Drafts）
   - [x] GitHub commits API で最新コミット日時を取得し更新日時をソートキーに反映（`GET /repos/:owner/:repo/commits?path=<path>&per_page=1`）
