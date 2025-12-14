@@ -284,6 +284,8 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
 - [ ] Marketplaceに公開(https://marketplace.visualstudio.com/)
   - [x] VSIXファイルフォーマットに変換
 
+- [ ] プレビュー起動時にサイドバーを折りたたんで起動するように変更
+
 ## メモ
 
 - GitHub連携、プレビュー、画像貼り付け、work/mainデプロイなどのコア機能はひと通り実装済み。残件は Books/PAT対応やキャッシュ失効ポリシーなど。
