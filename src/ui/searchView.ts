@@ -243,6 +243,38 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
         border-color: #0f9d58;
         color: #0f9d58;
       }
+      .panel {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+      .notice {
+        border: 1px solid var(--vscode-input-border, rgba(148, 163, 184, 0.35));
+        border-radius: 8px;
+        padding: 0.75rem 0.85rem;
+        background: var(--vscode-editor-background, #0b1120);
+        color: var(--vscode-foreground);
+      }
+      .notice .actions {
+        margin-top: 0.55rem;
+        display: inline-flex;
+        gap: 0.45rem;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.35rem 0.7rem;
+        border-radius: 7px;
+        border: 1px solid var(--vscode-input-border, rgba(148, 163, 184, 0.4));
+        background: transparent;
+        color: var(--vscode-foreground);
+        cursor: pointer;
+      }
+      .btn.primary {
+        border-color: #0f9d58;
+        color: #0f9d58;
+      }
       .searchbar {
         display: flex;
         align-items: center;
@@ -417,10 +449,20 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
       const noticeEl = document.getElementById("signin-notice");
       const searchArea = document.getElementById("search-area");
 
+      const actionButtons = document.querySelectorAll("[data-action]");
+      actionButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const command = btn.getAttribute("data-action");
+          vscode.postMessage({ type: "action", command });
+        });
+      });
+
       if (!signedIn && noticeEl && searchArea) {
         noticeEl.style.display = "block";
         searchArea.style.display = "none";
-        return;
+      } else if (signedIn && noticeEl && searchArea) {
+        noticeEl.style.display = "none";
+        searchArea.style.display = "block";
       }
 
       toggles.forEach((btn) => {
@@ -436,6 +478,12 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
       input.addEventListener("input", () => {
         clearTimeout(searchTimer);
         searchTimer = setTimeout(triggerSearch, 200);
+      });
+      input.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          triggerSearch();
+        }
       });
 
       document.querySelectorAll(".primary-btn").forEach((btn) => {
