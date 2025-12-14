@@ -45,7 +45,7 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
       enableScripts: true,
       localResourceRoots: [this.extensionUri]
     };
-    webviewView.webview.html = this.renderWebview(vscode.env.language ?? "en");
+    void this.initWebview(webviewView);
 
     const subscriptions: vscode.Disposable[] = [];
     subscriptions.push(
@@ -79,6 +79,11 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
         if (this.lastQuery) {
           await this.executeSearch(this.lastQuery.query, this.lastQuery.options);
         }
+      }),
+      vscode.authentication.onDidChangeSessions(async (event) => {
+        if (event.provider.id === "github" && this.view) {
+          await this.initWebview(this.view);
+        }
       })
     );
 
@@ -92,6 +97,14 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
 
   private async executeSearch(query: string, options: SearchOptions): Promise<void> {
     if (!this.view) {
+      return;
+    }
+    const session = await vscode.authentication.getSession("github", ["repo"], {
+      createIfNone: false,
+      silent: true
+    });
+    if (!session) {
+      this.view.webview.postMessage({ type: "requireSignIn" });
       return;
     }
     if (!query.trim()) {
@@ -174,10 +187,20 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
     }
   }
 
-  private renderWebview(locale: string): string {
+  private async initWebview(view: vscode.WebviewView): Promise<void> {
+    const session = await vscode.authentication.getSession("github", ["repo"], {
+      createIfNone: false,
+      silent: true
+    });
+    const signedIn = Boolean(session);
+    view.webview.html = this.renderWebview(vscode.env.language ?? "en", signedIn);
+  }
+
+  private renderWebview(locale: string, signedIn: boolean): string {
     const labels = localizedLabels(locale);
     const htmlLang = labels.lang ?? "en";
     const labelsJson = JSON.stringify(labels);
+    const signedInFlag = signedIn ? "true" : "false";
     const nonce = generateNonce();
     const styles = `
       :root {
@@ -187,6 +210,38 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
       body {
         margin: 0;
         padding: 0.75rem;
+      }
+      .panel {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+      .notice {
+        border: 1px solid var(--vscode-input-border, rgba(148, 163, 184, 0.35));
+        border-radius: 8px;
+        padding: 0.75rem 0.85rem;
+        background: var(--vscode-editor-background, #0b1120);
+        color: var(--vscode-foreground);
+      }
+      .notice .actions {
+        margin-top: 0.55rem;
+        display: inline-flex;
+        gap: 0.45rem;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.35rem 0.7rem;
+        border-radius: 7px;
+        border: 1px solid var(--vscode-input-border, rgba(148, 163, 184, 0.4));
+        background: transparent;
+        color: var(--vscode-foreground);
+        cursor: pointer;
+      }
+      .btn.primary {
+        border-color: #0f9d58;
+        color: #0f9d58;
       }
       .searchbar {
         display: flex;
@@ -354,10 +409,19 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
         useRegex: false
       };
       const labels = ${labelsJson};
+      const signedIn = ${signedInFlag};
       const input = document.getElementById("search-input");
       const toggles = document.querySelectorAll(".toggle");
       const resultsEl = document.getElementById("results");
       const errorEl = document.getElementById("error");
+      const noticeEl = document.getElementById("signin-notice");
+      const searchArea = document.getElementById("search-area");
+
+      if (!signedIn && noticeEl && searchArea) {
+        noticeEl.style.display = "block";
+        searchArea.style.display = "none";
+        return;
+      }
 
       toggles.forEach((btn) => {
         btn.addEventListener("click", () => {
@@ -387,6 +451,13 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
 
       window.addEventListener("message", (event) => {
         const { type, results = [], error } = event.data || {};
+        if (type === "requireSignIn") {
+          if (noticeEl && searchArea) {
+            noticeEl.style.display = "block";
+            searchArea.style.display = "none";
+          }
+          return;
+        }
         if (type !== "results") return;
         errorEl.textContent = error ? error : "";
         if (!results.length) {
@@ -461,24 +532,35 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
   <style>${styles}</style>
 </head>
 <body>
-  <form class="searchbar" onsubmit="return false;">
-    <input
-      id="search-input"
-      class="search-input"
-      type="text"
-      placeholder="${labels.placeholder}"
-      aria-label="${labels.placeholder}"
-      autofocus
-    />
-    <div class="toggles">
-      <button type="button" class="toggle" data-key="caseSensitive" data-active="false" aria-label="${labels.toggleCase}" title="${labels.toggleCase}">Aa</button>
-      <button type="button" class="toggle" data-key="wordMatch" data-active="false" aria-label="${labels.toggleWord}" title="${labels.toggleWord}">ab|</button>
-      <button type="button" class="toggle" data-key="useRegex" data-active="false" aria-label="${labels.toggleRegex}" title="${labels.toggleRegex}">.*</button>
+  <div class="panel">
+    <div id="signin-notice" class="notice" style="display:none;">
+      <div>${labels.signInPrompt}</div>
+      <div class="actions">
+        <button class="btn primary" data-action="signIn">$(github-inverted) ${labels.signIn}</button>
+        <button class="btn" data-action="openSettings">$(gear) ${labels.openSettings}</button>
+      </div>
     </div>
-  </form>
-  <div id="error" class="error"></div>
-  <div id="results" class="results">
-    <div class="empty">${labels.emptyResults}</div>
+    <div id="search-area">
+      <form class="searchbar" onsubmit="return false;">
+        <input
+          id="search-input"
+          class="search-input"
+          type="text"
+          placeholder="${labels.placeholder}"
+          aria-label="${labels.placeholder}"
+          autofocus
+        />
+        <div class="toggles">
+          <button type="button" class="toggle" data-key="caseSensitive" data-active="false" aria-label="${labels.toggleCase}" title="${labels.toggleCase}">Aa</button>
+          <button type="button" class="toggle" data-key="wordMatch" data-active="false" aria-label="${labels.toggleWord}" title="${labels.toggleWord}">ab|</button>
+          <button type="button" class="toggle" data-key="useRegex" data-active="false" aria-label="${labels.toggleRegex}" title="${labels.toggleRegex}">.*</button>
+        </div>
+      </form>
+      <div id="error" class="error"></div>
+      <div id="results" class="results">
+        <div class="empty">${labels.emptyResults}</div>
+      </div>
+    </div>
   </div>
   <script nonce="${nonce}">${script}</script>
 </body>
@@ -566,6 +648,7 @@ function localizedLabels(locale: string): {
   matchBody: string;
   signIn: string;
   openSettings: string;
+  signInPrompt: string;
 } {
   const lang = (locale || "en").toLowerCase();
   if (lang.startsWith("ja")) {
@@ -580,7 +663,8 @@ function localizedLabels(locale: string): {
       matchTitle: "タイトル",
       matchBody: "本文",
       signIn: "GitHub にサインイン",
-      openSettings: "設定を開く"
+      openSettings: "設定を開く",
+      signInPrompt: "Search を使うには GitHub にサインインし、Zenn リポジトリを設定してください。"
     };
   }
   return {
@@ -594,7 +678,8 @@ function localizedLabels(locale: string): {
     matchTitle: "Title",
     matchBody: "Body",
     signIn: "Sign in to GitHub",
-    openSettings: "Open Settings"
+    openSettings: "Open Settings",
+    signInPrompt: "Sign in to GitHub and set your Zenn repository to use Search."
   };
 }
 

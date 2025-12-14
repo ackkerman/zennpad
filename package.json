@@ -50,27 +50,6 @@
         }
       ]
     },
-    "viewsWelcome": [
-      {
-        "view": "zennpad.actions",
-        "contents": "まず GitHub にサインインし、Zenn 用リポジトリを設定してください。\n\n[$(github-inverted) GitHub にサインイン](command:zennpad.signIn)\n\n[$(gear) 設定を開く](command:zennpad.openSettingsPanel)"
-      },
-      {
-        "view": "zennpad.repos",
-        "contents": "ZennPad を使うには、GitHub にサインインし、Zenn のリポジトリ (owner/repo) を設定してください。\n\n[$(github-inverted) GitHub にサインイン](command:zennpad.signIn)\n\n[$(gear) 設定を開く](command:zennpad.openSettingsPanel)",
-        "when": "!zennpad.isSignedIn"
-      },
-      {
-        "view": "zennpad.repos",
-        "contents": "リポジトリ設定がまだありません。owner/repo/branch を設定すると、Articles/Books/Images がツリーに表示されます。\n\n[$(gear) 設定を開く](command:zennpad.openSettingsPanel)",
-        "when": "zennpad.isSignedIn && !zennpad.hasRepoConfig"
-      },
-      {
-        "view": "zennpad.search",
-        "contents": "Search は Zenn リポジトリを同期後に利用できます。\n\n[$(github-inverted) GitHub にサインイン](command:zennpad.signIn)\n\n[$(gear) 設定を開く](command:zennpad.openSettingsPanel)",
-        "when": "!zennpad.hasRepoConfig"
-      }
-    ],
     "menus": {
       "view/title": [
         {
