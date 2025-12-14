@@ -95,13 +95,35 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [x] 単体テスト/統合テスト追加（Commands/FS/Tree）
   - [x] README 改訂（セットアップ・認証手順・ワークフロー更新）
 
-- [ ] Books 機能（開発中）
+- [ ] Books 機能
   - [ ] GitHub 上の books/* 構造から Tree を構築（Book/Chapter 一覧・frontmatter 読込・ソート）
   - [ ] Book/Chapter 作成コマンド（slug 生成、frontmatter 初期値、章テンプレート）
   - [ ] Book/Chapter rename/move/delete（衝突・リンク整合性のハンドリング）
   - [ ] Book の published/非公開状態管理と Open on Zenn (book URL) 生成
   - [ ] Book/Chapter の preview パス解決（zenn preview 用の urlPath 生成）
   - [ ] 競合・同期エラー時の復帰導線（Book/Chapter 向け）
+
+- [ ] 検索機能
+  - [ ] Viewに検索ビューを設置
+    - [ ] 検索対象および優先順位を「ファイル名、タイトル、本文」とする
+    - [ ] 「大文字小文字を区別する」「単語単位で検索する」「正規表現を使用する」を検索バーの右端に設置（VSCode標準の検索機能と同様の機能を提供）
+    - [ ] 検索文字列が入力されたらViewに検索結果の表示を行う（スクロール可能、折りたたみ可能）
+    - [ ] 以下を参考に作成せよ
+      ```json
+      "viewsWelcome": [
+        {
+          "view": "zennpad.repos",
+          "contents": "ex: Open any Zenn, by either its URL or ID.\n\n[$(folder-opened) Open Zenn](command:zennpad.openZennURL)\n\nManage your zenn articles, by signing in with a GitHub account.\n\n[$(github-inverted) Sign In](command:zennpad.signInGitHub)"
+        },
+        {
+          "view": "zennpad.search",
+          "contents": "todo: fill out it."
+        }
+      ]
+      ```
+    - [ ] 同様に、現在のビューをzennpad.reposビュー以下に移管
+
+- [ ] Scrape機能
 
 - [x] 時系列ソート（Articles/Books/Drafts）
   - [x] GitHub commits API で最新コミット日時を取得し更新日時をソートキーに反映（`GET /repos/:owner/:repo/commits?path=<path>&per_page=1`）
@@ -178,10 +200,8 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
       - ここで指定されたアカウントが`zenn.dev/{username}`として、Open on Zennコマンドで使用される
       - 指定されていない場合は、デフォルトでGitHub認証に使用しているアカウント名を利用する
       - デフォルト: 空欄（GitHub認証アカウント名を使用）
-    - (<divider />)
     - 自動同期の有効/無効切替
     - サインイン/サインアウト
-    - (<divider />)
     - サインイン中のアカウント名/repo名表示
   - [x] Activity BarのタイトルバーのUI修正
     - [x] SyncPause/SyncOn を1つのボタンに集約し、トグルで状態を切り替えるように。また、状態に合わせたアイコンを表示すること
@@ -206,6 +226,7 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
       - [x] Copy Zenn URL(published: trueのみ)
   - [x] Preview開始ボタンの横(`editor/title`)に「Open on Zenn/ Zennで開く」ボタンを追加する
   - [x] 多言語対応
+  - [ ] `view/title`にCollapse/Expandボタンを追加、トグルするように。ソートの隣
 
 - [x] identifierを`zennpad`に変更
 

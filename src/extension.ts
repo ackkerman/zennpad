@@ -19,7 +19,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const fsProvider = new ZennFsProvider();
   let contentCache = new ContentCache(context.globalStorageUri, buildCacheNamespace());
   const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
-  const statusBar = new StatusBarController(statusBarItem);
+  const statusBar = new StatusBarController(statusBarItem, context.extensionUri);
   context.subscriptions.push(statusBarItem);
   seedScaffoldContent(fsProvider, scheme);
   context.subscriptions.push(
