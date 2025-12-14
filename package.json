@@ -29,9 +29,25 @@
     "views": {
       "zennPad": [
         {
-          "id": "zennPadExplorer",
-          "name": "ZennPad",
-          "icon": "media/logo-only.svg"
+          "id": "zennpad.actions",
+          "name": "Actions",
+          "icon": "media/icon/sparcle.svg",
+          "type": "webview",
+          "visibility": "visible"
+        },
+        {
+          "id": "zennpad.repos",
+          "name": "Repositories",
+          "icon": "media/logo-only.svg",
+          "type": "tree",
+          "visibility": "visible"
+        },
+        {
+          "id": "zennpad.search",
+          "name": "Search",
+          "icon": "media/icon/search.svg",
+          "type": "webview",
+          "visibility": "collapsed"
         }
       ]
     },
@@ -39,7 +55,7 @@
       "view/title": [
         {
           "command": "zennpad.refresh",
-          "when": "view == zennPadExplorer",
+          "when": "view == zennpad.repos",
           "group": "navigation@0",
           "icon": {
             "light": "media/icon/reload-light.svg",
@@ -48,7 +64,7 @@
         },
         {
           "command": "zennpad.pauseAutoSync",
-          "when": "view == zennPadExplorer && (!zennpad.autoSyncPaused || zennpad.autoSyncPaused == false)",
+          "when": "view == zennpad.repos && (!zennpad.autoSyncPaused || zennpad.autoSyncPaused == false)",
           "group": "navigation@1",
           "icon": {
             "light": "media/icon/sync-off-light.svg",
@@ -57,7 +73,7 @@
         },
         {
           "command": "zennpad.resumeAutoSync",
-          "when": "view == zennPadExplorer && zennpad.autoSyncPaused == true",
+          "when": "view == zennpad.repos && zennpad.autoSyncPaused == true",
           "group": "navigation@1",
           "icon": {
             "light": "media/icon/sync-on-light.svg",
@@ -66,7 +82,7 @@
         },
         {
           "command": "zennpad.sortArticlesByTitle",
-          "when": "view == zennPadExplorer && zennpad.sortOrder == 'date'",
+          "when": "view == zennpad.repos && zennpad.sortOrder == 'date'",
           "group": "navigation@2",
           "icon": {
             "light": "media/icon/sort-by-date-light.svg",
@@ -75,7 +91,7 @@
         },
         {
           "command": "zennpad.sortArticlesByDate",
-          "when": "view == zennPadExplorer && zennpad.sortOrder == 'title'",
+          "when": "view == zennpad.repos && zennpad.sortOrder == 'title'",
           "group": "navigation@2",
           "icon": {
             "light": "media/icon/sort-by-title-light.svg",
@@ -84,7 +100,7 @@
         },
         {
           "command": "zennpad.deployToZenn",
-          "when": "view == zennPadExplorer && zennpad.hasRepoConfig",
+          "when": "view == zennpad.repos && zennpad.hasRepoConfig",
           "group": "navigation@3",
           "icon": {
             "light": "media/icon/publish-light.svg",
@@ -93,7 +109,7 @@
         },
         {
           "command": "zennpad.openSettingsPanel",
-          "when": "view == zennPadExplorer",
+          "when": "view == zennpad.repos",
           "group": "navigation@4",
           "icon": {
             "light": "media/icon/settings-light.svg",
@@ -171,72 +187,72 @@
       "view/item/context": [
         {
           "command": "zennpad.publish",
-          "when": "view == zennPadExplorer && viewItem == article:draft",
+          "when": "view == zennpad.repos && viewItem == article:draft",
           "group": "inline"
         },
         {
           "command": "zennpad.openOnZenn",
-          "when": "view == zennPadExplorer && viewItem == article:published",
+          "when": "view == zennpad.repos && viewItem == article:published",
           "group": "inline"
         },
         {
           "command": "zennpad.newArticle",
-          "when": "view == zennPadExplorer && (viewItem == articles || viewItem == drafts)",
+          "when": "view == zennpad.repos && (viewItem == articles || viewItem == drafts)",
           "group": "z-create@0"
         },
         {
           "command": "zennpad.openZennRoot",
-          "when": "view == zennPadExplorer && (viewItem == articles || viewItem == drafts)",
+          "when": "view == zennpad.repos && (viewItem == articles || viewItem == drafts)",
           "group": "z-open@1"
         },
         {
           "command": "zennpad.openGithubRoot",
-          "when": "view == zennPadExplorer && (viewItem == articles || viewItem == drafts)",
+          "when": "view == zennpad.repos && (viewItem == articles || viewItem == drafts)",
           "group": "z-open@1"
         },
         {
           "command": "zennpad.copyZennUrl",
-          "when": "view == zennPadExplorer && (viewItem == article:draft || viewItem == article:published || viewItem == chapter)",
+          "when": "view == zennpad.repos && (viewItem == article:draft || viewItem == article:published || viewItem == chapter)",
           "group": "z-copy@2"
         },
         {
           "command": "zennpad.copyGithubUrl",
-          "when": "view == zennPadExplorer && (viewItem == article:draft || viewItem == article:published || viewItem == chapter || viewItem == image)",
+          "when": "view == zennpad.repos && (viewItem == article:draft || viewItem == article:published || viewItem == chapter || viewItem == image)",
           "group": "z-copy@2"
         },
         {
           "command": "zennpad.copyPath",
-          "when": "view == zennPadExplorer && viewItem == image",
+          "when": "view == zennpad.repos && viewItem == image",
           "group": "z-copy@2"
         },
         {
           "command": "zennpad.copyRelativePath",
-          "when": "view == zennPadExplorer && viewItem == image",
+          "when": "view == zennpad.repos && viewItem == image",
           "group": "z-copy@2"
         },
         {
           "command": "zennpad.publish",
-          "when": "view == zennPadExplorer && viewItem == article:draft",
+          "when": "view == zennpad.repos && viewItem == article:draft",
           "group": "z-publish@3"
         },
         {
           "command": "zennpad.unpublish",
-          "when": "view == zennPadExplorer && viewItem == article:published",
+          "when": "view == zennpad.repos && viewItem == article:published",
           "group": "z-publish@3"
         },
         {
           "command": "zennpad.renameNode",
-          "when": "view == zennPadExplorer && (viewItem == article:draft || viewItem == article:published || viewItem == chapter || viewItem == image)",
+          "when": "view == zennpad.repos && (viewItem == article:draft || viewItem == article:published || viewItem == chapter || viewItem == image)",
           "group": "z-edit@4"
         },
         {
           "command": "zennpad.duplicateNode",
-          "when": "view == zennPadExplorer && (viewItem == article:draft || viewItem == article:published || viewItem == chapter || viewItem == image)",
+          "when": "view == zennpad.repos && (viewItem == article:draft || viewItem == article:published || viewItem == chapter || viewItem == image)",
           "group": "z-edit@4"
         },
         {
           "command": "zennpad.deleteNode",
-          "when": "view == zennPadExplorer && (viewItem == article:draft || viewItem == article:published || viewItem == chapter || viewItem == image)",
+          "when": "view == zennpad.repos && (viewItem == article:draft || viewItem == article:published || viewItem == chapter || viewItem == image)",
           "group": "z-edit@5"
         }
       ]

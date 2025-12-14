@@ -103,12 +103,26 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [ ] Book/Chapter の preview パス解決（zenn preview 用の urlPath 生成）
   - [ ] 競合・同期エラー時の復帰導線（Book/Chapter 向け）
 
-- [ ] 検索機能
-  - [ ] Viewに検索ビューを設置
-    - [ ] 検索対象および優先順位を「ファイル名、タイトル、本文」とする
-    - [ ] 「大文字小文字を区別する」「単語単位で検索する」「正規表現を使用する」を検索バーの右端に設置（VSCode標準の検索機能と同様の機能を提供）
-    - [ ] 検索文字列が入力されたらViewに検索結果の表示を行う（スクロール可能、折りたたみ可能）
-    - [ ] 以下を参考に作成せよ
+- [x] 検索機能
+  - [x] Viewに検索ビューを設置
+    - [x] 検索バーを設置する。デザインはVSCodeの標準検索バーを踏襲すること。（置換機能は不要）
+      - [x] 検索対象および優先順位を「ファイル名、タイトル、本文」とする
+      - [x] 「大文字小文字を区別する」「単語単位で検索する」「正規表現を使用する」を検索バーの右端に設置（VSCode標準の検索機能と同様の機能を提供）
+        ```
+        Sidebar View (Webview)
+        ├─ SearchBar
+        │   ├─ input[type=text]
+        │   ├─ toggle: Aa
+        │   ├─ toggle: ab|
+        │   └─ toggle: .*
+        └─ ResultView
+            ├─ Section（File）
+            │   ├─ Match
+            │   └─ Match
+            └─ Section（File）
+        ```
+    - [x] 検索文字列が入力されたらViewに検索結果の表示を行う（スクロール可能、折りたたみ可能）
+    - [x] 以下を参考に作成せよ
       ```json
       "viewsWelcome": [
         {
@@ -121,9 +135,15 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
         }
       ]
       ```
-    - [ ] 同様に、現在のビューをzennpad.reposビュー以下に移管
+    - [x] 同様に、現在のビューをzennpad.reposビュー以下に移管
 
-- [ ] Scrape機能
+- [ ] 複数リポジトリ接続機能
+  - [ ] Zennは2つまでのGithubRepoと連携が可能
+  - [ ] Repositoriesビューを追加（既存のRepositoriesビューはFilesビューに改名）
+  - [ ] 登録されたリポジトリを一覧表示
+  - [ ] リポジトリを選んでアクティブにするとSync対象を切り替える→Filesビューに反映
+
+- [ ] Scrap機能
 
 - [x] 時系列ソート（Articles/Books/Drafts）
   - [x] GitHub commits API で最新コミット日時を取得し更新日時をソートキーに反映（`GET /repos/:owner/:repo/commits?path=<path>&per_page=1`）
@@ -173,11 +193,17 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [x] ユーザーが入力した場合はそれを優先し、未入力時のみランダムを使用する分岐を入れる
   - [x] テスト用に固定シード・モックを使える形にしておく（安定した検証のため）
 
-- [ ] Help、記事作成ガイドをVSCodeのWebviewで表示する機能を追加
+- [ ] Help、記事作成ガイドをVSCodeのWebviewで表示する機能を追加 -> Actionsビューに統合
   - [ ] Help コマンドを追加し、WebviewPanel を開く
   - [ ] Zenn の記事作成ガイドページを埋め込み、Webview 内で表示
   - [ ] Webview 内でのリンククリックを外部ブラウザで開くように制御
   - [ ] ユーザーが必要に応じてアクセスできるように、Activity Bar に Help ノードを追加
+
+- [ ] Actionsビューの作成
+  - [x] Webviewタイプのビューを追加
+  - [x] Githubにサインイン、設定を開くボタンを追加する
+  - [ ] リポジトリ切り替え（Activateするリポジトリにはチェックを入れる）
+  - [ ] ガイド（WebviewでPreviewペインを開き、該当のガイドページにジャンプする）
 
 - [x] UI改善：TreeView アイコンのカスタマイズ
   - [x] コアUI
@@ -227,6 +253,9 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [x] Preview開始ボタンの横(`editor/title`)に「Open on Zenn/ Zennで開く」ボタンを追加する
   - [x] 多言語対応
   - [ ] `view/title`にCollapse/Expandボタンを追加、トグルするように。ソートの隣
+  - [ ] メニューのファイルツリーのコンテキストウィンドウ
+    - [ ] .md/ 画像ファイル以外についても汎用的な「複製、削除、名前を変更」を表示するように変更
+  - [ ] メニューのファイルツリーについて、既定の「images/books/articles」以外のフォルダがあった場合、それも表示するように。順序は一番下。
 
 - [x] identifierを`zennpad`に変更
 

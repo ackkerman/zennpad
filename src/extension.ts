@@ -11,6 +11,8 @@ import { registerCommands } from "./commands/registerCommands";
 import { setAutoSyncContext, setSortOrderContext, updateActiveDocumentContext } from "./context";
 import { getMainBranch, getRepoConfigSummary, getZennOwner, validateRepoConfig } from "./config";
 import { StatusBarController } from "./ui/statusBar";
+import { SearchViewProvider } from "./ui/searchView";
+import { ActionsViewProvider } from "./ui/actionsView";
 
 export function activate(context: vscode.ExtensionContext): void {
   vscode.commands.executeCommand("setContext", "zennpad.activated", true);
@@ -28,10 +30,22 @@ export function activate(context: vscode.ExtensionContext): void {
     })
   );
 
-  const treeDataProvider = new ZennTreeDataProvider(fsProvider, context.extensionUri, scheme);
+  const treeDataProvider = new ZennTreeDataProvider(fsProvider, scheme);
   globalTreeDataProvider = treeDataProvider;
   context.subscriptions.push(
-    vscode.window.registerTreeDataProvider("zennPadExplorer", treeDataProvider)
+    vscode.window.registerTreeDataProvider("zennpad.repos", treeDataProvider)
+  );
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(
+      SearchViewProvider.viewId,
+      new SearchViewProvider(context.extensionUri, fsProvider, scheme)
+    )
+  );
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(
+      ActionsViewProvider.viewId,
+      new ActionsViewProvider(context.extensionUri)
+    )
   );
   setSortOrderContext(treeDataProvider.getSortOrder());
   applyBranchInfo(treeDataProvider);

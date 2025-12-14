@@ -49,11 +49,7 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
     this._onDidChangeTreeData.event;
   private readonly state = new TreeState();
 
-  constructor(
-    private readonly fsProvider: ZennFsProvider,
-    private readonly extensionUri: vscode.Uri,
-    private readonly scheme = "zenn"
-  ) {}
+  constructor(private readonly fsProvider: ZennFsProvider, private readonly scheme = "zenn") {}
 
   setStatus(status: { signedIn: boolean; hasRepoConfig: boolean }): void {
     this.state.setStatus(status);
@@ -83,12 +79,22 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
       if (!this.state.isSignedIn()) {
         return [
           new ZennTreeItem({
-            label: "Sign in to GitHub",
+            label: "GitHub にサインイン",
             collapsibleState: vscode.TreeItemCollapsibleState.None,
             contextValue: "articles",
             description: "GitHub authentication required",
             iconPath: new vscode.ThemeIcon("sign-in"),
-            command: { command: "zennpad.signIn", title: "Sign in to GitHub" }
+            command: { command: "zennpad.signIn", title: "GitHub にサインイン" },
+            tooltip: "GitHub にサインイン"
+          }),
+          new ZennTreeItem({
+            label: "設定を開く",
+            collapsibleState: vscode.TreeItemCollapsibleState.None,
+            contextValue: "articles",
+            description: "Open settings",
+            iconPath: new vscode.ThemeIcon("gear"),
+            command: { command: "zennpad.openSettingsPanel", title: "設定を開く" },
+            tooltip: "設定を開く"
           })
         ];
       }
@@ -243,7 +249,6 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
         contextValue: "drafts",
         resourceUri: vscode.Uri.from({ scheme: this.scheme, path: "/articles" }),
         description: branchDescription,
-        iconPath: this.buildIconPath("node-drafts")
       },
       {
         label: "Articles",
@@ -251,21 +256,18 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
         contextValue: "articles",
         resourceUri: vscode.Uri.from({ scheme: this.scheme, path: "/articles" }),
         description: branchDescription,
-        iconPath: this.buildIconPath("node-articles")
       },
       {
         label: "Books",
         collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
         contextValue: "books",
         resourceUri: vscode.Uri.from({ scheme: this.scheme, path: "/books" }),
-        iconPath: this.buildIconPath("node-books")
       },
       {
         label: "Images",
         collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
         contextValue: "images",
         resourceUri: vscode.Uri.from({ scheme: this.scheme, path: "/images" }),
-        iconPath: this.buildIconPath("node-images")
       }
     ];
   }
@@ -297,12 +299,5 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
   private buildUri(path: string): vscode.Uri {
     const normalizedPath = path.startsWith("/") ? path : `/${path}`;
     return vscode.Uri.from({ scheme: this.scheme, path: normalizedPath });
-  }
-
-  private buildIconPath(name: string): { light: vscode.Uri; dark: vscode.Uri } {
-    return {
-      light: vscode.Uri.joinPath(this.extensionUri, "media", "icon", `${name}-light.svg`),
-      dark: vscode.Uri.joinPath(this.extensionUri, "media", "icon", `${name}-dark.svg`)
-    };
   }
 }
