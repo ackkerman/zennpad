@@ -54,6 +54,43 @@
         }
       ]
     },
+    "viewsWelcome": [
+      {
+        "view": "zennpad.repos",
+        "contents": "%viewsWelcome.repos.signIn%",
+        "when": "!zennpad.isSignedIn"
+      },
+      {
+        "view": "zennpad.repos",
+        "contents": "%viewsWelcome.repos.configure%",
+        "when": "zennpad.isSignedIn && !zennpad.hasRepoConfig"
+      },
+      {
+        "view": "zennpad.search",
+        "contents": "%viewsWelcome.search.configure%",
+        "when": "!zennpad.isSignedIn || !zennpad.hasRepoConfig"
+      },
+      {
+        "view": "zennpad.search",
+        "contents": "%viewsWelcome.search.ready%",
+        "when": "zennpad.isSignedIn && zennpad.hasRepoConfig"
+      },
+      {
+        "view": "zennpad.actions",
+        "contents": "%viewsWelcome.actions.signIn%",
+        "when": "!zennpad.isSignedIn"
+      },
+      {
+        "view": "zennpad.actions",
+        "contents": "%viewsWelcome.actions.configure%",
+        "when": "zennpad.isSignedIn && !zennpad.hasRepoConfig"
+      },
+      {
+        "view": "zennpad.actions",
+        "contents": "%viewsWelcome.actions.ready%",
+        "when": "zennpad.isSignedIn && zennpad.hasRepoConfig"
+      }
+    ],
     "menus": {
       "view/title": [
         {

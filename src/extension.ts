@@ -15,8 +15,6 @@ import { SearchViewProvider } from "./ui/searchView";
 import { ActionsViewProvider } from "./ui/actionsView";
 
 export function activate(context: vscode.ExtensionContext): void {
-  vscode.commands.executeCommand("setContext", "zennpad.activated", true);
-
   const scheme = "zenn";
   const fsProvider = new ZennFsProvider();
   let contentCache = new ContentCache(context.globalStorageUri, buildCacheNamespace());
@@ -146,6 +144,7 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   updateStatusBar(statusBar, githubSync);
+  void vscode.commands.executeCommand("setContext", "zennpad.activated", true);
 }
 
 export function deactivate(): void {
@@ -218,7 +217,7 @@ function handleAuthError(error: unknown, action: string): void {
         if (choice === "Sign in") {
           void vscode.commands.executeCommand("zennpad.signIn");
         } else if (choice === "Open Settings") {
-          void vscode.commands.executeCommand("zennpad.openSettings");
+          void vscode.commands.executeCommand("zennpad.openSettingsPanel");
         }
       });
     return;

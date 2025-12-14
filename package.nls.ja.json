@@ -34,5 +34,12 @@
   "command.zennpad.preview.openPath": "プレビューパスを開く",
   "command.zennpad.actions.openZennFromTree": "Zenn を開く (Actions Tree)",
   "command.zennpad.actions.openHelpLink": "ヘルプリンクを開く",
-  "command.zennpad.newFolder": "新しいフォルダー"
+  "command.zennpad.newFolder": "新しいフォルダー",
+  "viewsWelcome.repos.signIn": "サイドバーから Zenn 記事を管理しましょう。\n\n[$(github) GitHub にサインイン](command:zennpad.signIn)\n\n設定を変更する場合は:\n\n[$(gear) ZennPad 設定を開く](command:zennpad.openSettingsPanel)",
+  "viewsWelcome.repos.configure": "同期を始めるには GitHub owner/repo を設定してください。\n\n[$(gear) ZennPad 設定を開く](command:zennpad.openSettingsPanel)\n\n設定後にコンテンツを読み込むにはリフレッシュ:\n\n[$(refresh) リフレッシュ](command:zennpad.refresh)",
+  "viewsWelcome.search.configure": "検索を使うにはサインインとリポ設定が必要です。\n\n[$(github) サインイン](command:zennpad.signIn)\n\n[$(gear) リポを設定](command:zennpad.openSettingsPanel)",
+  "viewsWelcome.search.ready": "ファイル名・タイトル・本文を横断検索できます。\n\n上の入力欄にキーワードを入力してください。\n\n[$(refresh) リフレッシュ](command:zennpad.refresh)",
+  "viewsWelcome.actions.signIn": "サインインするとクイックアクションが利用できます。\n\n[$(github) GitHub にサインイン](command:zennpad.signIn)\n\n使い方で迷ったら:\n\n[$(book) ヘルプガイドを開く](command:zennpad.openHelpGuide)",
+  "viewsWelcome.actions.configure": "アクションを有効にするには Zenn リポを設定してください。\n\n[$(gear) 設定を開く](command:zennpad.openSettingsPanel)\n\nowner/repo 設定後はツリーを更新:\n\n[$(refresh) リフレッシュ](command:zennpad.refresh)",
+  "viewsWelcome.actions.ready": "Zenn ワークスペース向けのクイックアクション:\n\n- $(folder-opened) [Zenn ルートを開く](command:zennpad.openZennRoot)\n- $(globe) [Zenn で開く](command:zennpad.openOnZenn)\n- $(sync) [Zenn にデプロイ](command:zennpad.deployToZenn)\n- $(settings-gear) [設定を開く](command:zennpad.openSettingsPanel)"
 }
