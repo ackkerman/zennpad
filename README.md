@@ -1,40 +1,52 @@
 # ZennPad
 
-ZennPad は Zenn 記事/Book を VS Code のサイドバーから操作するための拡張機能です。docs/spec.md の要件に沿った最小限のスケルトンを提供します。
+ZennPad は「Zenn への投稿準備を VS Code だけで完結させたい」というニーズに応える拡張機能です。記事の作成・編集・公開ステータスの切替、画像貼り付け、プレビューまでをサイドバー中心のワークフローでまとめ、GitHub との行き来や zenn CLI の起動を意識しないで済むようにします。
 
-## セットアップ
+## できること / 解消するペイン
 
-```bash
-pnpm install
-pnpm run compile
-```
+- **Zennコンテンツの見える化と編集**: Articles/Drafts/Images をツリーで一覧。クリックで即編集、ドラフトはラベルで判別。
+- **記事の生成と公開状態切替**: 日付入り slug 付きで新規作成、frontmatter の `published` をコマンドひとつでオン/オフ。
+- **画像まわりの手間削減**: クリップボードやドラッグ&ドロップの画像を `/images/xxx` に自動保存し、Markdown の `![](/images/xxx)` を挿入。手元の画像ファイルも同様に挿入可能。
+- **ワンクリックプレビュー**: `ZennPad: Preview` で zenn CLI を裏で起動し、Webview で動作確認。ローカル画像も 404 なく表示。
+- **URL やコピー操作の効率化**: Zenn/GitHub URL のコピー、パスコピー、リポ/プロフィールをブラウザで開く導線を用意。
+- **サインインと同期**: VS Code の GitHub 認証を使い、リポジトリを選んでからはサイドバー操作だけで pull/push/デプロイを回せます。
 
-VS Code の `Run Extension` 構成でデバッグ起動すると、Activity Bar に ZennPad ビューが出現します。
+## はじめ方（ユーザー）
 
-## GitHub 認証
+1. VS Code で拡張をインストールし、`Developer: Reload Window` 後に Activity Bar の ZennPad アイコンを開く。
+2. コマンドパレットで `ZennPad: Sign in to GitHub` を実行し、表示に従ってサインイン（Sign out は `ZennPad: Sign out of GitHub`）。
+3. 設定で `zennpad.githubOwner` / `zennpad.githubRepo` を入力するか、`ZennPad: Choose GitHub Repository` で選択。
+4. `ZennPad: Refresh` を実行してリポの articles/images を読み込み、以降はツリーから編集・プレビュー・公開切替を行う。
+5. 画像を貼る場合はエディタ上でペースト or ドロップ or `ZennPad: Insert Image from File` を実行。
 
-1. GitHub で Personal Access Token（`repo` 権限）を発行。
-2. ZennPad 設定で `zennpad.githubOwner` / `zennpad.githubRepo` / `zennpad.githubBranch`（監視用 main） / `zennpad.workBranch`（通常保存用、既定は `zenn-work`）を設定。Zenn のプロフィール URL を固定したい場合は任意で `zennpad.zennAccount` も指定。
-3. コマンドパレットで `ZennPad: Sign in to GitHub` を実行し、認証を完了。
+動作に必要なもの:
+- VS Code 1.85+
+- GitHub アカウント（`repo` 権限の認証）
+- `zenn` CLI が PATH にあること（プレビュー用）
 
-## ワークフロー（work/main 分離）
+## ヘルプになりやすいコマンド
 
-- 編集/保存は work ブランチに自動コミット＆push。
-- Zenn へのデプロイは `ZennPad: Deploy Pending Changes to Zenn` で work → main をマージして実行。
-- 自動同期を一時停止したい場合は `ZennPad: Pause/Resume Auto Sync` を使用。
+- `ZennPad: New Article` — 日付入り slug と frontmatter を含む記事を作成
+- `ZennPad: Publish Article` / `ZennPad: Unpublish Article` — 公開/非公開の切替
+- `ZennPad: Preview` — 現在の Markdown を zenn 互換でプレビュー
+- `ZennPad: Refresh` — GitHub から記事・画像を取得して最新化
+- `ZennPad: Insert Image from File` — ローカル画像を `/images` に保存し Markdown へ挿入
+- `ZennPad: Copy Zenn URL` / `Copy GitHub URL` — 選択中コンテンツの URL をクリップボードへ
+- `ZennPad: Deploy Pending Changes to Zenn` — 変更をまとめて Zenn 用ブランチへ反映
 
-## 品質タスク
+## 開発者向けオンボーディング
 
-- Lint: `pnpm run lint`（ESLint + @typescript-eslint）
-- Format: `pnpm run format`（Prettier）
-- Test: `pnpm test`（`tsc` コンパイル + `node --test`）
+読む順番の目安:
+1. `docs/spec.md`（必須）
+2. `src/` の主要ディレクトリ: `commands/`, `github/`, `preview/`, `ui/`
+3. `src/__tests__/` のテスト構造
 
-GitHub Actions の `ci` ワークフローで lint/test を自動実行します。
+変更するときのルール:
+- 「spec → code → test」の順に整合を取ること
+- PR には spec 更新要否（要/不要と理由）を必ず書くこと
 
-## 最小テスト項目
-
-- Frontmatter のパース/シリアライズが YAML 断面と本文を正しく分離すること
-- PendingState と SyncScheduler が重複同期を抑制し、リトライ/インターバル制御を行うこと
-- zenn スキームのパス変換（toRelativeZennPath / toPreviewUrlPath）が記事・Book・config を正しく解決すること
-- buildZennUrl が記事の公開/下書き、Book の URL を生成し、対応しないパスは undefined を返すこと
-- ZennFsProvider が write/read/rename/delete を正しく扱い、非再帰削除のガードを持つこと
+開発用コマンド:
+- セットアップ: `pnpm install`
+- ビルド: `pnpm run compile`
+- テスト: `pnpm test`
+- Lint/Format: `pnpm run lint` / `pnpm run format`

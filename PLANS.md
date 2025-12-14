@@ -24,9 +24,10 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [x] GitHub 認証（ブラウザ起動）
   - [x] GitHub Contents API との read/write/delete 実装（sha 管理・競合検知）
   - [x] 仮想FSと実ストレージの同期（URI → GitHub パス変換、pull/push）
+  - [x] Contents API が1MB超で返さない場合に git.getBlob をフォールバックする同期とユニットテスト
   - [ ] TreeDataProvider を GitHub 上の articles/books 構造から生成（LRU/ステータス表示）
   - [ ] PAT認証にも対応すること（SecretStorage で PAT 保存/読み出しにより認証できるように）
-  - [ ] [High Priority] Signoutを実装
+  - [x] [High Priority] Signoutを実装
   - [ ] Scrap対応？そもそもScrapはGithubに置かれないから編集できない？
 
 - [x] コマンド実装
@@ -70,7 +71,7 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [x] ファイル変更と自動リロード
     - [x] 保存時にミラー同期 → zenn CLI がファイル監視してるため自動リロード
     - [x] Webview iframe 内でのリロード処理（VL：iframe に対してセマンティックな reload）
-  - [ ] 仮想FS経由で取得した images/ 配下の実体を preview ミラーに同期し、`/images/<name>` リクエストで 404 が出ないように配信/検証する
+  - [x] 仮想FS経由で取得した images/ 配下の実体を preview ミラーに同期し、`/images/<name>` リクエストで 404 が出ないように配信/検証する
 
 - [ ] 作りこみ（Phase 2 以降）
   - [ ] スニペット/断片保存と検索（任意機能）
@@ -202,15 +203,16 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
       - [ ] Open in Zenn(published: trueのみ)
       - [ ] Copy GitHub URL
       - [ ] Copy Zenn URL(published: trueのみ)
+  - [ ] 多言語対応
 
-- [ ] identifierを`zenn-pad`に変更
+- [ ] identifierを`zennpad`に変更
 
 - [ ] Marketplaceに公開(https://marketplace.visualstudio.com/)
   - [ ] VSIXファイルフォーマットに変換
 
 ## メモ
 
-- 現状は scaffold 状態。GitHub 連携と frontmatter/publish まわりが未着手。
+- GitHub連携、プレビュー、画像貼り付け、work/mainデプロイなどのコア機能はひと通り実装済み。残件は Books/PAT対応やキャッシュ失効ポリシーなど。
 - UI 開発が走る際は screenshot 自動生成タスクを Makefile + Python スクリプトで用意し、AGENTS.md に利用手順を追記すること。
 
 ## 参考用のディレクトリ構造
