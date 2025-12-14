@@ -311,14 +311,13 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
           name !== ".."
       )
       .sort(([a], [b]) => a.localeCompare(b));
-    const extraNodes: ZennTreeItemDescriptor[] = extras
-      .map(([name]) => ({
-        label: name,
-        collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-        contextValue: "folder",
-        resourceUri: vscode.Uri.from({ scheme: this.scheme, path: `/${name}` }),
-        path: `/${name}`
-      }));
+    const extraNodes: ZennTreeItemDescriptor[] = extras.map(([name]) => ({
+      label: name,
+      collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+      contextValue: "folder",
+      resourceUri: vscode.Uri.from({ scheme: this.scheme, path: `/${name}` }),
+      path: `/${name}`
+    }));
 
     return [...defaults, ...extraNodes];
   }
@@ -361,11 +360,7 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
         const uri = this.buildUri(childPath);
         const isImage = isImageFile(name);
         const isMarkdown = name.toLowerCase().endsWith(".md");
-        const contextValue: ZennNodeType = isImage
-          ? "image"
-          : isMarkdown
-          ? "article"
-          : "file";
+        const contextValue: ZennNodeType = isImage ? "image" : isMarkdown ? "article" : "file";
         const frontmatter = isMarkdown ? readFrontmatter(this.fsProvider, uri) : undefined;
         const published = frontmatter?.published;
         return new ZennTreeItem({
@@ -380,11 +375,7 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
           contextValue,
           resourceUri: uri,
           published,
-          tooltip: isImage
-            ? childPath
-            : isMarkdown
-            ? buildTooltip(frontmatter)
-            : childPath
+          tooltip: isImage ? childPath : isMarkdown ? buildTooltip(frontmatter) : childPath
         });
       });
   }

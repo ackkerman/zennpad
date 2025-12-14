@@ -253,7 +253,10 @@ async function createFolder(
     return;
   }
   const newPath = `${targetBase.replace(/\/$/, "")}/${clean}`;
-  const newUri = vscode.Uri.from({ scheme: "zenn", path: newPath.startsWith("/") ? newPath : `/${newPath}` });
+  const newUri = vscode.Uri.from({
+    scheme: "zenn",
+    path: newPath.startsWith("/") ? newPath : `/${newPath}`
+  });
   try {
     fsProvider.createDirectory(newUri);
     treeDataProvider.refresh();

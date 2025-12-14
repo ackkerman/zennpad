@@ -23,6 +23,33 @@ interface SearchMatch {
   readonly snippet?: string;
 }
 
+interface WelcomeSlide {
+  readonly eyebrow: string;
+  readonly title: string;
+  readonly description: string;
+  readonly actionLabel?: string;
+  readonly actionCommand?: string;
+}
+
+interface LocalizedLabels {
+  lang: string;
+  placeholder: string;
+  toggleCase: string;
+  toggleWord: string;
+  toggleRegex: string;
+  emptyResults: string;
+  matchFilename: string;
+  matchTitle: string;
+  matchBody: string;
+  welcomeBadge: string;
+  welcomeTitle: string;
+  welcomeSubtitle: string;
+  prevSlide: string;
+  nextSlide: string;
+  slideIndicator: string;
+  welcomeSlides: WelcomeSlide[];
+}
+
 export class SearchViewProvider implements vscode.WebviewViewProvider {
   static readonly viewId = "zennpad.search";
   private view: vscode.WebviewView | undefined;
@@ -67,11 +94,15 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
         }
         if (type === "action") {
           const { command } = message as { command?: string };
-          if (command === "signIn") {
-            void vscode.commands.executeCommand("zennpad.signIn");
-          }
-          if (command === "openSettings") {
-            void vscode.commands.executeCommand("zennpad.openSettingsPanel");
+          const commandMap: Record<string, string> = {
+            signIn: "zennpad.signIn",
+            openSettings: "zennpad.openSettingsPanel",
+            openHelp: "zennpad.openHelpGuide",
+            refresh: "zennpad.refresh"
+          };
+          const target = command ? commandMap[command] : undefined;
+          if (target) {
+            void vscode.commands.executeCommand(target);
           }
         }
       }),
@@ -275,6 +306,98 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
         border-color: #0f9d58;
         color: #0f9d58;
       }
+      .welcome {
+        border: 1px solid var(--vscode-editorWidget-border, #cccccc);
+        border-radius: 10px;
+        background: linear-gradient(180deg, rgba(15, 157, 88, 0.08) 0%, rgba(15, 157, 88, 0.02) 100%);
+        padding: 0.9rem 0.85rem;
+        display: grid;
+        gap: 0.65rem;
+      }
+      .welcome-head {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+      }
+      .welcome-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.2rem 0.55rem;
+        border-radius: 999px;
+        background: rgba(15, 157, 88, 0.12);
+        color: var(--vscode-textLink-foreground);
+        font-size: 0.8rem;
+        font-weight: 600;
+        width: fit-content;
+      }
+      .welcome-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--vscode-foreground);
+      }
+      .welcome-subtitle {
+        color: var(--vscode-descriptionForeground, #6b7280);
+        font-size: 0.95rem;
+        line-height: 1.4;
+      }
+      .carousel-card {
+        border: 1px solid var(--vscode-editorWidget-border, #d1d5db);
+        border-radius: 8px;
+        padding: 0.75rem;
+        background: var(--vscode-editor-background);
+        box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+      }
+      .carousel-eyebrow {
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.8rem;
+        color: var(--vscode-textLink-foreground);
+        margin-bottom: 0.25rem;
+      }
+      .carousel-title {
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+      }
+      .carousel-desc {
+        color: var(--vscode-descriptionForeground, #6b7280);
+        line-height: 1.5;
+      }
+      .carousel-actions {
+        margin-top: 0.55rem;
+      }
+      .carousel-footer {
+        margin-top: 0.65rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+      }
+      .dots {
+        display: inline-flex;
+        gap: 0.35rem;
+        align-items: center;
+      }
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        border: 1px solid var(--vscode-input-border, #d1d5db);
+        background: transparent;
+        padding: 0;
+        cursor: pointer;
+      }
+      .dot[data-active="true"] {
+        background: var(--vscode-textLink-foreground);
+        border-color: var(--vscode-textLink-foreground);
+      }
+      .carousel-indicator {
+        margin-top: 0.3rem;
+        font-size: 0.85rem;
+        color: var(--vscode-descriptionForeground, #6b7280);
+        text-align: right;
+      }
       .searchbar {
         display: flex;
         align-items: center;
@@ -442,12 +565,15 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
       };
       const labels = ${labelsJson};
       const signedIn = ${signedInFlag};
+      const shouldShowProductTour = !signedIn;
+      const slides = Array.isArray(labels.welcomeSlides) ? labels.welcomeSlides : [];
+      let activeSlide = 0;
       const input = document.getElementById("search-input");
       const toggles = document.querySelectorAll(".toggle");
       const resultsEl = document.getElementById("results");
       const errorEl = document.getElementById("error");
-      const noticeEl = document.getElementById("signin-notice");
       const searchArea = document.getElementById("search-area");
+      const searchBar = document.querySelector(".searchbar");
 
       const actionButtons = document.querySelectorAll("[data-action]");
       actionButtons.forEach((btn) => {
@@ -457,12 +583,18 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
         });
       });
 
-      if (!signedIn && noticeEl && searchArea) {
-        noticeEl.style.display = "block";
-        searchArea.style.display = "none";
-      } else if (signedIn && noticeEl && searchArea) {
-        noticeEl.style.display = "none";
+      if (!signedIn && searchArea) {
         searchArea.style.display = "block";
+        if (searchBar) {
+          searchBar.style.display = "none";
+        }
+        renderProductTour();
+      } else if (signedIn && searchArea) {
+        searchArea.style.display = "block";
+        if (searchBar) {
+          searchBar.style.display = "";
+        }
+        renderEmptyResults();
       }
 
       toggles.forEach((btn) => {
@@ -486,30 +618,58 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
         }
       });
 
-      document.querySelectorAll(".primary-btn").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const command = btn.getAttribute("data-command");
-          vscode.postMessage({ type: "action", command });
+      function wirePrimaryButtons(scope) {
+        (scope || document).querySelectorAll(".primary-btn").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const command = btn.getAttribute("data-command");
+            if (command) {
+              vscode.postMessage({ type: "action", command });
+            }
+          });
         });
-      });
+      }
 
       function triggerSearch() {
-        vscode.postMessage({ type: "search", query: input.value, options: state });
+        const query = input.value;
+        if (!query.trim()) {
+          if (shouldShowProductTour) {
+            renderProductTour();
+          } else {
+            renderEmptyResults();
+          }
+          return;
+        }
+        if (!signedIn) {
+          renderProductTour();
+          return;
+        }
+        vscode.postMessage({ type: "search", query, options: state });
       }
 
       window.addEventListener("message", (event) => {
         const { type, results = [], error } = event.data || {};
         if (type === "requireSignIn") {
-          if (noticeEl && searchArea) {
-            noticeEl.style.display = "block";
-            searchArea.style.display = "none";
+          if (searchArea) {
+            searchArea.style.display = "block";
+            if (searchBar) {
+              searchBar.style.display = "none";
+            }
+            renderProductTour();
           }
           return;
         }
         if (type !== "results") return;
         errorEl.textContent = error ? error : "";
         if (!results.length) {
-          resultsEl.innerHTML = '<div class="empty">' + labels.emptyResults + '</div>';
+          if (!input.value.trim()) {
+            if (shouldShowProductTour) {
+              renderProductTour();
+            } else {
+              renderEmptyResults();
+            }
+            return;
+          }
+          renderEmptyResults();
           return;
         }
         resultsEl.innerHTML = results
@@ -555,6 +715,112 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
         });
       });
 
+      function renderProductTour() {
+        if (!slides.length) {
+          renderEmptyResults();
+          return;
+        }
+        if (activeSlide >= slides.length) {
+          activeSlide = 0;
+        }
+        const slide = slides[activeSlide] || slides[0];
+        const dots = slides
+          .map(
+            (_, index) =>
+              '<button class="dot" data-index="' +
+              index +
+              '" aria-label="' +
+              formatIndicatorText(index, slides.length) +
+              '" data-active="' +
+              (index === activeSlide) +
+              '"></button>'
+          )
+          .join("");
+        const actionButton = slide.actionLabel
+          ? '<div class="carousel-actions"><button class="primary-btn" data-command="' +
+            (slide.actionCommand || "") +
+            '">' +
+            slide.actionLabel +
+            "</button></div>"
+          : "";
+        resultsEl.innerHTML =
+          '<div class="welcome">' +
+          '<div class="welcome-head">' +
+          '<span class="welcome-badge">' +
+          labels.welcomeBadge +
+          "</span>" +
+          '<div class="welcome-title">' +
+          labels.welcomeTitle +
+          "</div>" +
+          '<div class="welcome-subtitle">' +
+          labels.welcomeSubtitle +
+          "</div>" +
+          "</div>" +
+          '<div class="carousel-card">' +
+          '<div class="carousel-eyebrow">' +
+          slide.eyebrow +
+          "</div>" +
+          '<div class="carousel-title">' +
+          slide.title +
+          "</div>" +
+          '<div class="carousel-desc">' +
+          slide.description +
+          "</div>" +
+          actionButton +
+          '<div class="carousel-footer">' +
+          '<button class="chevron" data-direction="prev" aria-label="' +
+          labels.prevSlide +
+          '">&lt;</button>' +
+          '<div class="dots">' +
+          dots +
+          "</div>" +
+          '<button class="chevron" data-direction="next" aria-label="' +
+          labels.nextSlide +
+          '">&gt;</button>' +
+          "</div>" +
+          '<div class="carousel-indicator">' +
+          formatIndicatorText(activeSlide, slides.length) +
+          "</div>" +
+          "</div>" +
+          "</div>";
+        wirePrimaryButtons(resultsEl);
+        bindCarouselControls();
+      }
+
+      function renderEmptyResults() {
+        resultsEl.innerHTML = '<div class="empty">' + labels.emptyResults + "</div>";
+      }
+
+      function bindCarouselControls() {
+        resultsEl.querySelectorAll("[data-direction]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            if (!slides.length) return;
+            const direction = btn.getAttribute("data-direction");
+            if (direction === "prev") {
+              activeSlide = (activeSlide - 1 + slides.length) % slides.length;
+            } else {
+              activeSlide = (activeSlide + 1) % slides.length;
+            }
+            renderProductTour();
+          });
+        });
+        resultsEl.querySelectorAll(".dot").forEach((dot) => {
+          dot.addEventListener("click", () => {
+            const index = Number(dot.getAttribute("data-index"));
+            if (!Number.isNaN(index)) {
+              activeSlide = index;
+              renderProductTour();
+            }
+          });
+        });
+      }
+
+      function formatIndicatorText(index, total) {
+        return (labels.slideIndicator || "{current}/{total}")
+          .replace("{current}", String(index + 1))
+          .replace("{total}", String(total));
+      }
+
       function label(target) {
         if (target === "filename") return labels.matchFilename;
         if (target === "title") return labels.matchTitle;
@@ -581,13 +847,6 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
 </head>
 <body>
   <div class="panel">
-    <div id="signin-notice" class="notice" style="display:none;">
-      <div>${labels.signInPrompt}</div>
-      <div class="actions">
-        <button class="btn primary" data-action="signIn">$(github-inverted) ${labels.signIn}</button>
-        <button class="btn" data-action="openSettings">$(gear) ${labels.openSettings}</button>
-      </div>
-    </div>
     <div id="search-area">
       <form class="searchbar" onsubmit="return false;">
         <input
@@ -684,20 +943,7 @@ function escapeRegExp(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function localizedLabels(locale: string): {
-  lang: string;
-  placeholder: string;
-  toggleCase: string;
-  toggleWord: string;
-  toggleRegex: string;
-  emptyResults: string;
-  matchFilename: string;
-  matchTitle: string;
-  matchBody: string;
-  signIn: string;
-  openSettings: string;
-  signInPrompt: string;
-} {
+function localizedLabels(locale: string): LocalizedLabels {
   const lang = (locale || "en").toLowerCase();
   if (lang.startsWith("ja")) {
     return {
@@ -710,9 +956,38 @@ function localizedLabels(locale: string): {
       matchFilename: "ファイル名",
       matchTitle: "タイトル",
       matchBody: "本文",
-      signIn: "GitHub にサインイン",
-      openSettings: "設定を開く",
-      signInPrompt: "Search を使うには GitHub にサインインし、Zenn リポジトリを設定してください。"
+      welcomeBadge: "ようこそ",
+      welcomeTitle: "ZennPad で Zenn の執筆を完結させる",
+      welcomeSubtitle: "サイドバーから検索、プレビュー、デプロイまでを直感的に操作できます。",
+      prevSlide: "前の紹介",
+      nextSlide: "次の紹介",
+      slideIndicator: "{current}/{total} 枚目",
+      welcomeSlides: [
+        {
+          eyebrow: "セットアップ",
+          title: "GitHub 連携で Zenn リポジトリを同期",
+          description:
+            "owner/repo とブランチを設定すると、記事・Book・画像まで自動で読み込みます。",
+          actionLabel: "設定を開く",
+          actionCommand: "openSettings"
+        },
+        {
+          eyebrow: "プレビュー",
+          title: "Zenn 互換プレビューをすぐに確認",
+          description:
+            "ミラーされたワークスペースと zenn preview で、ブラウザを開かず Markdown の見た目を確認できます。",
+          actionLabel: "ヘルプガイドを見る",
+          actionCommand: "openHelp"
+        },
+        {
+          eyebrow: "ワークフロー",
+          title: "全文検索とリフレッシュで素早く執筆",
+          description:
+            "ファイル名・タイトル・本文を一括検索し、必要に応じてリフレッシュして最新コンテンツを取り込み、デプロイにつなげます。",
+          actionLabel: "リポジトリを更新",
+          actionCommand: "refresh"
+        }
+      ]
     };
   }
   return {
@@ -725,9 +1000,39 @@ function localizedLabels(locale: string): {
     matchFilename: "Filename",
     matchTitle: "Title",
     matchBody: "Body",
-    signIn: "Sign in to GitHub",
-    openSettings: "Open Settings",
-    signInPrompt: "Sign in to GitHub and set your Zenn repository to use Search."
+
+    welcomeBadge: "Product tour",
+    welcomeTitle: "Manage Zenn without leaving VS Code",
+    welcomeSubtitle: "Search, preview, and deploy directly from the sidebar.",
+    prevSlide: "Previous highlight",
+    nextSlide: "Next highlight",
+    slideIndicator: "Slide {current} of {total}",
+    welcomeSlides: [
+      {
+        eyebrow: "Setup",
+        title: "Connect your Zenn repository",
+        description:
+          "Set GitHub owner/repo and branches to sync articles, books, and images into the explorer.",
+        actionLabel: "Open settings",
+        actionCommand: "openSettings"
+      },
+      {
+        eyebrow: "Preview",
+        title: "Check Zenn-ready previews instantly",
+        description:
+          "A mirrored workspace feeds zenn preview so you can validate Markdown rendering without switching windows.",
+        actionLabel: "Read the help guide",
+        actionCommand: "openHelp"
+      },
+      {
+        eyebrow: "Workflow",
+        title: "Search and refresh before you deploy",
+        description:
+          "Search filenames, titles, and bodies at once, then refresh to pull the latest content before publishing.",
+        actionLabel: "Refresh content",
+        actionCommand: "refresh"
+      }
+    ]
   };
 }
 

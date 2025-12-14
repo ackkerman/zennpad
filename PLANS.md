@@ -275,6 +275,10 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
     - [ ] .md/ 画像ファイル以外についても汎用的な「複製、削除、名前を変更」を表示するように変更
   - [ ] メニューのファイルツリーについて、既定の「images/books/articles」以外のフォルダがあった場合、それも表示するように。順序は一番下。
 
+- [x] SearchViewのWelcomeViewにて拡張機能の紹介を行う
+  - [x] カルーセルを設置
+  - [x] 3ページ程度でこのツールの機能を紹介
+
 - [x] identifierを`zennpad`に変更
 
 - [ ] Marketplaceに公開(https://marketplace.visualstudio.com/)

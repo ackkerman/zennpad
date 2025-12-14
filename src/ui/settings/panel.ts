@@ -111,7 +111,7 @@ export async function showSettingsPanel(
       {
         label: snapshot.isSignedIn ? strings.signOut : strings.signIn,
         description: snapshot.isSignedIn
-          ? snapshot.accountLabel ?? strings.signedOutLabel
+          ? (snapshot.accountLabel ?? strings.signedOutLabel)
           : strings.signInRequired,
         run: async () => {
           if (snapshot.isSignedIn) {

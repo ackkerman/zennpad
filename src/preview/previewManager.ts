@@ -128,9 +128,7 @@ async function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-type PreviewTarget =
-  | { type: "absolute"; url: string }
-  | { type: "relative"; path: string };
+type PreviewTarget = { type: "absolute"; url: string } | { type: "relative"; path: string };
 
 function normalizePreviewTarget(raw: string): PreviewTarget | null {
   if (typeof raw !== "string") {

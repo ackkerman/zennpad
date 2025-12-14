@@ -36,13 +36,13 @@
   "command.zennpad.actions.openHelpLink": "Open Help Link",
   "command.zennpad.newFolder": "New Folder",
 
+  "viewsWelcome.actions.signIn": "Start with quick actions once you sign in.\n\n[$(github) Sign in with GitHub](command:zennpad.signIn)\n\nNeed to adjust settings?\n\n[$(gear) Open ZennPad Settings](command:zennpad.openSettingsPanel)",
+  "viewsWelcome.actions.configure": "Connect a Zenn repo to enable actions.\n\n[$(gear) Open Settings](command:zennpad.openSettingsPanel)\n\nAfter setting owner/repo, refresh the tree.\n\n[$(refresh) Refresh](command:zennpad.refresh)",
+  "viewsWelcome.actions.ready": "Quick actions for your Zenn workspace:\n\n- $(folder-opened) [Open Zenn root](command:zennpad.openZennRoot)\n- $(globe) [Open on Zenn](command:zennpad.openOnZenn)\n- $(sync) [Deploy to Zenn](command:zennpad.deployToZenn)\n- $(settings-gear) [Open Settings](command:zennpad.openSettingsPanel)",
+
   "viewsWelcome.repos.signIn": "",
   "viewsWelcome.repos.configure": "Set GitHub owner/repo to start syncing.\n\n[$(gear) Open ZennPad Settings](command:zennpad.openSettingsPanel)\n\nAfter configuring, refresh to load content.\n\n[$(refresh) Refresh](command:zennpad.refresh)",
 
   "viewsWelcome.search.configure": "Search is available after sign-in and repo setup.\n\n[$(github) Sign in](command:zennpad.signIn)\n\n[$(gear) Configure repo](command:zennpad.openSettingsPanel)",
-  "viewsWelcome.search.ready": "Search filenames, titles, and bodies across your Zenn repo.\n\nType a query above to see matches.\n\n[$(refresh) Refresh](command:zennpad.refresh)",
-
-  "viewsWelcome.actions.signIn": "Start with quick actions once you sign in.\n\n[$(github) Sign in with GitHub](command:zennpad.signIn)\n\nNeed to adjust settings?\n\n[$(gear) Open ZennPad Settings](command:zennpad.openSettingsPanel)",
-  "viewsWelcome.actions.configure": "Connect a Zenn repo to enable actions.\n\n[$(gear) Open Settings](command:zennpad.openSettingsPanel)\n\nAfter setting owner/repo, refresh the tree.\n\n[$(refresh) Refresh](command:zennpad.refresh)",
-  "viewsWelcome.actions.ready": "Quick actions for your Zenn workspace:\n\n- $(folder-opened) [Open Zenn root](command:zennpad.openZennRoot)\n- $(globe) [Open on Zenn](command:zennpad.openOnZenn)\n- $(sync) [Deploy to Zenn](command:zennpad.deployToZenn)\n- $(settings-gear) [Open Settings](command:zennpad.openSettingsPanel)"
+  "viewsWelcome.search.ready": "Search filenames, titles, and bodies across your Zenn repo.\n\nUse the welcome carousel below to learn the key flows, then type a query above.\n\n[$(refresh) Refresh](command:zennpad.refresh)"
 }
