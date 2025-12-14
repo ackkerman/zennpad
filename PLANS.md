@@ -278,7 +278,7 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
 - [x] identifierを`zennpad`に変更
 
 - [ ] Marketplaceに公開(https://marketplace.visualstudio.com/)
-  - [ ] VSIXファイルフォーマットに変換
+  - [x] VSIXファイルフォーマットに変換
 
 ## メモ
 
