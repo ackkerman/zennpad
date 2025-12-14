@@ -194,7 +194,7 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
         gap: 0.35rem;
         margin-bottom: 0.75rem;
         padding: 0.2rem 0.35rem;
-        border: 1px solid var(--vscode-input-border, #d1d5db);
+        border: 1px solid var(--vscode-editorWidget-border, #cccccc);
         border-radius: 6px;
         background: var(--vscode-input-background, #f9fafb);
         box-shadow: 0 1px 1px rgba(0,0,0,0.04);
@@ -231,7 +231,7 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        border: 1px solid var(--vscode-input-border, #d1d5db);
+        border: 1px solid var(--vscode-input-border, #cccccc);
         border-radius: 4px;
         background: var(--vscode-input-background, #fff);
         color: var(--vscode-input-foreground, #6b7280);
@@ -263,15 +263,15 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
         min-width: 32px;
         height: 28px;
         padding: 0 0.4rem;
-        border: 1px solid var(--vscode-input-border, #d1d5db);
-        background: var(--vscode-input-background, #fff);
+        border: 1px solid var(--vscode-input-border, #cccccc);
+        background: var(--vscode-input-background, #cccccc);
         color: var(--vscode-input-foreground, #6b7280);
         border-radius: 4px;
         cursor: pointer;
         font-size: 0.85rem;
       }
       .toggle[data-active="true"] {
-        background: var(--vscode-inputOption-activeBackground, #e5f2ff);
+        background: var(--vscode-inputOption-activeBackground, #cccccc;
         color: var(--vscode-inputOption-activeForeground, #1f2937);
         border-color: var(--vscode-inputOption-activeBorder, #4a90e2);
       }

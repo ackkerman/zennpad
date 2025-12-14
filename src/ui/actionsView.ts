@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { getZennOwner } from "../config";
 
 export class ActionsViewProvider implements vscode.WebviewViewProvider {
   static readonly viewId = "zennpad.actions";
@@ -11,21 +12,40 @@ export class ActionsViewProvider implements vscode.WebviewViewProvider {
       localResourceRoots: [this.extensionUri]
     };
     const nonce = generateNonce();
-    webviewView.webview.html = this.renderHtml(nonce, vscode.env.language ?? "en");
-    webviewView.webview.onDidReceiveMessage((message: unknown) => {
+    const initialZenn = getZennOwner(vscode.workspace.getConfiguration("zennpad")) ?? "";
+    webviewView.webview.html = this.renderHtml(
+      nonce,
+      vscode.env.language ?? "en",
+      initialZenn
+    );
+    webviewView.webview.onDidReceiveMessage(async (message: unknown) => {
       if (typeof message !== "object" || !message) return;
-      const { type } = message as { type?: string };
+      const { type, user } = message as { type?: string; user?: unknown };
       if (type === "signIn") {
         void vscode.commands.executeCommand("zennpad.signIn");
       }
       if (type === "settings") {
         void vscode.commands.executeCommand("zennpad.openSettingsPanel");
       }
+      if (type === "openZenn") {
+        const config = vscode.workspace.getConfiguration("zennpad");
+        const inputUser = typeof user === "string" ? user.trim() : "";
+        const targetUser = inputUser || getZennOwner(config);
+        if (!targetUser) {
+          void vscode.window.showWarningMessage("Zenn ユーザー名を入力してください。");
+          return;
+        }
+        if (inputUser) {
+          await config.update("zennAccount", targetUser, vscode.ConfigurationTarget.Global);
+        }
+        void vscode.env.openExternal(vscode.Uri.parse(`https://zenn.dev/${targetUser}`));
+      }
     });
   }
 
-  private renderHtml(nonce: string, locale: string): string {
+  private renderHtml(nonce: string, locale: string, initialZennUser: string): string {
     const labels = localizedLabels(locale);
+    const safeInitialZenn = escapeHtml(initialZennUser);
     const styles = `
       :root {
         color-scheme: light dark;
@@ -41,6 +61,12 @@ export class ActionsViewProvider implements vscode.WebviewViewProvider {
         display: flex;
         flex-direction: column;
         gap: 0.75rem;
+      }
+      .card {
+        border: 1px solid var(--vscode-input-border, rgba(148, 163, 184, 0.28));
+        border-radius: 10px;
+        padding: 0.85rem;
+        background: var(--vscode-editor-background, #0b1120);
       }
       .btn {
         display: inline-flex;
@@ -64,6 +90,26 @@ export class ActionsViewProvider implements vscode.WebviewViewProvider {
         color: #0f9d58;
         box-shadow: none;
       }
+      .input-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 0.5rem;
+        align-items: center;
+      }
+      .input {
+        width: 100%;
+        padding: 0.55rem 0.7rem;
+        border-radius: 8px;
+        border: 1px solid var(--vscode-input-border, rgba(148, 163, 184, 0.28));
+        background: var(--vscode-input-background, #0b1120);
+        color: var(--vscode-foreground);
+        font-size: 0.95rem;
+      }
+      .label {
+        font-size: 0.92rem;
+        margin-bottom: 0.35rem;
+        color: var(--vscode-foreground);
+      }
     `;
     const script = `
       const vscode = acquireVsCodeApi();
@@ -78,6 +124,14 @@ export class ActionsViewProvider implements vscode.WebviewViewProvider {
       };
       bind('[data-action="signIn"]', () => vscode.postMessage({ type: 'signIn' }));
       bind('[data-action="settings"]', () => vscode.postMessage({ type: 'settings' }));
+      const form = document.querySelector('[data-form="openZenn"]');
+      const input = document.querySelector('[data-input="zennUser"]');
+      if (form && input) {
+        form.addEventListener('submit', (event) => {
+          event.preventDefault();
+          vscode.postMessage({ type: 'openZenn', user: input.value });
+        });
+      }
     `;
     return `<!DOCTYPE html>
 <html lang="${labels.lang}">
@@ -88,11 +142,18 @@ export class ActionsViewProvider implements vscode.WebviewViewProvider {
 </head>
 <body>
   <div class="stack">
-    <section>
+    <section class="card">
       <div style="display:flex; flex-direction:column; gap:0.75rem;">
         <button class="btn" data-action="signIn">✓ ${labels.signIn}</button>
         <button class="btn ghost" data-action="settings">⚙ ${labels.openSettings}</button>
       </div>
+    </section>
+    <section class="card">
+      <div class="label">${labels.zennUserLabel}</div>
+      <form class="input-row" data-form="openZenn">
+        <input class="input" data-input="zennUser" type="text" value="${safeInitialZenn}" placeholder="${labels.zennUserPlaceholder}" />
+        <button class="btn" type="submit">↗ ${labels.openZenn}</button>
+      </form>
     </section>
   </div>
   <script nonce="${nonce}">${script}</script>
@@ -105,19 +166,28 @@ function localizedLabels(locale: string): {
   lang: string;
   signIn: string;
   openSettings: string;
+  zennUserLabel: string;
+  zennUserPlaceholder: string;
+  openZenn: string;
 } {
   const lang = (locale || "en").toLowerCase();
   if (lang.startsWith("ja")) {
     return {
       lang: "ja",
       signIn: "GitHub にサインイン",
-      openSettings: "設定を開く"
+      openSettings: "設定を開く",
+      zennUserLabel: "Zenn ユーザー名",
+      zennUserPlaceholder: "zenn.dev/{username}",
+      openZenn: "Zennを開く"
     };
   }
   return {
     lang: "en",
     signIn: "Sign in to GitHub",
-    openSettings: "Open Settings"
+    openSettings: "Open Settings",
+    zennUserLabel: "Zenn username",
+    zennUserPlaceholder: "zenn.dev/{username}",
+    openZenn: "Open Zenn"
   };
 }
 
@@ -128,4 +198,13 @@ function generateNonce(): string {
     value += alphabet.charAt(Math.floor(Math.random() * alphabet.length));
   }
   return value;
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }

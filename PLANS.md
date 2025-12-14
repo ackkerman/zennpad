@@ -198,15 +198,15 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [x] Zenn の記事作成ガイドページを埋め込み、Webview 内で表示
   - [x] Webview 内でのリンククリックを外部ブラウザで開くように制御
   - [x] ユーザーが必要に応じてアクセスできるように、Activity Bar に Help ノードを追加
-  - [ ] Help ガイドのリンクをプレビューパネルに連動
-    - [ ] Help Webview から previewPath を postMessage し VSCode コマンド経由で受け付ける
-    - [ ] PreviewManager に navigate API を追加して既存プレビューパネルを開きパス変更する
-    - [ ] プレビュー未起動時の起動・パネル生成とパスバリデーション（toPreviewUrlPath）を実装
+  - [x] Help ガイドのリンクをプレビューパネルに連動
+    - [x] Help Webview から previewPath を postMessage し VSCode コマンド経由で受け付ける
+    - [x] PreviewManager に navigate API を追加して既存プレビューパネルを開きパス変更する
+    - [x] プレビュー未起動時の起動・パネル生成とパスバリデーション（toPreviewUrlPath）を実装
 
-- [ ] Actionsビューの作成
+- [x] Actionsビューの作成
   - [x] Webviewタイプのビューを追加
   - [x] Githubにサインイン、設定を開くボタンを追加する
-  - [ ] Zennユーザー名の入力欄の作成。入力欄の右側に「Open Zenn」ボタンを追加
+  - [x] Zennユーザー名の入力欄の作成。入力欄の右側に「Open Zenn」ボタンを追加
   - [x] リポジトリ切り替え（Activateするリポジトリにはチェックを入れる）
     - [x] あと回しでOK。とりあえず現在は「Coming soon」とだけ表示しておいて
   - [x] ガイド（WebviewでPreviewペインを開き、該当のガイドページにジャンプする）
