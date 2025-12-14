@@ -459,7 +459,6 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
 </head>
 <body>
   <form class="searchbar" onsubmit="return false;">
-    <span class="chevron" aria-hidden="true">▸</span>
     <input
       id="search-input"
       class="search-input"
