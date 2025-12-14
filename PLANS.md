@@ -70,6 +70,7 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [x] ファイル変更と自動リロード
     - [x] 保存時にミラー同期 → zenn CLI がファイル監視してるため自動リロード
     - [x] Webview iframe 内でのリロード処理（VL：iframe に対してセマンティックな reload）
+  - [ ] 仮想FS経由で取得した images/ 配下の実体を preview ミラーに同期し、`/images/<name>` リクエストで 404 が出ないように配信/検証する
 
 - [ ] 作りこみ（Phase 2 以降）
   - [ ] スニペット/断片保存と検索（任意機能）
@@ -155,14 +156,15 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [ ] ユーザーが必要に応じてアクセスできるように、Activity Bar に Help ノードを追加
 
 - [x] UI改善：TreeView アイコンのカスタマイズ
-  - [x] Articles ノードにページアイコンを設定
-  - [x] Drafts ノードに鉛筆アイコンを設定
-  - [x] Books ノードに本アイコンを設定
-  - [x] Images ノードにメディアアイコンを設定
-  - [x] @package.json の `icon` プロパティを適切なアイコンファイルに設定し、拡張機能全体のアイコンを改善
-  - [x] DeployボタンをActivity Barに追加し、ワンクリックでZennへのデプロイを実行できるようにする
-  - [x] Pause/Resume SyncボタンをActivity Barに追加し、GitHubとの自動同期を一時停止・再開できるようにする
-  - [x] SortByDateボタン/SortByNameボタンをActivity Barに追加し、TreeViewの表示順を日付順・名前順で切り替えられるようにする
+  - [x] コアUI
+    - [x] Articles ノードにページアイコンを設定
+    - [x] Drafts ノードに鉛筆アイコンを設定
+    - [x] Books ノードに本アイコンを設定
+    - [x] Images ノードにメディアアイコンを設定
+    - [x] @package.json の `icon` プロパティを適切なアイコンファイルに設定し、拡張機能全体のアイコンを改善
+    - [x] DeployボタンをActivity Barに追加し、ワンクリックでZennへのデプロイを実行できるようにする
+    - [x] Pause/Resume SyncボタンをActivity Barに追加し、GitHubとの自動同期を一時停止・再開できるようにする
+    - [x] SortByDateボタン/SortByNameボタンをActivity Barに追加し、TreeViewの表示順を日付順・名前順で切り替えられるようにする
     - [x] SortByDateとSortByNameの状態をトグル式にし、現在のソート順を視覚的に示す
   - [x] [HIGH PRIORITY] SettingsボタンをActivity Barに追加し、以下の要素を含む設定パネルを開けるようにする
     - GitHubリポジトリ設定（owner/repo/branch）
@@ -185,6 +187,10 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [x] ステータスバー実装
     - [x] スピナーを表示するヘルパー (StatusBarController.withSpinner) を追加し、deployToZenn と pauseAutoSync / resumeAutoSync 実行中に $(sync~spin) で進行中を示すようにした
     - [x] `Github(<uesr-id>/<repo-name>) -> Zenn(<user-id>)`的なソースとDistがわかりやすくなるような表示をステータスバーに表示したい。
+    - [ ] ステータスバーの表示に「media/logo-only-white.svg」や「media/logo-only.svg」を使用
+  - [ ] コンテキストウィンドウのUI修正
+    - [ ] 「ZennPad: <コマンドを名>」と表示されているのを「<コマンド名>」としたい。愚直にPZennPadを取り除くとVSCodeの検索で出てこなくなるため注意
+    - [ ] 現在はすべてのコマンドが並列だが、ディバイダーをいれるなどしてコマンドの種類ごとにある程度整理して提示するようにしたい
 
 - [ ] identifierを`zenn-pad`に変更
 

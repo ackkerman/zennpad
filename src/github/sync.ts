@@ -7,6 +7,7 @@ import { SyncScheduler, type Clock } from "./syncScheduler";
 import { getRepoConfig, type RepoConfig } from "./repoConfig";
 import { PendingState, hashContent } from "./pendingState";
 import { buildTreeEntries, ensureWorkBranch, getHeadRefs, isNotFoundError } from "./gitApi";
+import { resolveGitHubFileBuffer } from "./fileContent";
 
 const DEFAULT_DEBOUNCE_MS = 0;
 const DEFAULT_MIN_INTERVAL_MS = 0;
@@ -270,11 +271,20 @@ export class GitHubSync {
       path,
       ref: branch
     });
-    if (!("content" in file.data) || !file.data.content) {
+    const data = file.data as {
+      type?: string;
+      sha: string;
+      content?: string | null;
+      encoding?: string | null;
+    };
+    if (data.type !== "file") {
       return;
     }
-    const buffer = Buffer.from(file.data.content, "base64");
-    this.state.setRemoteState(branch, path, file.data.sha, hashContent(buffer));
+    const buffer = await resolveGitHubFileBuffer(octokit, repoConfig, data);
+    if (!buffer) {
+      return;
+    }
+    this.state.setRemoteState(branch, path, data.sha, hashContent(buffer));
     const uri = vscode.Uri.from({ scheme: "zenn", path: `/${path}` });
     this.fsProvider.writeFile(uri, buffer, { create: true, overwrite: true });
   }
