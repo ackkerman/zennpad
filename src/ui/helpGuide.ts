@@ -1,7 +1,5 @@
 import * as vscode from "vscode";
 
-type GuideVariant = "panel" | "view";
-
 const LINKS: Array<{
   labelJa: string;
   labelEn: string;
@@ -68,7 +66,7 @@ export class HelpGuidePanel {
       }
     );
     this.panel = panel;
-    panel.webview.html = renderGuideHtml(panel.webview, vscode.env.language ?? "en", "panel");
+    panel.webview.html = renderGuideHtml(panel.webview, vscode.env.language ?? "en");
     const disposable = panel.webview.onDidReceiveMessage((message: unknown) => {
       if (typeof message !== "object" || !message) return;
       const { type, href, previewPath } = message as {
@@ -110,7 +108,6 @@ export class HelpViewProvider implements vscode.WebviewViewProvider {
     webviewView.webview.html = renderGuideHtml(
       webviewView.webview,
       vscode.env.language ?? "en",
-      "view"
     );
     webviewView.webview.onDidReceiveMessage((message: unknown) => {
       if (typeof message !== "object" || !message) return;
@@ -137,7 +134,7 @@ export class HelpViewProvider implements vscode.WebviewViewProvider {
   }
 }
 
-function renderGuideHtml(webview: vscode.Webview, locale: string, variant: GuideVariant): string {
+function renderGuideHtml(webview: vscode.Webview, locale: string): string {
   const labels = localizedLabels(locale);
   const nonce = generateNonce();
   const csp = [
@@ -145,7 +142,6 @@ function renderGuideHtml(webview: vscode.Webview, locale: string, variant: Guide
     `style-src 'nonce-${nonce}' 'unsafe-inline'`,
     `script-src 'nonce-${nonce}'`
   ].join("; ");
-  const showOpenPanel = variant === "view";
   const linkItems = LINKS.map((link) => {
     const text = locale.toLowerCase().startsWith("ja") ? link.labelJa : link.labelEn;
     const externalMark = link.url.startsWith("http://localhost:8000") ? "" : " ↗";
@@ -168,7 +164,6 @@ function renderGuideHtml(webview: vscode.Webview, locale: string, variant: Guide
     }
     body {
       margin: 0;
-      padding: 0.9rem;
       background: var(--vscode-sideBar-background, #0f172a);
       color: var(--vscode-foreground);
     }
@@ -176,21 +171,6 @@ function renderGuideHtml(webview: vscode.Webview, locale: string, variant: Guide
       display: flex;
       flex-direction: column;
       gap: 0.9rem;
-    }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .title {
-      margin: 0;
-      font-size: 1.1rem;
-      font-weight: 700;
-    }
-    .actions {
-      display: inline-flex;
-      gap: 0.4rem;
     }
     .btn {
       display: inline-flex;
@@ -210,42 +190,33 @@ function renderGuideHtml(webview: vscode.Webview, locale: string, variant: Guide
     }
     .list {
       list-style: none;
-      padding: 0.4rem 0;
+      padding: 0 0;
       margin: 0;
-      border: 1px solid var(--vscode-input-border, rgba(148, 163, 184, 0.28));
-      border-radius: 12px;
-      background: var(--vscode-editor-background, #0b1120);
     }
     .link-row {
       display: grid;
-      grid-template-columns: 28px 1fr;
+      grid-template-columns: 14px 1fr;
       align-items: center;
-      gap: 0.4rem;
-      padding: 0.5rem 0.85rem;
+      gap: 0.1rem;
+      padding: 0.3rem 0.85rem;
       cursor: pointer;
     }
     .link-row:hover {
       background: rgba(18, 178, 98, 0.08);
     }
     .icon {
-      font-size: 1rem;
+      font-size: 0.8rem;
       opacity: 0.9;
       text-align: center;
     }
     .label {
-      font-size: 0.98rem;
+      font-size: 0.8rem;
       color: var(--vscode-foreground);
     }
   </style>
 </head>
 <body>
   <div class="shell">
-    <div class="header">
-      <h1 class="title">${labels.heading}</h1>
-      <div class="actions">
-        ${showOpenPanel ? `<button class="btn" data-action="openPanel">↗ ${labels.openPanel}</button>` : ""}
-      </div>
-    </div>
     <ul class="list">
       ${linkItems}
     </ul>
