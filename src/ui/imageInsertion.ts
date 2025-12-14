@@ -14,6 +14,9 @@ export function registerImageInsertionProviders(
       { language: "markdown" },
       {
         async provideDocumentPasteEdits(document, ranges, dataTransfer) {
+          if (ranges.length === 0) {
+            return;
+          }
           const imageItem = firstImageItem(dataTransfer);
           if (!imageItem) {
             return;
@@ -30,7 +33,7 @@ export function registerImageInsertionProviders(
           return [edit];
         }
       },
-      { copyMimeTypes: IMAGE_MIME_TYPES } as unknown as vscode.DocumentPasteProviderMetadata
+      { copyMimeTypes: IMAGE_MIME_TYPES, pasteMimeTypes: IMAGE_MIME_TYPES } as unknown as vscode.DocumentPasteProviderMetadata
     ),
     vscode.languages.registerDocumentDropEditProvider({ language: "markdown" }, {
       async provideDocumentDropEdits(document, position, dataTransfer) {

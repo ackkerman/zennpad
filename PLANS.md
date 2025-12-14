@@ -124,7 +124,8 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [x] 失敗時の通知とフォールバックコマンド（ファイルピッカー経由の `zennpad.insertImageFromFile` を追加）
   - [x] GitHub 同期フックで images/ 配下の変更も push/pull 対象に含める
   - [ ] 大きな画像や非対応 MIME の扱い（警告／スキップ）
-  - [ ] [HIGH PRIORITY] zennpad.insertImageFromFileコマンドだけでなくCtrl+Vでも上記のように`/images/`以下に画像ファイルを保存し、適切なMarkdownリンクを挿入する
+    - [ ] Zenn側の制約として、画像に3MB制限がある
+  - [x] [HIGH PRIORITY] zennpad.insertImageFromFileコマンドだけでなくCtrl+Vでも上記のように`/images/`以下に画像ファイルを保存し、適切なMarkdownリンクを挿入する
 
 - [x] GitHub同期のデプロイ回数抑制（main固定・Zenn 150回/日制限対応）
   - [x] writeFile では即 push せず dirty キューに積む
@@ -191,6 +192,16 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [ ] コンテキストウィンドウのUI修正
     - [ ] 「ZennPad: <コマンドを名>」と表示されているのを「<コマンド名>」としたい。愚直にPZennPadを取り除くとVSCodeの検索で出てこなくなるため注意
     - [ ] 現在はすべてのコマンドが並列だが、ディバイダーをいれるなどしてコマンドの種類ごとにある程度整理して提示するようにしたい
+  - [ ] エディター側のコンテキストウィンドウ
+    - [ ] 以下のコマンドをコンテキストウィンドウに追加する
+      - [ ] Insert image
+      - [ ] Make unpublished(published: trueのみ)
+      - [ ] Make published(published: falseのみ)
+      - [ ] Deploy to Zenn
+      - [ ] Open in GitHub
+      - [ ] Open in Zenn(published: trueのみ)
+      - [ ] Copy GitHub URL
+      - [ ] Copy Zenn URL(published: trueのみ)
 
 - [ ] identifierを`zenn-pad`に変更
 
