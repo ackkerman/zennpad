@@ -31,7 +31,12 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- Layered separation: UI, filesystem, sync, and preview concerns stay isolated with clear contracts.
+- Sync safety: Plans include work vs main flow, idempotent GitHub operations, and deploy confirmations/debouncing.
+- VS Code UX consistency: Command/view patterns follow platform conventions; no surprise destructive actions.
+- Testability: Core logic (sync, caching, path resolution) must be unit/integration testable without UI.
+- Error handling: Recovery paths for auth failures, rate limits, and preview/proxy startup are defined.
+- UI changes: Include screenshot generation plan (`make screenshot-web`) and artifact review steps.
 
 ## Project Structure
 

@@ -10,6 +10,8 @@ description: "Task list template for feature implementation"
 
 **Tests**: The examples below include test tasks. Tests are OPTIONAL - only include them if explicitly requested in the feature specification.
 
+**Constitution Alignment**: Add tasks for GitHub sync/deploy safety (work vs main, confirmations, debounced pushes), deterministic core logic tests (sync/caching/path resolution), VS Code-convention UX, and recovery flows for auth/rate-limit/preview failures.
+
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
 ## Format: `[ID] [P?] [Story] Description`
@@ -249,3 +251,4 @@ With multiple developers:
 - Commit after each task or logical group
 - Stop at any checkpoint to validate story independently
 - Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence
+- UI-facing tasks that alter visuals should include screenshot generation (`make screenshot-web`) for review

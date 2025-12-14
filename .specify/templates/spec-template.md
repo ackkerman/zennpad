@@ -7,6 +7,8 @@
 
 ## User Scenarios & Testing *(mandatory)*
 
+Include journeys that prove GitHub sync/deploy safety (work vs main, confirmation, debouncing), predictable VS Code-aligned UX, and recovery from auth/rate-limit/preview failures.
+
 <!--
   IMPORTANT: User stories should be PRIORITIZED as user journeys ordered by importance.
   Each user story/journey must be INDEPENDENTLY TESTABLE - meaning if you implement just ONE of them,
@@ -72,6 +74,9 @@
   Fill them out with the right edge cases.
 -->
 
+- How do we respond to GitHub 401/403/404/409/429 responses and surface recovery?
+- How does preview startup/proxy failure degrade and retry?
+- What prevents unintended deploys (double-clicks, rapid retries, stale branch)?
 - What happens when [boundary condition]?
 - How does system handle [error scenario]?
 
