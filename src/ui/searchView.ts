@@ -45,7 +45,7 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
       enableScripts: true,
       localResourceRoots: [this.extensionUri]
     };
-    webviewView.webview.html = this.renderWebview();
+    webviewView.webview.html = this.renderWebview(vscode.env.language ?? "en");
 
     const subscriptions: vscode.Disposable[] = [];
     subscriptions.push(
@@ -171,7 +171,10 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
     }
   }
 
-  private renderWebview(): string {
+  private renderWebview(locale: string): string {
+    const labels = localizedLabels(locale);
+    const htmlLang = labels.lang ?? "en";
+    const labelsJson = JSON.stringify(labels);
     const nonce = generateNonce();
     const styles = `
       :root {
@@ -347,6 +350,7 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
         wordMatch: false,
         useRegex: false
       };
+      const labels = ${labelsJson};
       const input = document.getElementById("search-input");
       const toggles = document.querySelectorAll(".toggle");
       const resultsEl = document.getElementById("results");
@@ -383,7 +387,7 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
         if (type !== "results") return;
         errorEl.textContent = error ? error : "";
         if (!results.length) {
-          resultsEl.innerHTML = '<div class="empty">検索結果はありません。</div>';
+          resultsEl.innerHTML = '<div class="empty">' + labels.emptyResults + '</div>';
           return;
         }
         resultsEl.innerHTML = results
@@ -430,9 +434,9 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
       });
 
       function label(target) {
-        if (target === "filename") return "ファイル名";
-        if (target === "title") return "タイトル";
-        return "本文";
+        if (target === "filename") return labels.matchFilename;
+        if (target === "title") return labels.matchTitle;
+        return labels.matchBody;
       }
 
       function escapeHtml(text) {
@@ -446,7 +450,7 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
     `;
 
     return `<!DOCTYPE html>
-<html lang="ja">
+<html lang="${htmlLang}">
 <head>
   <meta charset="UTF-8" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-${nonce}';">
@@ -455,23 +459,24 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
 </head>
 <body>
   <form class="searchbar" onsubmit="return false;">
+    <span class="chevron" aria-hidden="true">▸</span>
     <input
       id="search-input"
       class="search-input"
       type="text"
-      placeholder="検索"
-      aria-label="search"
+      placeholder="${labels.placeholder}"
+      aria-label="${labels.placeholder}"
       autofocus
     />
     <div class="toggles">
-      <button type="button" class="toggle" data-key="caseSensitive" data-active="false" aria-label="大文字小文字を区別" title="大文字小文字を区別">Aa</button>
-      <button type="button" class="toggle" data-key="wordMatch" data-active="false" aria-label="単語単位で検索" title="単語単位で検索">ab|</button>
-      <button type="button" class="toggle" data-key="useRegex" data-active="false" aria-label="正規表現を使用" title="正規表現を使用">.*</button>
+      <button type="button" class="toggle" data-key="caseSensitive" data-active="false" aria-label="${labels.toggleCase}" title="${labels.toggleCase}">Aa</button>
+      <button type="button" class="toggle" data-key="wordMatch" data-active="false" aria-label="${labels.toggleWord}" title="${labels.toggleWord}">ab|</button>
+      <button type="button" class="toggle" data-key="useRegex" data-active="false" aria-label="${labels.toggleRegex}" title="${labels.toggleRegex}">.*</button>
     </div>
   </form>
   <div id="error" class="error"></div>
   <div id="results" class="results">
-    <div class="empty">検索結果はありません。</div>
+    <div class="empty">${labels.emptyResults}</div>
   </div>
   <script nonce="${nonce}">${script}</script>
 </body>
@@ -545,6 +550,50 @@ function targetScore(target: SearchResult["matchTargets"][number]): number {
 
 function escapeRegExp(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function localizedLabels(locale: string): {
+  lang: string;
+  placeholder: string;
+  toggleCase: string;
+  toggleWord: string;
+  toggleRegex: string;
+  emptyResults: string;
+  matchFilename: string;
+  matchTitle: string;
+  matchBody: string;
+  signIn: string;
+  openSettings: string;
+} {
+  const lang = (locale || "en").toLowerCase();
+  if (lang.startsWith("ja")) {
+    return {
+      lang: "ja",
+      placeholder: "検索",
+      toggleCase: "大文字小文字を区別",
+      toggleWord: "単語単位で検索",
+      toggleRegex: "正規表現を使用",
+      emptyResults: "検索結果はありません。",
+      matchFilename: "ファイル名",
+      matchTitle: "タイトル",
+      matchBody: "本文",
+      signIn: "GitHub にサインイン",
+      openSettings: "設定を開く"
+    };
+  }
+  return {
+    lang: "en",
+    placeholder: "Search",
+    toggleCase: "Match case",
+    toggleWord: "Match whole word",
+    toggleRegex: "Use regex",
+    emptyResults: "No results found.",
+    matchFilename: "Filename",
+    matchTitle: "Title",
+    matchBody: "Body",
+    signIn: "Sign in to GitHub",
+    openSettings: "Open Settings"
+  };
 }
 
 function generateNonce(): string {
