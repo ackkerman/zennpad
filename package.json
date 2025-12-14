@@ -115,6 +115,48 @@
           "group": "navigation"
         }
       ],
+      "editor/context": [
+        {
+          "command": "zennpad.insertImageFromFile",
+          "when": "zennpad.activeDocIsZenn && editorLangId == markdown",
+          "group": "zennpad@0"
+        },
+        {
+          "command": "zennpad.publish",
+          "when": "zennpad.activeDocDraft",
+          "group": "zennpad@1"
+        },
+        {
+          "command": "zennpad.unpublish",
+          "when": "zennpad.activeDocPublished",
+          "group": "zennpad@1"
+        },
+        {
+          "command": "zennpad.deployToZenn",
+          "when": "zennpad.hasRepoConfig",
+          "group": "zennpad@2"
+        },
+        {
+          "command": "zennpad.openInGithub",
+          "when": "zennpad.activeDocIsZenn",
+          "group": "zennpad@3"
+        },
+        {
+          "command": "zennpad.openOnZenn",
+          "when": "zennpad.activeDocPublished",
+          "group": "zennpad@3"
+        },
+        {
+          "command": "zennpad.copyGithubUrl",
+          "when": "zennpad.activeDocIsZenn",
+          "group": "zennpad@4"
+        },
+        {
+          "command": "zennpad.copyZennUrl",
+          "when": "zennpad.activeDocPublished",
+          "group": "zennpad@4"
+        }
+      ],
       "view/item/context": [
         {
           "command": "zennpad.publish",
@@ -128,73 +170,63 @@
         },
         {
           "command": "zennpad.newArticle",
-          "when": "view == zennPadExplorer && viewItem == articles",
-          "group": "inline"
-        },
-        {
-          "command": "zennpad.newArticle",
-          "when": "view == zennPadExplorer && viewItem == drafts",
-          "group": "inline"
-        },
-        {
-          "command": "zennpad.newArticle",
-          "when": "view == zennPadExplorer && viewItem == articles",
-          "group": "navigation@0"
+          "when": "view == zennPadExplorer && (viewItem == articles || viewItem == drafts)",
+          "group": "z-create@0"
         },
         {
           "command": "zennpad.openZennRoot",
           "when": "view == zennPadExplorer && (viewItem == articles || viewItem == drafts)",
-          "group": "navigation@1"
+          "group": "z-open@1"
         },
         {
           "command": "zennpad.openGithubRoot",
           "when": "view == zennPadExplorer && (viewItem == articles || viewItem == drafts)",
-          "group": "navigation@1"
+          "group": "z-open@1"
         },
         {
           "command": "zennpad.copyZennUrl",
           "when": "view == zennPadExplorer && (viewItem == article:draft || viewItem == article:published || viewItem == chapter)",
-          "group": "navigation@1"
+          "group": "z-copy@2"
         },
         {
           "command": "zennpad.copyGithubUrl",
           "when": "view == zennPadExplorer && (viewItem == article:draft || viewItem == article:published || viewItem == chapter || viewItem == image)",
-          "group": "navigation@1"
+          "group": "z-copy@2"
         },
         {
           "command": "zennpad.copyPath",
           "when": "view == zennPadExplorer && viewItem == image",
-          "group": "navigation@1"
+          "group": "z-copy@2"
         },
         {
           "command": "zennpad.copyRelativePath",
           "when": "view == zennPadExplorer && viewItem == image",
-          "group": "navigation@1"
+          "group": "z-copy@2"
         },
         {
           "command": "zennpad.publish",
           "when": "view == zennPadExplorer && viewItem == article:draft",
-          "group": "navigation@2"
+          "group": "z-publish@3"
         },
         {
           "command": "zennpad.unpublish",
           "when": "view == zennPadExplorer && viewItem == article:published",
-          "group": "navigation@2"
+          "group": "z-publish@3"
         },
         {
           "command": "zennpad.renameNode",
           "when": "view == zennPadExplorer && (viewItem == article:draft || viewItem == article:published || viewItem == chapter || viewItem == image)",
-          "group": "navigation@3"
+          "group": "z-edit@4"
         },
         {
           "command": "zennpad.duplicateNode",
           "when": "view == zennPadExplorer && (viewItem == article:draft || viewItem == article:published || viewItem == chapter || viewItem == image)",
-          "group": "navigation@3"
+          "group": "z-edit@4"
         },
         {
           "command": "zennpad.deleteNode",
           "when": "view == zennPadExplorer && (viewItem == article:draft || viewItem == article:published || viewItem == chapter || viewItem == image)",
-          "group": "navigation@4"
+          "group": "z-edit@5"
         }
       ]
     },
@@ -231,7 +263,8 @@
     "commands": [
       {
         "command": "zennpad.newArticle",
-        "title": "ZennPad: New Article",
+        "title": "%command.zennpad.newArticle%",
+        "category": "ZennPad",
         "icon": {
           "light": "media/icon/plus-light.svg",
           "dark": "media/icon/plus-dark.svg"
@@ -239,7 +272,8 @@
       },
       {
         "command": "zennpad.publish",
-        "title": "ZennPad: Publish Article",
+        "title": "%command.zennpad.publish%",
+        "category": "ZennPad",
         "icon": {
           "light": "media/icon/publish-light.svg",
           "dark": "media/icon/publish-dark.svg"
@@ -247,7 +281,8 @@
       },
       {
         "command": "zennpad.unpublish",
-        "title": "ZennPad: Unpublish Article",
+        "title": "%command.zennpad.unpublish%",
+        "category": "ZennPad",
         "icon": {
           "light": "media/icon/unpublish-light.svg",
           "dark": "media/icon/unpublish-dark.svg"
@@ -255,12 +290,14 @@
       },
       {
         "command": "zennpad.openOnZenn",
-        "title": "ZennPad: Open on Zenn",
+        "title": "%command.zennpad.openOnZenn%",
+        "category": "ZennPad",
         "icon": "media/logo-only.svg"
       },
       {
         "command": "zennpad.preview",
-        "title": "ZennPad: Preview",
+        "title": "%command.zennpad.preview%",
+        "category": "ZennPad",
         "icon": {
           "light": "media/icon/preview-light.svg",
           "dark": "media/icon/preview-dark.svg"
@@ -268,7 +305,8 @@
       },
       {
         "command": "zennpad.signIn",
-        "title": "ZennPad: Sign in to GitHub",
+        "title": "%command.zennpad.signIn%",
+        "category": "ZennPad",
         "icon": {
           "light": "media/icon/github-light.svg",
           "dark": "media/icon/github-dark.svg"
@@ -276,7 +314,8 @@
       },
       {
         "command": "zennpad.signOut",
-        "title": "ZennPad: Sign out of GitHub",
+        "title": "%command.zennpad.signOut%",
+        "category": "ZennPad",
         "icon": {
           "light": "media/icon/signout-light.svg",
           "dark": "media/icon/signout-dark.svg"
@@ -284,7 +323,8 @@
       },
       {
         "command": "zennpad.authHelp",
-        "title": "ZennPad: Settings",
+        "title": "%command.zennpad.authHelp%",
+        "category": "ZennPad",
         "icon": {
           "light": "media/icon/settings-light.svg",
           "dark": "media/icon/settings-dark.svg"
@@ -292,7 +332,8 @@
       },
       {
         "command": "zennpad.openSettingsPanel",
-        "title": "ZennPad: Open Settings Panel",
+        "title": "%command.zennpad.openSettingsPanel%",
+        "category": "ZennPad",
         "icon": {
           "light": "media/icon/settings-light.svg",
           "dark": "media/icon/settings-dark.svg"
@@ -300,11 +341,13 @@
       },
       {
         "command": "zennpad.chooseRepo",
-        "title": "ZennPad: Choose GitHub Repository"
+        "title": "%command.zennpad.chooseRepo%",
+        "category": "ZennPad"
       },
       {
         "command": "zennpad.refresh",
-        "title": "ZennPad: Refresh",
+        "title": "%command.zennpad.refresh%",
+        "category": "ZennPad",
         "icon": {
           "light": "media/icon/refresh-light.svg",
           "dark": "media/icon/refresh-dark.svg"
@@ -312,43 +355,62 @@
       },
       {
         "command": "zennpad.openZennRoot",
-        "title": "ZennPad: Open Zenn Home"
+        "title": "%command.zennpad.openZennRoot%",
+        "category": "ZennPad"
       },
       {
         "command": "zennpad.openGithubRoot",
-        "title": "ZennPad: Open GitHub Repo"
+        "title": "%command.zennpad.openGithubRoot%",
+        "category": "ZennPad"
       },
       {
         "command": "zennpad.copyZennUrl",
-        "title": "ZennPad: Copy Zenn URL"
+        "title": "%command.zennpad.copyZennUrl%",
+        "category": "ZennPad"
       },
       {
         "command": "zennpad.copyGithubUrl",
-        "title": "ZennPad: Copy GitHub URL"
+        "title": "%command.zennpad.copyGithubUrl%",
+        "category": "ZennPad"
+      },
+      {
+        "command": "zennpad.openInGithub",
+        "title": "%command.zennpad.openInGithub%",
+        "category": "ZennPad",
+        "icon": {
+          "light": "media/icon/github-light.svg",
+          "dark": "media/icon/github-dark.svg"
+        }
       },
       {
         "command": "zennpad.renameNode",
-        "title": "ZennPad: Rename"
+        "title": "%command.zennpad.renameNode%",
+        "category": "ZennPad"
       },
       {
         "command": "zennpad.duplicateNode",
-        "title": "ZennPad: Duplicate"
+        "title": "%command.zennpad.duplicateNode%",
+        "category": "ZennPad"
       },
       {
         "command": "zennpad.deleteNode",
-        "title": "ZennPad: Delete"
+        "title": "%command.zennpad.deleteNode%",
+        "category": "ZennPad"
       },
       {
         "command": "zennpad.insertImageFromFile",
-        "title": "ZennPad: Insert Image from File"
+        "title": "%command.zennpad.insertImageFromFile%",
+        "category": "ZennPad"
       },
       {
         "command": "zennpad.flushPendingSync",
-        "title": "ZennPad: Flush Pending Sync"
+        "title": "%command.zennpad.flushPendingSync%",
+        "category": "ZennPad"
       },
       {
         "command": "zennpad.deployToZenn",
-        "title": "ZennPad: Deploy Pending Changes to Zenn",
+        "title": "%command.zennpad.deployToZenn%",
+        "category": "ZennPad",
         "icon": {
           "light": "media/icon/publish-light.svg",
           "dark": "media/icon/publish-dark.svg"
@@ -356,11 +418,13 @@
       },
       {
         "command": "zennpad.toggleAutoSync",
-        "title": "ZennPad: Pause/Resume Auto Sync"
+        "title": "%command.zennpad.toggleAutoSync%",
+        "category": "ZennPad"
       },
       {
         "command": "zennpad.pauseAutoSync",
-        "title": "ZennPad: Pause Auto Sync",
+        "title": "%command.zennpad.pauseAutoSync%",
+        "category": "ZennPad",
         "icon": {
           "light": "media/icon/sync-on-light.svg",
           "dark": "media/icon/sync-on-dark.svg"
@@ -368,7 +432,8 @@
       },
       {
         "command": "zennpad.resumeAutoSync",
-        "title": "ZennPad: Resume Auto Sync",
+        "title": "%command.zennpad.resumeAutoSync%",
+        "category": "ZennPad",
         "icon": {
           "light": "media/icon/sync-off-light.svg",
           "dark": "media/icon/sync-off-dark.svg"
@@ -376,15 +441,18 @@
       },
       {
         "command": "zennpad.copyPath",
-        "title": "ZennPad: Copy Path"
+        "title": "%command.zennpad.copyPath%",
+        "category": "ZennPad"
       },
       {
         "command": "zennpad.copyRelativePath",
-        "title": "ZennPad: Copy Relative Path"
+        "title": "%command.zennpad.copyRelativePath%",
+        "category": "ZennPad"
       },
       {
         "command": "zennpad.sortArticlesByDate",
-        "title": "ZennPad: Sort Articles by Date",
+        "title": "%command.zennpad.sortArticlesByDate%",
+        "category": "ZennPad",
         "icon": {
           "light": "media/icon/sort-by-title-light.svg",
           "dark": "media/icon/sort-by-title-dark.svg"
@@ -392,7 +460,8 @@
       },
       {
         "command": "zennpad.sortArticlesByTitle",
-        "title": "ZennPad: Sort Articles by Title",
+        "title": "%command.zennpad.sortArticlesByTitle%",
+        "category": "ZennPad",
         "icon": {
           "light": "media/icon/sort-by-date-light.svg",
           "dark": "media/icon/sort-by-date-dark.svg"

@@ -8,7 +8,7 @@ import { GitHubSync } from "./github/sync";
 import { ContentCache } from "./utils/contentCache";
 import { registerImageInsertionProviders } from "./ui/imageInsertion";
 import { registerCommands } from "./commands/registerCommands";
-import { setAutoSyncContext, setSortOrderContext, updatePreviewableContext } from "./context";
+import { setAutoSyncContext, setSortOrderContext, updateActiveDocumentContext } from "./context";
 import { getMainBranch, getRepoConfigSummary, getZennOwner, validateRepoConfig } from "./config";
 import { StatusBarController } from "./ui/statusBar";
 
@@ -72,7 +72,7 @@ export function activate(context: vscode.ExtensionContext): void {
       vscode.window.showWarningMessage(`[ZennPad] GitHub sync skipped: ${message}`);
     }
   })();
-  updatePreviewableContext();
+  updateActiveDocumentContext();
 
   registerCommands(context, {
     fsProvider,
@@ -105,8 +105,13 @@ export function activate(context: vscode.ExtensionContext): void {
         vscode.window.showWarningMessage(`[ZennPad] Failed to persist cache: ${message}`);
       }
     }),
-    vscode.window.onDidChangeActiveTextEditor(() => updatePreviewableContext()),
-    vscode.workspace.onDidOpenTextDocument(() => updatePreviewableContext()),
+    vscode.window.onDidChangeActiveTextEditor(() => updateActiveDocumentContext()),
+    vscode.workspace.onDidOpenTextDocument(() => updateActiveDocumentContext()),
+    vscode.workspace.onDidChangeTextDocument((event) => {
+      if (event.document === vscode.window.activeTextEditor?.document) {
+        updateActiveDocumentContext(event.document);
+      }
+    }),
     vscode.authentication.onDidChangeSessions(async (e) => {
       if (e.provider.id === "github") {
         await updateAuthStatus();
@@ -119,6 +124,7 @@ export function activate(context: vscode.ExtensionContext): void {
         updateStatusBar(statusBar, githubSync);
         // reload cache with new namespace on config changes
         contentCache = new ContentCache(context.globalStorageUri, buildCacheNamespace());
+        updateActiveDocumentContext();
       }
     })
   );

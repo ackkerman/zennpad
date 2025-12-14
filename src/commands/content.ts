@@ -7,6 +7,7 @@ import { randomEmoji } from "../utils/emojiPool";
 import { insertImageFromFile } from "../ui/imageInsertion";
 import { buildZennUrlFromDoc } from "./openOnZenn";
 import { getMainBranch, getZennOwner } from "../config";
+import { updateActiveDocumentContext } from "../context";
 import { CommandDeps } from "./types";
 
 export function registerContentCommands(context: vscode.ExtensionContext, deps: CommandDeps): vscode.Disposable[] {
@@ -47,6 +48,9 @@ export function registerContentCommands(context: vscode.ExtensionContext, deps: 
     }),
     vscode.commands.registerCommand("zennpad.copyZennUrl", async (resource?: vscode.Uri) => {
       await copyZennUrl(resource);
+    }),
+    vscode.commands.registerCommand("zennpad.openInGithub", async (resource?: vscode.Uri) => {
+      await openGithub(resource);
     }),
     vscode.commands.registerCommand("zennpad.copyGithubUrl", async (resource?: vscode.Uri) => {
       await copyGithubUrl(resource);
@@ -94,18 +98,39 @@ async function copyGithubUrl(resource?: vscode.Uri | { resourceUri?: vscode.Uri 
     vscode.window.showWarningMessage("Open a ZennPad file to copy its GitHub URL.");
     return;
   }
+  const url = buildGithubUrl(uri);
+  if (!url) {
+    vscode.window.showErrorMessage("Set zennpad.githubOwner and zennpad.githubRepo to copy GitHub URL.");
+    return;
+  }
+  await vscode.env.clipboard.writeText(url);
+  vscode.window.showInformationMessage("Copied GitHub URL to clipboard.");
+}
+
+async function openGithub(resource?: vscode.Uri | { resourceUri?: vscode.Uri }): Promise<void> {
+  const uri = resolveResourceUri(resource) ?? vscode.window.activeTextEditor?.document?.uri;
+  if (!uri || !isZennUri(uri)) {
+    vscode.window.showWarningMessage("Open a ZennPad file to open on GitHub.");
+    return;
+  }
+  const url = buildGithubUrl(uri);
+  if (!url) {
+    vscode.window.showErrorMessage("Set zennpad.githubOwner and zennpad.githubRepo to open GitHub URL.");
+    return;
+  }
+  void vscode.env.openExternal(vscode.Uri.parse(url));
+}
+
+function buildGithubUrl(uri: vscode.Uri): string | undefined {
   const config = vscode.workspace.getConfiguration("zennpad");
   const owner = config.get<string>("githubOwner")?.trim();
   const repo = config.get<string>("githubRepo")?.trim();
   const branch = getMainBranch(config);
   if (!owner || !repo) {
-    vscode.window.showErrorMessage("Set zennpad.githubOwner and zennpad.githubRepo to copy GitHub URL.");
-    return;
+    return undefined;
   }
   const path = uri.path.startsWith("/") ? uri.path.slice(1) : uri.path;
-  const url = `https://github.com/${owner}/${repo}/blob/${branch}/${path}`;
-  await vscode.env.clipboard.writeText(url);
-  vscode.window.showInformationMessage("Copied GitHub URL to clipboard.");
+  return `https://github.com/${owner}/${repo}/blob/${branch}/${path}`;
 }
 
 async function copyPath(resource?: vscode.Uri | { resourceUri?: vscode.Uri }, relative = false): Promise<void> {
@@ -299,6 +324,7 @@ async function updatePublishedFlag(published: boolean): Promise<void> {
   await vscode.workspace.applyEdit(edit);
   await doc.save();
   vscode.window.showInformationMessage(`Set published: ${published}`);
+  updateActiveDocumentContext(doc);
 }
 
 async function openOnZenn(): Promise<void> {

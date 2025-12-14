@@ -190,20 +190,20 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
     - [x] スピナーを表示するヘルパー (StatusBarController.withSpinner) を追加し、deployToZenn と pauseAutoSync / resumeAutoSync 実行中に $(sync~spin) で進行中を示すようにした
     - [x] `Github(<uesr-id>/<repo-name>) -> Zenn(<user-id>)`的なソースとDistがわかりやすくなるような表示をステータスバーに表示したい。
     - [ ] ステータスバーの表示に「media/logo-only-white.svg」や「media/logo-only.svg」を使用
-  - [ ] コンテキストウィンドウのUI修正
-    - [ ] 「ZennPad: <コマンドを名>」と表示されているのを「<コマンド名>」としたい。愚直にPZennPadを取り除くとVSCodeの検索で出てこなくなるため注意
-    - [ ] 現在はすべてのコマンドが並列だが、ディバイダーをいれるなどしてコマンドの種類ごとにある程度整理して提示するようにしたい
-  - [ ] エディター側のコンテキストウィンドウ
-    - [ ] 以下のコマンドをコンテキストウィンドウに追加する
-      - [ ] Insert image
-      - [ ] Make unpublished(published: trueのみ)
-      - [ ] Make published(published: falseのみ)
-      - [ ] Deploy to Zenn
-      - [ ] Open in GitHub
-      - [ ] Open in Zenn(published: trueのみ)
-      - [ ] Copy GitHub URL
-      - [ ] Copy Zenn URL(published: trueのみ)
-  - [ ] 多言語対応
+  - [x] コンテキストウィンドウのUI修正
+    - [x] 「ZennPad: <コマンドを名>」と表示されているのを「<コマンド名>」としたい。愚直にZennPadを取り除くとVSCodeの検索で出てこなくなるため注意
+    - [x] 現在はすべてのコマンドが並列だが、ディバイダーをいれるなどしてコマンドの種類ごとにある程度整理して提示するようにしたい
+  - [x] エディター側のコンテキストウィンドウ
+    - [x] 以下のコマンドをコンテキストウィンドウに追加する
+      - [x] Insert image
+      - [x] Make unpublished(published: trueのみ)
+      - [x] Make published(published: falseのみ)
+      - [x] Deploy to Zenn
+      - [x] Open in GitHub
+      - [x] Open in Zenn(published: trueのみ)
+      - [x] Copy GitHub URL
+      - [x] Copy Zenn URL(published: trueのみ)
+  - [x] 多言語対応
 
 - [ ] identifierを`zennpad`に変更
 
