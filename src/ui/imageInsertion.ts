@@ -31,20 +31,32 @@ export function registerImageInsertionProviders(
           return [edit];
         }
       },
-      { copyMimeTypes: IMAGE_MIME_TYPES, pasteMimeTypes: IMAGE_MIME_TYPES } as unknown as vscode.DocumentPasteProviderMetadata
+      {
+        copyMimeTypes: IMAGE_MIME_TYPES,
+        pasteMimeTypes: IMAGE_MIME_TYPES
+      } as unknown as vscode.DocumentPasteProviderMetadata
     ),
-    vscode.languages.registerDocumentDropEditProvider({ language: "markdown" }, {
-      async provideDocumentDropEdits(document, position, dataTransfer) {
-        const fileItem = firstFile(dataTransfer);
-        if (!fileItem) {
-          return;
+    vscode.languages.registerDocumentDropEditProvider(
+      { language: "markdown" },
+      {
+        async provideDocumentDropEdits(document, position, dataTransfer) {
+          const fileItem = firstFile(dataTransfer);
+          if (!fileItem) {
+            return;
+          }
+          const baseName = slugFromUri(document.uri) ?? "pasted-image";
+          const { link } = await saveImage(
+            fileItem.file,
+            fileItem.mime,
+            fsProvider,
+            scheme,
+            baseName
+          );
+          const edit = new vscode.DocumentDropEdit(`![](${link})`, "Insert image");
+          return [edit];
         }
-        const baseName = slugFromUri(document.uri) ?? "pasted-image";
-        const { link } = await saveImage(fileItem.file, fileItem.mime, fsProvider, scheme, baseName);
-        const edit = new vscode.DocumentDropEdit(`![](${link})`, "Insert image");
-        return [edit];
       }
-    })
+    )
   );
 }
 
@@ -65,7 +77,12 @@ export async function insertImageFromFile(
   const fileUri = pick[0];
   const data = await vscode.workspace.fs.readFile(fileUri);
   const ext = path.extname(fileUri.fsPath) || ".png";
-  const link = await saveBuffer(data, await ensureSequentialName(baseName, ext, fsProvider), fsProvider, scheme);
+  const link = await saveBuffer(
+    data,
+    await ensureSequentialName(baseName, ext, fsProvider),
+    fsProvider,
+    scheme
+  );
   const editor = vscode.window.activeTextEditor;
   if (!editor) {
     return;
@@ -93,7 +110,10 @@ function firstFile(
     const file = item.asFile();
     if (file) {
       const ext = path.extname(file.name).toLowerCase();
-      if (IMAGE_MIME_TYPES.includes(mime) || [".png", ".jpg", ".jpeg", ".gif", ".webp"].includes(ext)) {
+      if (
+        IMAGE_MIME_TYPES.includes(mime) ||
+        [".png", ".jpg", ".jpeg", ".gif", ".webp"].includes(ext)
+      ) {
         return { file, mime };
       }
     }
@@ -143,7 +163,11 @@ function guessExt(mime?: string): string {
   return ".png";
 }
 
-async function ensureSequentialName(base: string, ext: string, fsProvider: ZennFsProvider): Promise<string> {
+async function ensureSequentialName(
+  base: string,
+  ext: string,
+  fsProvider: ZennFsProvider
+): Promise<string> {
   const dir = "/images";
   let counter = 1;
   let candidate = `${base}_${String(counter).padStart(3, "0")}${ext}`;
@@ -157,15 +181,20 @@ async function ensureSequentialName(base: string, ext: string, fsProvider: ZennF
 function slugFromUri(uri: vscode.Uri): string | undefined {
   const name = path.basename(uri.path, path.extname(uri.path));
   if (!name) return undefined;
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "") || undefined;
+  return (
+    name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || undefined
+  );
 }
 
 function createDocumentPasteEdit(text: string, label: string): vscode.DocumentPasteEdit {
-  const ctor = (vscode as typeof vscode & { DocumentPasteEdit?: new (t: string, l: string) => vscode.DocumentPasteEdit })
-    .DocumentPasteEdit;
+  const ctor = (
+    vscode as typeof vscode & {
+      DocumentPasteEdit?: new (t: string, l: string) => vscode.DocumentPasteEdit;
+    }
+  ).DocumentPasteEdit;
   if (!ctor) {
     throw new Error("DocumentPasteEdit is not available in this VS Code version.");
   }

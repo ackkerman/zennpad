@@ -23,7 +23,8 @@ export async function loadSettings(): Promise<SettingsSnapshot> {
     silent: true
   });
   const accountLabel = session?.account?.label ?? "未サインイン";
-  const repoSummary = owner && repo ? `${owner}/${repo}@${mainBranch} (work:${workBranch})` : "リポジトリ未設定";
+  const repoSummary =
+    owner && repo ? `${owner}/${repo}@${mainBranch} (work:${workBranch})` : "リポジトリ未設定";
   return { owner, repo, mainBranch, workBranch, zennAccount, accountLabel, repoSummary };
 }
 

@@ -130,7 +130,11 @@ function buildControllerScript(): string {
 `;
 }
 
-function serveStaticFile(requestPath: string, workspaceRoot: string, res: http.ServerResponse): void {
+function serveStaticFile(
+  requestPath: string,
+  workspaceRoot: string,
+  res: http.ServerResponse
+): void {
   const normalized = path.normalize(requestPath).replace(/^(\.\.(\/|\\|$))+/, "");
   const absolutePath = path.join(workspaceRoot, normalized);
   if (!absolutePath.startsWith(workspaceRoot)) {

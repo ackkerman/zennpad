@@ -16,9 +16,13 @@ export function resolveLabel(
   return `${status}${base}`;
 }
 
-export function buildTooltip(
-  fm?: { title?: string; emoji?: string; type?: string; topics?: unknown; published?: boolean }
-): string | undefined {
+export function buildTooltip(fm?: {
+  title?: string;
+  emoji?: string;
+  type?: string;
+  topics?: unknown;
+  published?: boolean;
+}): string | undefined {
   if (!fm) {
     return undefined;
   }

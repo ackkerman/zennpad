@@ -28,5 +28,7 @@
   "command.zennpad.copyPath": "Copy Path",
   "command.zennpad.copyRelativePath": "Copy Relative Path",
   "command.zennpad.sortArticlesByDate": "Sort Articles by Date",
-  "command.zennpad.sortArticlesByTitle": "Sort Articles by Title"
+  "command.zennpad.sortArticlesByTitle": "Sort Articles by Title",
+  "command.zennpad.openHelpGuide": "Open Help Guide",
+  "command.zennpad.openHelpGuideExternal": "Open Help Guide in Browser"
 }

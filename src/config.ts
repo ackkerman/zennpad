@@ -1,7 +1,9 @@
 import * as vscode from "vscode";
 
 export function getMainBranch(config: vscode.WorkspaceConfiguration): string {
-  return config.get<string>("githubBranch")?.trim() || config.get<string>("mainBranch")?.trim() || "main";
+  return (
+    config.get<string>("githubBranch")?.trim() || config.get<string>("mainBranch")?.trim() || "main"
+  );
 }
 
 export function getRepoConfigSummary(): string | undefined {
@@ -23,10 +25,14 @@ export function validateRepoConfig(): void {
   const mainBranch = getMainBranch(config);
   const workBranch = config.get<string>("workBranch")?.trim() || "zenn-work";
   if (!owner || !repo) {
-    vscode.window.showErrorMessage("zennpad.githubOwner と zennpad.githubRepo を設定してください。");
+    vscode.window.showErrorMessage(
+      "zennpad.githubOwner と zennpad.githubRepo を設定してください。"
+    );
   }
   if (workBranch === mainBranch) {
-    vscode.window.showWarningMessage("workBranch が main と同じです。分離してデプロイ回数を抑制してください。");
+    vscode.window.showWarningMessage(
+      "workBranch が main と同じです。分離してデプロイ回数を抑制してください。"
+    );
   }
 }
 

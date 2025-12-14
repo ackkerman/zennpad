@@ -37,7 +37,9 @@ test("resolveGitHubFileBuffer falls back to git.getBlob when content is absent",
   const expected = Buffer.from("image-bytes");
   const octokit = {
     git: {
-      async getBlob(params: { file_sha: string }): Promise<{ data: { content: string; encoding: string } }> {
+      async getBlob(params: {
+        file_sha: string;
+      }): Promise<{ data: { content: string; encoding: string } }> {
         blobCalls += 1;
         assert.equal(params.file_sha, "sha456");
         return { data: { content: expected.toString("base64"), encoding: "base64" } };

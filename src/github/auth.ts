@@ -5,7 +5,9 @@ const providerId = "github";
 const scopes = ["repo"];
 
 export async function getOctokit(): Promise<Octokit> {
-  const session = await vscode.authentication.getSession(providerId, scopes, { createIfNone: true });
+  const session = await vscode.authentication.getSession(providerId, scopes, {
+    createIfNone: true
+  });
   if (!session) {
     throw new Error("GitHub authentication is required to access Zenn content.");
   }

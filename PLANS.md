@@ -193,17 +193,19 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [x] ユーザーが入力した場合はそれを優先し、未入力時のみランダムを使用する分岐を入れる
   - [x] テスト用に固定シード・モックを使える形にしておく（安定した検証のため）
 
-- [ ] Help、記事作成ガイドをVSCodeのWebviewで表示する機能を追加 -> Actionsビューに統合
-  - [ ] Help コマンドを追加し、WebviewPanel を開く
-  - [ ] Zenn の記事作成ガイドページを埋め込み、Webview 内で表示
-  - [ ] Webview 内でのリンククリックを外部ブラウザで開くように制御
-  - [ ] ユーザーが必要に応じてアクセスできるように、Activity Bar に Help ノードを追加
+- [x] Help、記事作成ガイドをVSCodeのWebviewで表示する機能を追加 -> Actionsビューに統合
+  - [x] Help コマンドを追加し、WebviewPanel を開く
+  - [x] Zenn の記事作成ガイドページを埋め込み、Webview 内で表示
+  - [x] Webview 内でのリンククリックを外部ブラウザで開くように制御
+  - [x] ユーザーが必要に応じてアクセスできるように、Activity Bar に Help ノードを追加
 
 - [ ] Actionsビューの作成
   - [x] Webviewタイプのビューを追加
   - [x] Githubにサインイン、設定を開くボタンを追加する
-  - [ ] リポジトリ切り替え（Activateするリポジトリにはチェックを入れる）
-  - [ ] ガイド（WebviewでPreviewペインを開き、該当のガイドページにジャンプする）
+  - [ ] Zennユーザー名の入力欄の作成。入力欄の右側に「Open Zenn」ボタンを追加
+  - [x] リポジトリ切り替え（Activateするリポジトリにはチェックを入れる）
+    - [x] あと回しでOK。とりあえず現在は「Coming soon」とだけ表示しておいて
+  - [x] ガイド（WebviewでPreviewペインを開き、該当のガイドページにジャンプする）
 
 - [x] UI改善：TreeView アイコンのカスタマイズ
   - [x] コアUI

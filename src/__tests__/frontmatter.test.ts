@@ -3,14 +3,7 @@ import test from "node:test";
 import { parseFrontmatter, serializeFrontmatter } from "../utils/markdown/frontmatter";
 
 test("parseFrontmatter extracts frontmatter and body", () => {
-  const input = [
-    "---",
-    "title: Hello",
-    "published: false",
-    "---",
-    "",
-    "Content line"
-  ].join("\n");
+  const input = ["---", "title: Hello", "published: false", "---", "", "Content line"].join("\n");
 
   const parsed = parseFrontmatter(input);
   assert.equal(parsed.frontmatter.title, "Hello");

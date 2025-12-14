@@ -33,33 +33,40 @@ export class ActionsViewProvider implements vscode.WebviewViewProvider {
       }
       body {
         margin: 0;
-        padding: 0.75rem;
+        padding: 0.85rem;
+        background: var(--vscode-sideBar-background, #0f172a);
+        color: var(--vscode-foreground);
       }
-      .actions {
+      .stack {
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 0.75rem;
+      }
+      .card {
+        border: 1px solid var(--vscode-input-border, rgba(148, 163, 184, 0.28));
+        border-radius: 12px;
+        padding: 0.9rem 1rem;
+        background: var(--vscode-editor-background, #0b1120);
+        box-shadow: 0 10px 26px rgba(0,0,0,0.08);
       }
       .btn {
-        flex: 1;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 0.35rem;
-        padding: 0.55rem 0.85rem;
-        border-radius: 8px;
+        gap: 0.4rem;
+        padding: 0.5rem 0.9rem;
+        border-radius: 9px;
         border: 1px solid #0f9d58;
         background: linear-gradient(180deg, #12b262 0%, #0f9d58 100%);
         color: #fff;
         font-weight: 600;
         cursor: pointer;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.16);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.22);
       }
       .btn:active {
         transform: translateY(1px);
       }
-      .ghost {
-        border: 1px solid #0f9d58;
+      .btn.ghost {
         background: transparent;
         color: #0f9d58;
         box-shadow: none;
@@ -67,24 +74,33 @@ export class ActionsViewProvider implements vscode.WebviewViewProvider {
     `;
     const script = `
       const vscode = acquireVsCodeApi();
-      document.querySelector('[data-action="signIn"]').addEventListener('click', () => {
-        vscode.postMessage({ type: 'signIn' });
-      });
-      document.querySelector('[data-action="settings"]').addEventListener('click', () => {
-        vscode.postMessage({ type: 'settings' });
-      });
+      const bind = (selector, cb) => {
+        const el = document.querySelector(selector);
+        if (el) {
+          el.addEventListener('click', (event) => {
+            event.preventDefault();
+            cb();
+          });
+        }
+      };
+      bind('[data-action="signIn"]', () => vscode.postMessage({ type: 'signIn' }));
+      bind('[data-action="settings"]', () => vscode.postMessage({ type: 'settings' }));
     `;
     return `<!DOCTYPE html>
-<html lang="ja">
+<html lang="${labels.lang}">
 <head>
   <meta charset="UTF-8" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-${nonce}';">
-  <style>${styles}</style>
+  <style nonce="${nonce}">${styles}</style>
 </head>
 <body>
-  <div class="actions">
-    <button class="btn" data-action="signIn">✓ ${labels.signIn}</button>
-    <button class="btn ghost" data-action="settings">⚙ ${labels.openSettings}</button>
+  <div class="stack">
+    <section class="card">
+      <div style="display:flex; flex-direction:column; gap:0.75rem;">
+        <button class="btn" data-action="signIn">✓ ${labels.signIn}</button>
+        <button class="btn ghost" data-action="settings">⚙ ${labels.openSettings}</button>
+      </div>
+    </section>
   </div>
   <script nonce="${nonce}">${script}</script>
 </body>
@@ -92,12 +108,24 @@ export class ActionsViewProvider implements vscode.WebviewViewProvider {
   }
 }
 
-function localizedLabels(locale: string): { signIn: string; openSettings: string } {
+function localizedLabels(locale: string): {
+  lang: string;
+  signIn: string;
+  openSettings: string;
+} {
   const lang = (locale || "en").toLowerCase();
   if (lang.startsWith("ja")) {
-    return { signIn: "GitHub にサインイン", openSettings: "設定を開く" };
+    return {
+      lang: "ja",
+      signIn: "GitHub にサインイン",
+      openSettings: "設定を開く"
+    };
   }
-  return { signIn: "Sign in to GitHub", openSettings: "Open Settings" };
+  return {
+    lang: "en",
+    signIn: "Sign in to GitHub",
+    openSettings: "Open Settings"
+  };
 }
 
 function generateNonce(): string {

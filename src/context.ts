@@ -20,7 +20,11 @@ export function updateActiveDocumentContext(doc?: vscode.TextDocument): void {
   const isZennDoc = Boolean(activeDoc && isZennUri(activeDoc.uri));
   const isMarkdown = Boolean(activeDoc && activeDoc.languageId === "markdown");
   const previewable = Boolean(isZennDoc && isMarkdown);
-  void vscode.commands.executeCommand("setContext", "zennpad.activeTextEditorPreviewable", previewable);
+  void vscode.commands.executeCommand(
+    "setContext",
+    "zennpad.activeTextEditorPreviewable",
+    previewable
+  );
   void vscode.commands.executeCommand("setContext", "zennpad.activeDocIsZenn", isZennDoc);
 
   let published: boolean | undefined;
@@ -35,6 +39,10 @@ export function updateActiveDocumentContext(doc?: vscode.TextDocument): void {
     }
   }
 
-  void vscode.commands.executeCommand("setContext", "zennpad.activeDocPublished", published === true);
+  void vscode.commands.executeCommand(
+    "setContext",
+    "zennpad.activeDocPublished",
+    published === true
+  );
   void vscode.commands.executeCommand("setContext", "zennpad.activeDocDraft", published === false);
 }

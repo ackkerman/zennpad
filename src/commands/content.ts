@@ -10,7 +10,10 @@ import { getMainBranch, getZennOwner } from "../config";
 import { updateActiveDocumentContext } from "../context";
 import { CommandDeps } from "./types";
 
-export function registerContentCommands(context: vscode.ExtensionContext, deps: CommandDeps): vscode.Disposable[] {
+export function registerContentCommands(
+  context: vscode.ExtensionContext,
+  deps: CommandDeps
+): vscode.Disposable[] {
   const { fsProvider, treeDataProvider, scheme } = deps;
   return [
     vscode.commands.registerCommand("zennpad.newArticle", async () => {
@@ -100,7 +103,9 @@ async function copyGithubUrl(resource?: vscode.Uri | { resourceUri?: vscode.Uri 
   }
   const url = buildGithubUrl(uri);
   if (!url) {
-    vscode.window.showErrorMessage("Set zennpad.githubOwner and zennpad.githubRepo to copy GitHub URL.");
+    vscode.window.showErrorMessage(
+      "Set zennpad.githubOwner and zennpad.githubRepo to copy GitHub URL."
+    );
     return;
   }
   await vscode.env.clipboard.writeText(url);
@@ -115,7 +120,9 @@ async function openGithub(resource?: vscode.Uri | { resourceUri?: vscode.Uri }):
   }
   const url = buildGithubUrl(uri);
   if (!url) {
-    vscode.window.showErrorMessage("Set zennpad.githubOwner and zennpad.githubRepo to open GitHub URL.");
+    vscode.window.showErrorMessage(
+      "Set zennpad.githubOwner and zennpad.githubRepo to open GitHub URL."
+    );
     return;
   }
   void vscode.env.openExternal(vscode.Uri.parse(url));
@@ -133,7 +140,10 @@ function buildGithubUrl(uri: vscode.Uri): string | undefined {
   return `https://github.com/${owner}/${repo}/blob/${branch}/${path}`;
 }
 
-async function copyPath(resource?: vscode.Uri | { resourceUri?: vscode.Uri }, relative = false): Promise<void> {
+async function copyPath(
+  resource?: vscode.Uri | { resourceUri?: vscode.Uri },
+  relative = false
+): Promise<void> {
   const uri = resolveResourceUri(resource) ?? vscode.window.activeTextEditor?.document?.uri;
   if (!uri || !isZennUri(uri)) {
     vscode.window.showWarningMessage("Select a ZennPad item to copy its path.");
@@ -141,7 +151,9 @@ async function copyPath(resource?: vscode.Uri | { resourceUri?: vscode.Uri }, re
   }
   const path = relative ? uri.path.replace(/^\//, "") : uri.path;
   await vscode.env.clipboard.writeText(path);
-  vscode.window.showInformationMessage(`Copied ${relative ? "relative" : "absolute"} path to clipboard.`);
+  vscode.window.showInformationMessage(
+    `Copied ${relative ? "relative" : "absolute"} path to clipboard.`
+  );
 }
 
 async function renameNode(
@@ -189,7 +201,9 @@ async function duplicateNode(
   try {
     targetContent = fsProvider.readFile(uri);
   } catch (error) {
-    vscode.window.showErrorMessage(`[ZennPad] Duplicate failed: ${error instanceof Error ? error.message : String(error)}`);
+    vscode.window.showErrorMessage(
+      `[ZennPad] Duplicate failed: ${error instanceof Error ? error.message : String(error)}`
+    );
     return;
   }
   const segments = uri.path.split("/");
@@ -204,7 +218,9 @@ async function duplicateNode(
     const document = await vscode.workspace.openTextDocument(newUri);
     await vscode.window.showTextDocument(document);
   } catch (error) {
-    vscode.window.showErrorMessage(`[ZennPad] Duplicate failed: ${error instanceof Error ? error.message : String(error)}`);
+    vscode.window.showErrorMessage(
+      `[ZennPad] Duplicate failed: ${error instanceof Error ? error.message : String(error)}`
+    );
   }
 }
 
@@ -230,11 +246,17 @@ async function deleteNode(
     fsProvider.delete(uri, { recursive: true });
     treeDataProvider.refresh();
   } catch (error) {
-    vscode.window.showErrorMessage(`[ZennPad] Delete failed: ${error instanceof Error ? error.message : String(error)}`);
+    vscode.window.showErrorMessage(
+      `[ZennPad] Delete failed: ${error instanceof Error ? error.message : String(error)}`
+    );
   }
 }
 
-async function createArticle(fsProvider: ZennFsProvider, treeDataProvider: ZennTreeDataProvider, scheme: string): Promise<void> {
+async function createArticle(
+  fsProvider: ZennFsProvider,
+  treeDataProvider: ZennTreeDataProvider,
+  scheme: string
+): Promise<void> {
   const title = await vscode.window.showInputBox({
     prompt: "Enter article title (optional)",
     placeHolder: "My first Zenn article",
@@ -253,7 +275,11 @@ async function createArticle(fsProvider: ZennFsProvider, treeDataProvider: ZennT
   await vscode.window.showTextDocument(document);
 }
 
-async function createBook(fsProvider: ZennFsProvider, treeDataProvider: ZennTreeDataProvider, scheme: string): Promise<void> {
+async function createBook(
+  fsProvider: ZennFsProvider,
+  treeDataProvider: ZennTreeDataProvider,
+  scheme: string
+): Promise<void> {
   const title = await vscode.window.showInputBox({
     prompt: "Enter book title",
     placeHolder: "My Zenn Book",
@@ -276,8 +302,14 @@ async function createBook(fsProvider: ZennFsProvider, treeDataProvider: ZennTree
   await vscode.window.showTextDocument(document);
 }
 
-async function createChapter(fsProvider: ZennFsProvider, treeDataProvider: ZennTreeDataProvider, scheme: string): Promise<void> {
-  const books = fsProvider.readDirectory(vscode.Uri.from({ scheme, path: "/books" })).filter(([, t]) => t === vscode.FileType.Directory);
+async function createChapter(
+  fsProvider: ZennFsProvider,
+  treeDataProvider: ZennTreeDataProvider,
+  scheme: string
+): Promise<void> {
+  const books = fsProvider
+    .readDirectory(vscode.Uri.from({ scheme, path: "/books" }))
+    .filter(([, t]) => t === vscode.FileType.Directory);
   if (books.length === 0) {
     vscode.window.showWarningMessage("No books found. Create a book first.");
     return;
@@ -336,7 +368,9 @@ async function openOnZenn(): Promise<void> {
   const config = vscode.workspace.getConfiguration("zennpad");
   const owner = getZennOwner(config);
   if (!owner) {
-    vscode.window.showErrorMessage("Set zennpad.githubOwner or zennpad.zennAccount to open on Zenn.");
+    vscode.window.showErrorMessage(
+      "Set zennpad.githubOwner or zennpad.zennAccount to open on Zenn."
+    );
     return;
   }
   const url = buildZennUrlFromDoc(doc);
@@ -348,11 +382,13 @@ async function openOnZenn(): Promise<void> {
 }
 
 function slugify(input: string): string {
-  return input
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .replace(/--+/g, "-") || `draft-${shortId()}`;
+  return (
+    input
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .replace(/--+/g, "-") || `draft-${shortId()}`
+  );
 }
 
 function buildArticleSlug(title?: string): string {
@@ -366,7 +402,9 @@ function shortId(): string {
   return Math.random().toString(36).slice(2, 8);
 }
 
-function resolveResourceUri(resource?: vscode.Uri | { resourceUri?: vscode.Uri }): vscode.Uri | undefined {
+function resolveResourceUri(
+  resource?: vscode.Uri | { resourceUri?: vscode.Uri }
+): vscode.Uri | undefined {
   if (!resource) {
     return undefined;
   }

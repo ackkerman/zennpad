@@ -13,6 +13,7 @@ import { getMainBranch, getRepoConfigSummary, getZennOwner, validateRepoConfig }
 import { StatusBarController } from "./ui/statusBar";
 import { SearchViewProvider } from "./ui/searchView";
 import { ActionsViewProvider } from "./ui/actionsView";
+import { HelpGuidePanel, HelpViewProvider } from "./ui/helpGuide";
 
 export function activate(context: vscode.ExtensionContext): void {
   vscode.commands.executeCommand("setContext", "zennpad.activated", true);
@@ -22,6 +23,7 @@ export function activate(context: vscode.ExtensionContext): void {
   let contentCache = new ContentCache(context.globalStorageUri, buildCacheNamespace());
   const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
   const statusBar = new StatusBarController(statusBarItem, context.extensionUri);
+  const helpGuidePanel = new HelpGuidePanel(context.extensionUri);
   context.subscriptions.push(statusBarItem);
   seedScaffoldContent(fsProvider, scheme);
   context.subscriptions.push(
@@ -45,6 +47,12 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.window.registerWebviewViewProvider(
       ActionsViewProvider.viewId,
       new ActionsViewProvider(context.extensionUri)
+    )
+  );
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(
+      HelpViewProvider.viewId,
+      new HelpViewProvider(context.extensionUri, helpGuidePanel)
     )
   );
   setSortOrderContext(treeDataProvider.getSortOrder());
@@ -100,7 +108,8 @@ export function activate(context: vscode.ExtensionContext): void {
     updateAuthStatus,
     setAutoSyncContext,
     setSortOrderContext,
-    handleAuthError
+    handleAuthError,
+    helpGuidePanel
   });
 
   context.subscriptions.push(
@@ -191,7 +200,10 @@ function handleAuthError(error: unknown, action: string): void {
   const message = error instanceof Error ? error.message : String(error);
   if (status === 409) {
     void vscode.window
-      .showErrorMessage(`[ZennPad] Conflict detected while trying to ${action}.`, "Refresh from GitHub")
+      .showErrorMessage(
+        `[ZennPad] Conflict detected while trying to ${action}.`,
+        "Refresh from GitHub"
+      )
       .then((choice) => {
         if (choice === "Refresh from GitHub") {
           void vscode.commands.executeCommand("zennpad.refresh");
@@ -201,7 +213,11 @@ function handleAuthError(error: unknown, action: string): void {
   }
   if (status === 401 || status === 403) {
     void vscode.window
-      .showErrorMessage(`[ZennPad] GitHub authentication required to ${action}.`, "Sign in", "Open Settings")
+      .showErrorMessage(
+        `[ZennPad] GitHub authentication required to ${action}.`,
+        "Sign in",
+        "Open Settings"
+      )
       .then((choice) => {
         if (choice === "Sign in") {
           void vscode.commands.executeCommand("zennpad.signIn");

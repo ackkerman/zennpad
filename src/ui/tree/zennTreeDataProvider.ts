@@ -11,7 +11,11 @@ export interface ZennTreeItemDescriptor {
   readonly contextValue: ZennNodeType;
   readonly description?: string;
   readonly resourceUri?: vscode.Uri;
-  readonly iconPath?: vscode.ThemeIcon | vscode.Uri | { light: vscode.Uri; dark: vscode.Uri } | string;
+  readonly iconPath?:
+    | vscode.ThemeIcon
+    | vscode.Uri
+    | { light: vscode.Uri; dark: vscode.Uri }
+    | string;
   readonly command?: vscode.Command;
   readonly published?: boolean;
   readonly tooltip?: string;
@@ -24,7 +28,10 @@ class ZennTreeItem extends vscode.TreeItem {
     this.description = descriptor.description;
     this.resourceUri = descriptor.resourceUri;
     this.tooltip = descriptor.tooltip;
-    if (descriptor.resourceUri && descriptor.collapsibleState === vscode.TreeItemCollapsibleState.None) {
+    if (
+      descriptor.resourceUri &&
+      descriptor.collapsibleState === vscode.TreeItemCollapsibleState.None
+    ) {
       this.command = {
         command: "vscode.open",
         title: "Open Zenn content",
@@ -37,19 +44,27 @@ class ZennTreeItem extends vscode.TreeItem {
     if (descriptor.command) {
       this.command = descriptor.command;
     }
-    if (typeof descriptor.published === "boolean" && descriptor.contextValue.startsWith("article")) {
+    if (
+      typeof descriptor.published === "boolean" &&
+      descriptor.contextValue.startsWith("article")
+    ) {
       this.contextValue = descriptor.published ? "article:published" : "article:draft";
     }
   }
 }
 
 export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeItem> {
-  private readonly _onDidChangeTreeData = new vscode.EventEmitter<ZennTreeItem | undefined | void>();
+  private readonly _onDidChangeTreeData = new vscode.EventEmitter<
+    ZennTreeItem | undefined | void
+  >();
   readonly onDidChangeTreeData: vscode.Event<ZennTreeItem | undefined | void> =
     this._onDidChangeTreeData.event;
   private readonly state = new TreeState();
 
-  constructor(private readonly fsProvider: ZennFsProvider, private readonly scheme = "zenn") {}
+  constructor(
+    private readonly fsProvider: ZennFsProvider,
+    private readonly scheme = "zenn"
+  ) {}
 
   setStatus(status: { signedIn: boolean; hasRepoConfig: boolean }): void {
     this.state.setStatus(status);
@@ -174,7 +189,13 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
       .map(([name]) => {
         const uri = this.buildUri(`/articles/${name}`);
         if (isImageFile(name)) {
-          return { name, uri, published: undefined, kind: "image" as const, frontmatter: undefined };
+          return {
+            name,
+            uri,
+            published: undefined,
+            kind: "image" as const,
+            frontmatter: undefined
+          };
         }
         const published = readPublished(this.fsProvider, uri);
         const frontmatter = readFrontmatter(this.fsProvider, uri);
@@ -194,7 +215,8 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
           description: entry.kind === "image" ? undefined : "draft",
           resourceUri: entry.uri,
           published: entry.published,
-          tooltip: entry.kind === "image" ? `/images/${entry.name}` : buildTooltip(entry.frontmatter)
+          tooltip:
+            entry.kind === "image" ? `/images/${entry.name}` : buildTooltip(entry.frontmatter)
         });
       });
     return drafts;
@@ -241,33 +263,35 @@ export class ZennTreeDataProvider implements vscode.TreeDataProvider<ZennTreeIte
 
   private get rootNodes(): ZennTreeItemDescriptor[] {
     const branchInfo = this.state.getBranchInfo();
-    const branchDescription = branchInfo ? `${branchInfo.workBranch} → ${branchInfo.mainBranch}` : undefined;
+    const branchDescription = branchInfo
+      ? `${branchInfo.workBranch} → ${branchInfo.mainBranch}`
+      : undefined;
     return [
       {
         label: "Drafts / Daily",
         collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
         contextValue: "drafts",
         resourceUri: vscode.Uri.from({ scheme: this.scheme, path: "/articles" }),
-        description: branchDescription,
+        description: branchDescription
       },
       {
         label: "Articles",
         collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
         contextValue: "articles",
         resourceUri: vscode.Uri.from({ scheme: this.scheme, path: "/articles" }),
-        description: branchDescription,
+        description: branchDescription
       },
       {
         label: "Books",
         collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
         contextValue: "books",
-        resourceUri: vscode.Uri.from({ scheme: this.scheme, path: "/books" }),
+        resourceUri: vscode.Uri.from({ scheme: this.scheme, path: "/books" })
       },
       {
         label: "Images",
         collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
         contextValue: "images",
-        resourceUri: vscode.Uri.from({ scheme: this.scheme, path: "/images" }),
+        resourceUri: vscode.Uri.from({ scheme: this.scheme, path: "/images" })
       }
     ];
   }

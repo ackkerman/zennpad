@@ -52,7 +52,10 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
       webviewView.webview.onDidReceiveMessage(async (message: unknown) => {
         const { type } = (message as { type?: string }) ?? {};
         if (type === "search") {
-          const { query, options } = message as { query?: string; options?: Partial<SearchOptions> };
+          const { query, options } = message as {
+            query?: string;
+            options?: Partial<SearchOptions>;
+          };
           this.lastQuery = { query: query ?? "", options: normalizeOptions(options) };
           await this.executeSearch(this.lastQuery.query, this.lastQuery.options);
         }

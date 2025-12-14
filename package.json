@@ -48,6 +48,13 @@
           "icon": "media/icon/search.svg",
           "type": "webview",
           "visibility": "collapsed"
+        },
+        {
+          "id": "zennpad.help",
+          "name": "Help",
+          "icon": "media/icon/globe.svg",
+          "type": "webview",
+          "visibility": "collapsed"
         }
       ]
     },
@@ -498,6 +505,24 @@
         "icon": {
           "light": "media/icon/sort-by-date-light.svg",
           "dark": "media/icon/sort-by-date-dark.svg"
+        }
+      },
+      {
+        "command": "zennpad.openHelpGuide",
+        "title": "%command.zennpad.openHelpGuide%",
+        "category": "ZennPad",
+        "icon": {
+          "light": "media/icon/globe-light.svg",
+          "dark": "media/icon/globe-dark.svg"
+        }
+      },
+      {
+        "command": "zennpad.openHelpGuideExternal",
+        "title": "%command.zennpad.openHelpGuideExternal%",
+        "category": "ZennPad",
+        "icon": {
+          "light": "media/icon/globe-light.svg",
+          "dark": "media/icon/globe-dark.svg"
         }
       }
     ]

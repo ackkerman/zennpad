@@ -5,7 +5,10 @@ import { FsMutation, ZennFsProvider } from "../fs/zennFsProvider";
 import { toRelativeZennPath } from "../utils/path/zennPath";
 
 export class PreviewWorkspace {
-  constructor(private readonly baseUri: vscode.Uri, private readonly fsProvider: ZennFsProvider) {}
+  constructor(
+    private readonly baseUri: vscode.Uri,
+    private readonly fsProvider: ZennFsProvider
+  ) {}
 
   get rootFsPath(): string {
     return this.baseUri.fsPath;
@@ -41,7 +44,9 @@ export class PreviewWorkspace {
 
   private async syncDirectory(virtualPath: string, targetDir: string): Promise<void> {
     try {
-      const entries = this.fsProvider.readDirectory(vscode.Uri.from({ scheme: "zenn", path: virtualPath }));
+      const entries = this.fsProvider.readDirectory(
+        vscode.Uri.from({ scheme: "zenn", path: virtualPath })
+      );
       await fs.mkdir(targetDir, { recursive: true });
       for (const [name, type] of entries) {
         const virtualEntryPath = path.posix.join(virtualPath, name);
@@ -50,7 +55,9 @@ export class PreviewWorkspace {
           await this.syncDirectory(virtualEntryPath, targetPath);
         } else if (type === vscode.FileType.File) {
           try {
-            const data = this.fsProvider.readFile(vscode.Uri.from({ scheme: "zenn", path: virtualEntryPath }));
+            const data = this.fsProvider.readFile(
+              vscode.Uri.from({ scheme: "zenn", path: virtualEntryPath })
+            );
             await fs.writeFile(targetPath, data);
           } catch {
             // Ignore files that disappear during sync.

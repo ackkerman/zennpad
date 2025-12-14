@@ -8,7 +8,10 @@ export class PreviewManager {
   private backend: PreviewBackend | undefined;
   private view: PreviewView | undefined;
 
-  constructor(private readonly workspace: PreviewWorkspace, private readonly context: vscode.ExtensionContext) {}
+  constructor(
+    private readonly workspace: PreviewWorkspace,
+    private readonly context: vscode.ExtensionContext
+  ) {}
 
   async open(document: vscode.TextDocument): Promise<void> {
     const relativePath = toRelativeZennPath(document.uri);
@@ -78,7 +81,9 @@ export class PreviewManager {
         this.backend = undefined;
         if (attempt === maxAttempts) {
           const message =
-            error instanceof Error ? error.message : "zenn preview 起動に失敗しました。zenn CLI を確認してください。";
+            error instanceof Error
+              ? error.message
+              : "zenn preview 起動に失敗しました。zenn CLI を確認してください。";
           vscode.window.showErrorMessage(`[ZennPad Preview] ${message}`);
           return false;
         }

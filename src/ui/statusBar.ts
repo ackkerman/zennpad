@@ -18,7 +18,10 @@ export class StatusBarController {
   };
   private readonly logoPaths: { light: vscode.Uri; dark: vscode.Uri };
 
-  constructor(private readonly item: IconStatusBarItem, extensionUri: vscode.Uri) {
+  constructor(
+    private readonly item: IconStatusBarItem,
+    extensionUri: vscode.Uri
+  ) {
     this.logoPaths = {
       light: vscode.Uri.joinPath(extensionUri, "media/logo-only.svg"),
       dark: vscode.Uri.joinPath(extensionUri, "media/logo-only-white.svg")
@@ -61,16 +64,22 @@ export class StatusBarController {
     this.applyIconPath();
     const repo = this.state.repoSummary ?? "GitHub: 未設定";
     const zenn = this.state.zennOwner ?? "Zenn: 未設定";
-    const autoSync = this.state.autoSyncPaused ? "$(debug-pause) AutoSync: Off" : "$(sync) AutoSync: On";
+    const autoSync = this.state.autoSyncPaused
+      ? "$(debug-pause) AutoSync: Off"
+      : "$(sync) AutoSync: On";
     const pending =
-      this.state.pending > 0 ? ` | $(circle-large-filled) Pending: ${this.state.pending}` : " | Pending: 0";
+      this.state.pending > 0
+        ? ` | $(circle-large-filled) Pending: ${this.state.pending}`
+        : " | Pending: 0";
     this.item.text = `$(book) ${repo} → $(globe) ${zenn} | ${autoSync}${pending}`;
     const tooltip = new vscode.MarkdownString(undefined, true);
     tooltip.isTrusted = true;
     tooltip.appendMarkdown(`![ZennPad Logo](${this.activeLogoUri().toString()})\n\n`);
     tooltip.appendMarkdown(`**GitHub**: ${repo}\n\n`);
     tooltip.appendMarkdown(`**Zenn**: ${zenn}\n\n`);
-    tooltip.appendMarkdown(`**Auto Sync**: ${this.state.autoSyncPaused ? "Paused" : "Running"}\n\n`);
+    tooltip.appendMarkdown(
+      `**Auto Sync**: ${this.state.autoSyncPaused ? "Paused" : "Running"}\n\n`
+    );
     tooltip.appendMarkdown(`**Pending changes**: ${this.state.pending}`);
     this.item.tooltip = tooltip;
     this.item.show();

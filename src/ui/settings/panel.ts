@@ -103,13 +103,21 @@ export async function showSettingsPanel(
           githubSync.setAutoSyncPaused(!autoSyncPaused);
           updateAutoSyncContext(githubSync.isAutoSyncPaused());
           vscode.window.showInformationMessage(
-            githubSync.isAutoSyncPaused() ? "Auto Sync を一時停止しました。" : "Auto Sync を再開しました。"
+            githubSync.isAutoSyncPaused()
+              ? "Auto Sync を一時停止しました。"
+              : "Auto Sync を再開しました。"
           );
         }
       },
       {
-        label: snapshot.accountLabel !== "未サインイン" ? "$(sign-out) GitHub からサインアウト" : "$(sign-in) GitHub にサインイン",
-        description: snapshot.accountLabel !== "未サインイン" ? snapshot.accountLabel : "GitHub 認証が必要です",
+        label:
+          snapshot.accountLabel !== "未サインイン"
+            ? "$(sign-out) GitHub からサインアウト"
+            : "$(sign-in) GitHub にサインイン",
+        description:
+          snapshot.accountLabel !== "未サインイン"
+            ? snapshot.accountLabel
+            : "GitHub 認証が必要です",
         run: async () => {
           if (snapshot.accountLabel !== "未サインイン") {
             await vscode.commands.executeCommand("zennpad.signOut");
