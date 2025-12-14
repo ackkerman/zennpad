@@ -15,10 +15,12 @@
 - クリップボード貼り付け時に画像リンクが二重挿入される問題を修正（src/ui/imageInsertion.ts）。
 - GitHub Content APIが1MB超のファイルでcontentを返さないケースに備え、`git.getBlob`によるバイナリ取得へフォールバックする処理を追加し、プレビュー用の同期が画像など大きなファイルでも失敗しないようにした（src/github/fileContent.ts, src/github/sync.ts）。
 - プレビュー用プロキシで`/images/*`リクエストを捕捉し、プレビュー用ミラー直下の実ファイルを静的配信するハンドラーを追加。zenn CLI経由で404になる状況でもローカル画像を確実に表示できるようにした（src/preview/previewProxyServer.ts）。
-- Searchビューで未サインイン時にサインイン/設定導線を表示し、検索UIを非表示にするガードを追加（src/ui/searchView.ts）。
+- Searchビューで未サインイン時は検索バーを隠してプロダクトツアーのみを表示し、サインイン済みでは空結果ビューを初期表示するように調整（src/ui/searchView.ts）。
 - GitHubサインアウト失敗時に未処理例外にならないようガードし、サインアウト後は強制的に未ログイン状態へUI/コンテキストを更新（src/github/auth.ts, src/commands/auth.ts, src/extension.ts）。
 - 設定パネル（QuickPick）のラベル・説明・トグル文言を多言語化し、英日で表示が切り替わるようにした（src/ui/settings/panel.ts）。
 - 汎用ファイル・フォルダに対しても複製/削除/リネームメニューが出るようにし、複製時に拡張子を維持するよう修正（package.json, src/ui/tree/zennTreeDataProvider.ts, src/commands/content.ts）。
+- VSIXに必要な out/node_modules を含めるよう .vscodeignore を追加し、配布パッケージ欠落を防止（.vscodeignore）。
+- Actions統合に伴い未使用となっていたヘルプ用 TreeDataProvider を削除し、余計な VS Code 依存を解消（src/ui/helpViewProvider.ts ほか）。
 
 ### 変更
 - ステータスバーにZennPadロゴSVGを用い、ライト/ダークテーマに応じたブランド表示とツールチップを追加（src/ui/statusBar.ts, media/logo）。
