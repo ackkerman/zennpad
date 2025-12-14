@@ -37,10 +37,12 @@ jobs:
         run: |
           TAG_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || node -p "require('./package.json').version")
           TAG_CLEAN=${TAG_VERSION#v}
-          pnpm exec vsce package --no-dependencies
+          pnpm exec vsce package --allow-star-activation
           FILE=$(ls *.vsix | head -n 1)
           TARGET="zennpad-${TAG_CLEAN}.vsix"
-          mv "$FILE" "$TARGET"
+          if [ "$FILE" != "$TARGET" ]; then
+            mv "$FILE" "$TARGET"
+          fi
           echo "PACKAGE_NAME=$TARGET" >> "$GITHUB_ENV"
 
       - name: Upload artifact
