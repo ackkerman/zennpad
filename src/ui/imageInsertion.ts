@@ -28,8 +28,6 @@ export function registerImageInsertionProviders(
           const baseName = slugFromUri(document.uri) ?? "pasted-image";
           const { link } = await saveImage(file, imageItem.mime, fsProvider, scheme, baseName);
           const edit = createDocumentPasteEdit(`![](${link})`, "Insert image");
-          edit.additionalEdit = new vscode.WorkspaceEdit();
-          edit.additionalEdit.insert(document.uri, ranges[0].start, `![](${link})`);
           return [edit];
         }
       },
@@ -44,8 +42,6 @@ export function registerImageInsertionProviders(
         const baseName = slugFromUri(document.uri) ?? "pasted-image";
         const { link } = await saveImage(fileItem.file, fileItem.mime, fsProvider, scheme, baseName);
         const edit = new vscode.DocumentDropEdit(`![](${link})`, "Insert image");
-        edit.additionalEdit = new vscode.WorkspaceEdit();
-        edit.additionalEdit.insert(document.uri, position, `![](${link})`);
         return [edit];
       }
     })
