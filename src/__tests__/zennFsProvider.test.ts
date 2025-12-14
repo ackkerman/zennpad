@@ -4,7 +4,10 @@ import { withMockedVscode } from "./helpers/testUtils";
 
 function createVscodeStub() {
   class Uri {
-    constructor(public readonly scheme: string, public readonly path: string) {}
+    constructor(
+      public readonly scheme: string,
+      public readonly path: string
+    ) {}
     static from(init: { scheme: string; path: string }): Uri {
       return new Uri(init.scheme, init.path);
     }
@@ -44,8 +47,10 @@ function createVscodeStub() {
   } as const;
 
   const FileSystemError = {
-    FileNotFound: (uri: Uri) => Object.assign(new Error(`File not found: ${uri.path}`), { code: "FileNotFound" }),
-    FileExists: (uri: Uri) => Object.assign(new Error(`File exists: ${uri.path}`), { code: "FileExists" }),
+    FileNotFound: (uri: Uri) =>
+      Object.assign(new Error(`File not found: ${uri.path}`), { code: "FileNotFound" }),
+    FileExists: (uri: Uri) =>
+      Object.assign(new Error(`File exists: ${uri.path}`), { code: "FileExists" }),
     NoPermissions: (message: string) => Object.assign(new Error(message), { code: "NoPermissions" })
   };
 
@@ -87,8 +92,9 @@ test("ZennFsProvider rename and delete emit mutations and move data", async () =
     const { ZennFsProvider } = await import("../fs/zennFsProvider");
     const vscode = await import("vscode");
     const provider = new ZennFsProvider();
-    const mutations: Array<{ type: string; uri?: { path: string }; newUri?: { path: string } }> = [];
-    provider.onDidMutate((m) => mutations.push(m as typeof mutations[number]));
+    const mutations: Array<{ type: string; uri?: { path: string }; newUri?: { path: string } }> =
+      [];
+    provider.onDidMutate((m) => mutations.push(m as (typeof mutations)[number]));
 
     const oldUri = vscode.Uri.from({ scheme: "zenn", path: "/articles/old.md" });
     const newUri = vscode.Uri.from({ scheme: "zenn", path: "/articles/new.md" });

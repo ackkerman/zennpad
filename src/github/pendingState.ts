@@ -34,7 +34,13 @@ export class PendingState {
     return true;
   }
 
-  recordRename(branch: string, oldPath: string, newPath: string, content: Uint8Array, hash: string): boolean {
+  recordRename(
+    branch: string,
+    oldPath: string,
+    newPath: string,
+    content: Uint8Array,
+    hash: string
+  ): boolean {
     this.pendingWrites.delete(oldPath);
     this.pendingDeletes.add(oldPath);
     this.pendingDeletes.delete(newPath);
@@ -53,7 +59,11 @@ export class PendingState {
     };
   }
 
-  applyCommitResult(branch: string, treeEntries: Array<{ path: string; sha: string | null }>, snapshot: { writes: Array<[string, PendingWrite]>; deletes: string[] }): void {
+  applyCommitResult(
+    branch: string,
+    treeEntries: Array<{ path: string; sha: string | null }>,
+    snapshot: { writes: Array<[string, PendingWrite]>; deletes: string[] }
+  ): void {
     const shaMap = this.getBranchShaMap(branch);
     const hashes = this.getBranchHashMap(branch);
     for (const [path, write] of snapshot.writes) {

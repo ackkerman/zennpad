@@ -10,7 +10,10 @@ export interface ParsedFrontmatter {
   published?: boolean;
 }
 
-export function readFrontmatter(fsProvider: ZennFsProvider, uri: vscode.Uri): ParsedFrontmatter | undefined {
+export function readFrontmatter(
+  fsProvider: ZennFsProvider,
+  uri: vscode.Uri
+): ParsedFrontmatter | undefined {
   try {
     const content = Buffer.from(fsProvider.readFile(uri)).toString();
     const parsed = parseFrontmatter(content);

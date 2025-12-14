@@ -19,6 +19,13 @@ export function registerPreviewCommands(
       await previewWorkspace.syncDocument(active);
       await previewManager.open(active);
       updatePreviewableContext();
+    }),
+    vscode.commands.registerCommand("zennpad.preview.openPath", async (previewPath?: string) => {
+      if (!previewPath || typeof previewPath !== "string") {
+        vscode.window.showWarningMessage("[ZennPad Preview] preview path is required.");
+        return;
+      }
+      await previewManager.navigate(previewPath);
     })
   ];
 }

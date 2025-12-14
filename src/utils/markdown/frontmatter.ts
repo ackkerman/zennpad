@@ -16,7 +16,8 @@ export function parseFrontmatter(text: string): ParsedFrontmatter {
   try {
     const parsed = parse(match[1]) ?? {};
     return {
-      frontmatter: typeof parsed === "object" && parsed !== null ? (parsed as Record<string, unknown>) : {},
+      frontmatter:
+        typeof parsed === "object" && parsed !== null ? (parsed as Record<string, unknown>) : {},
       body: match[2] ?? ""
     };
   } catch (error) {
@@ -28,6 +29,8 @@ export function parseFrontmatter(text: string): ParsedFrontmatter {
 export function serializeFrontmatter(frontmatter: Record<string, unknown>, body: string): string {
   const yamlContent = stringify(frontmatter ?? {}).trimEnd();
   const normalizedBody = body ?? "";
-  const bodyWithTrailingNewline = normalizedBody.endsWith("\n") ? normalizedBody : `${normalizedBody}\n`;
+  const bodyWithTrailingNewline = normalizedBody.endsWith("\n")
+    ? normalizedBody
+    : `${normalizedBody}\n`;
   return `---\n${yamlContent}\n---\n\n${bodyWithTrailingNewline}`;
 }

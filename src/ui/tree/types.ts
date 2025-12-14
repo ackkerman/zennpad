@@ -6,7 +6,10 @@ export type ZennNodeType =
   | "chapter"
   | "book"
   | "article"
-  | "image";
+  | "image"
+  | "action"
+  | "folder"
+  | "file";
 
 export type SortOrder = "date" | "title";
 

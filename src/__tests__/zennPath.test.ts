@@ -4,7 +4,10 @@ import { withMockedVscode } from "./helpers/testUtils";
 
 function createVscodeStub() {
   class Uri {
-    constructor(public readonly scheme: string, public readonly path: string) {}
+    constructor(
+      public readonly scheme: string,
+      public readonly path: string
+    ) {}
     static from(init: { scheme: string; path: string }): Uri {
       return new Uri(init.scheme, init.path);
     }
@@ -23,7 +26,8 @@ function createVscodeStub() {
 
 test("zenn path helpers handle relative path extraction and preview routing", async () => {
   await withMockedVscode(async () => {
-    const { toRelativeZennPath, toPreviewUrlPath, isZennUri } = await import("../utils/path/zennPath");
+    const { toRelativeZennPath, toPreviewUrlPath, isZennUri } =
+      await import("../utils/path/zennPath");
     const vscode = await import("vscode");
 
     const articleUri = vscode.Uri.from({ scheme: "zenn", path: "/articles/20240101_hello.md" });

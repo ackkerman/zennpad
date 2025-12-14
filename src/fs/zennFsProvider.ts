@@ -78,7 +78,11 @@ export class ZennFsProvider implements vscode.FileSystemProvider {
     return entry.data;
   }
 
-  writeFile(uri: vscode.Uri, content: Uint8Array, options: { create: boolean; overwrite: boolean }): void {
+  writeFile(
+    uri: vscode.Uri,
+    content: Uint8Array,
+    options: { create: boolean; overwrite: boolean }
+  ): void {
     const existing = this.files.get(uri.path);
     if (!existing && !options.create) {
       throw vscode.FileSystemError.FileNotFound(uri);
@@ -153,7 +157,16 @@ export class ZennFsProvider implements vscode.FileSystemProvider {
     }
   }
 
-  hydrate(entries: { path: string; type: vscode.FileType; ctime: number; mtime: number; size: number; data?: string }[]): void {
+  hydrate(
+    entries: {
+      path: string;
+      type: vscode.FileType;
+      ctime: number;
+      mtime: number;
+      size: number;
+      data?: string;
+    }[]
+  ): void {
     this.files.clear();
     for (const entry of entries) {
       this.files.set(entry.path, {
@@ -164,12 +177,27 @@ export class ZennFsProvider implements vscode.FileSystemProvider {
         data: entry.data ? Buffer.from(entry.data, "base64") : undefined
       });
     }
-    this.emitter.fire([{ type: vscode.FileChangeType.Changed, uri: vscode.Uri.from({ path: "/", scheme: "zenn" }) }]);
+    this.emitter.fire([
+      { type: vscode.FileChangeType.Changed, uri: vscode.Uri.from({ path: "/", scheme: "zenn" }) }
+    ]);
   }
 
-  snapshot(): { path: string; type: vscode.FileType; ctime: number; mtime: number; size: number; data?: string }[] {
-    const entries: { path: string; type: vscode.FileType; ctime: number; mtime: number; size: number; data?: string }[] =
-      [];
+  snapshot(): {
+    path: string;
+    type: vscode.FileType;
+    ctime: number;
+    mtime: number;
+    size: number;
+    data?: string;
+  }[] {
+    const entries: {
+      path: string;
+      type: vscode.FileType;
+      ctime: number;
+      mtime: number;
+      size: number;
+      data?: string;
+    }[] = [];
     for (const [path, entry] of this.files.entries()) {
       entries.push({
         path,

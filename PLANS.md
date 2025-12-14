@@ -25,7 +25,7 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [x] GitHub Contents API との read/write/delete 実装（sha 管理・競合検知）
   - [x] 仮想FSと実ストレージの同期（URI → GitHub パス変換、pull/push）
   - [x] Contents API が1MB超で返さない場合に git.getBlob をフォールバックする同期とユニットテスト
-  - [ ] TreeDataProvider を GitHub 上の articles/books 構造から生成（LRU/ステータス表示）
+  - [x] TreeDataProvider を GitHub 上の articles/books 構造から生成（LRU/ステータス表示）
   - [ ] PAT認証にも対応すること（SecretStorage で PAT 保存/読み出しにより認証できるように）
   - [x] [High Priority] Signoutを実装
   - [ ] Scrap対応？そもそもScrapはGithubに置かれないから編集できない？
@@ -95,13 +95,66 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [x] 単体テスト/統合テスト追加（Commands/FS/Tree）
   - [x] README 改訂（セットアップ・認証手順・ワークフロー更新）
 
-- [ ] Books 機能（開発中）
+- [ ] Books 機能
   - [ ] GitHub 上の books/* 構造から Tree を構築（Book/Chapter 一覧・frontmatter 読込・ソート）
   - [ ] Book/Chapter 作成コマンド（slug 生成、frontmatter 初期値、章テンプレート）
   - [ ] Book/Chapter rename/move/delete（衝突・リンク整合性のハンドリング）
   - [ ] Book の published/非公開状態管理と Open on Zenn (book URL) 生成
   - [ ] Book/Chapter の preview パス解決（zenn preview 用の urlPath 生成）
   - [ ] 競合・同期エラー時の復帰導線（Book/Chapter 向け）
+
+- [x] 検索機能
+  - [x] Viewに検索ビューを設置
+    - [x] 検索バーを設置する。デザインはVSCodeの標準検索バーを踏襲すること。（置換機能は不要）
+      - [x] 検索対象および優先順位を「ファイル名、タイトル、本文」とする
+      - [x] 「大文字小文字を区別する」「単語単位で検索する」「正規表現を使用する」を検索バーの右端に設置（VSCode標準の検索機能と同様の機能を提供）
+        ```
+        Sidebar View (Webview)
+        ├─ SearchBar
+        │   ├─ input[type=text]
+        │   ├─ toggle: Aa
+        │   ├─ toggle: ab|
+        │   └─ toggle: .*
+        └─ ResultView
+            ├─ Section（File）
+            │   ├─ Match
+            │   └─ Match
+            └─ Section（File）
+        ```
+    - [x] 検索文字列が入力されたらViewに検索結果の表示を行う（スクロール可能、折りたたみ可能）
+    - [x] 以下を参考に作成せよ
+      ```json
+      "viewsWelcome": [
+        {
+          "view": "zennpad.repos",
+          "contents": "ex: Open any Zenn, by either its URL or ID.\n\n[$(folder-opened) Open Zenn](command:zennpad.openZennURL)\n\nManage your zenn articles, by signing in with a GitHub account.\n\n[$(github-inverted) Sign In](command:zennpad.signInGitHub)"
+        },
+        {
+          "view": "zennpad.search",
+          "contents": "todo: fill out it."
+        }
+      ]
+      ```
+    - [x] 同様に、現在のビューをzennpad.reposビュー以下に移管
+
+- [ ] 複数リポジトリ接続機能
+  - [ ] Zennは2つまでのGithubRepoと連携が可能
+  - [ ] Repositoriesビューを追加（既存のRepositoriesビューはFilesビューに改名）
+  - [ ] 登録されたリポジトリを一覧表示
+  - [ ] リポジトリを選んでアクティブにするとSync対象を切り替える→Filesビューに反映
+
+- [ ] Deploy制御機能
+  - [ ] Deploy回数の上限（1日150回）のうち、何回を消費しているかをUI上に表示する
+  - [ ] Deploy回数を計測するロジックを実装する
+  - [ ] Deploy回数はZennアカウントについて独立のため、複数のリポジトリから何回単一のZennアカウントに対してDeployしているかを計算する
+
+- [ ] 執筆日付関連機能
+  - [x] 日付順ソート
+  - [ ] 投稿ストリーク
+  - [ ] カレンダー表示
+  - [ ] Githubライクの草マップ表示
+
+- [ ] Scraps機能
 
 - [x] 時系列ソート（Articles/Books/Drafts）
   - [x] GitHub commits API で最新コミット日時を取得し更新日時をソートキーに反映（`GET /repos/:owner/:repo/commits?path=<path>&per_page=1`）
@@ -117,7 +170,7 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [x] Refresh 時はキャッシュ無視で取得し、成功後キャッシュ更新。失敗時はキャッシュを維持し通知
   - [ ] パース失敗や不整合時のフォールバック（キャッシュ破棄→通常取得）
 
-- [ ] 画像挿入（images/ に保存してリンク挿入）
+- [x] 画像挿入（images/ に保存してリンク挿入）
   - [x] markdown 向けに DocumentPasteEditProvider を登録し、クリップボードの image/png/jpeg を検知
   - [x] DocumentDropEditProvider を登録し、ドラッグ&ドロップした画像ファイルを検知
   - [x] 画像ファイル名の生成（日時+拡張子、重複時は -1, -2 などでリネーム）
@@ -151,11 +204,24 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [x] ユーザーが入力した場合はそれを優先し、未入力時のみランダムを使用する分岐を入れる
   - [x] テスト用に固定シード・モックを使える形にしておく（安定した検証のため）
 
-- [ ] Help、記事作成ガイドをVSCodeのWebviewで表示する機能を追加
-  - [ ] Help コマンドを追加し、WebviewPanel を開く
-  - [ ] Zenn の記事作成ガイドページを埋め込み、Webview 内で表示
-  - [ ] Webview 内でのリンククリックを外部ブラウザで開くように制御
-  - [ ] ユーザーが必要に応じてアクセスできるように、Activity Bar に Help ノードを追加
+- [x] Help、記事作成ガイドをVSCodeのWebviewで表示する機能を追加 -> Actionsビューに統合
+  - [x] Help コマンドを追加し、WebviewPanel を開く
+  - [x] Zenn の記事作成ガイドページを埋め込み、Webview 内で表示
+  - [x] Webview 内でのリンククリックを外部ブラウザで開くように制御
+  - [x] ユーザーが必要に応じてアクセスできるように、Activity Bar に Help ノードを追加
+  - [x] Help ガイドのリンクをプレビューパネルに連動
+    - [x] Help Webview から previewPath を postMessage し VSCode コマンド経由で受け付ける
+    - [x] PreviewManager に navigate API を追加して既存プレビューパネルを開きパス変更する
+    - [x] プレビュー未起動時の起動・パネル生成とパスバリデーション（toPreviewUrlPath）を実装
+  - [x] WebviewからTreeビューに変更
+
+- [x] Actionsビューの作成
+  - [x] Webviewタイプのビューを追加→Treeビューに変更
+  - [x] Githubにサインイン、設定を開くボタンを追加する
+  - [x] Zennユーザー名の入力欄の作成。入力欄の右側に「Open Zenn」ボタンを追加
+  - [x] リポジトリ切り替え（Activateするリポジトリにはチェックを入れる）
+    - [x] あと回しでOK。とりあえず現在は「Coming soon」とだけ表示しておいて
+  - [x] ガイド（WebviewでPreviewペインを開き、該当のガイドページにジャンプする）
 
 - [x] UI改善：TreeView アイコンのカスタマイズ
   - [x] コアUI
@@ -178,10 +244,8 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
       - ここで指定されたアカウントが`zenn.dev/{username}`として、Open on Zennコマンドで使用される
       - 指定されていない場合は、デフォルトでGitHub認証に使用しているアカウント名を利用する
       - デフォルト: 空欄（GitHub認証アカウント名を使用）
-    - (<divider />)
     - 自動同期の有効/無効切替
     - サインイン/サインアウト
-    - (<divider />)
     - サインイン中のアカウント名/repo名表示
   - [x] Activity BarのタイトルバーのUI修正
     - [x] SyncPause/SyncOn を1つのボタンに集約し、トグルで状態を切り替えるように。また、状態に合わせたアイコンを表示すること
@@ -190,245 +254,37 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
     - [x] スピナーを表示するヘルパー (StatusBarController.withSpinner) を追加し、deployToZenn と pauseAutoSync / resumeAutoSync 実行中に $(sync~spin) で進行中を示すようにした
     - [x] `Github(<uesr-id>/<repo-name>) -> Zenn(<user-id>)`的なソースとDistがわかりやすくなるような表示をステータスバーに表示したい。
     - [ ] ステータスバーの表示に「media/logo-only-white.svg」や「media/logo-only.svg」を使用
-  - [ ] コンテキストウィンドウのUI修正
-    - [ ] 「ZennPad: <コマンドを名>」と表示されているのを「<コマンド名>」としたい。愚直にPZennPadを取り除くとVSCodeの検索で出てこなくなるため注意
-    - [ ] 現在はすべてのコマンドが並列だが、ディバイダーをいれるなどしてコマンドの種類ごとにある程度整理して提示するようにしたい
-  - [ ] エディター側のコンテキストウィンドウ
-    - [ ] 以下のコマンドをコンテキストウィンドウに追加する
-      - [ ] Insert image
-      - [ ] Make unpublished(published: trueのみ)
-      - [ ] Make published(published: falseのみ)
-      - [ ] Deploy to Zenn
-      - [ ] Open in GitHub
-      - [ ] Open in Zenn(published: trueのみ)
-      - [ ] Copy GitHub URL
-      - [ ] Copy Zenn URL(published: trueのみ)
-  - [ ] 多言語対応
+  - [x] コンテキストウィンドウのUI修正
+    - [x] 「ZennPad: <コマンドを名>」と表示されているのを「<コマンド名>」としたい。愚直にZennPadを取り除くとVSCodeの検索で出てこなくなるため注意
+    - [x] 現在はすべてのコマンドが並列だが、ディバイダーをいれるなどしてコマンドの種類ごとにある程度整理して提示するようにしたい
+  - [x] エディター側のコンテキストウィンドウ
+    - [x] 以下のコマンドをコンテキストウィンドウに追加する
+      - [x] Preview
+      - [x] Insert image
+      - [x] Make unpublished(published: trueのみ)
+      - [x] Make published(published: falseのみ)
+      - [x] Deploy to Zenn
+      - [x] Open in GitHub
+      - [x] Open in Zenn(published: trueのみ)
+      - [x] Copy GitHub URL
+      - [x] Copy Zenn URL(published: trueのみ)
+  - [x] Preview開始ボタンの横(`editor/title`)に「Open on Zenn/ Zennで開く」ボタンを追加する
+  - [x] 多言語対応
+  - [ ] `view/title`にCollapse/Expandボタンを追加、トグルするように。ソートの隣
+  - [ ] メニューのファイルツリーのコンテキストウィンドウ
+    - [ ] .md/ 画像ファイル以外についても汎用的な「複製、削除、名前を変更」を表示するように変更
+  - [ ] メニューのファイルツリーについて、既定の「images/books/articles」以外のフォルダがあった場合、それも表示するように。順序は一番下。
 
-- [ ] identifierを`zennpad`に変更
+- [x] SearchViewのWelcomeViewにて拡張機能の紹介を行う
+  - [x] カルーセルを設置
+  - [x] 3ページ程度でこのツールの機能を紹介
+
+- [x] identifierを`zennpad`に変更
 
 - [ ] Marketplaceに公開(https://marketplace.visualstudio.com/)
-  - [ ] VSIXファイルフォーマットに変換
+  - [x] VSIXファイルフォーマットに変換
 
 ## メモ
 
 - GitHub連携、プレビュー、画像貼り付け、work/mainデプロイなどのコア機能はひと通り実装済み。残件は Books/PAT対応やキャッシュ失効ポリシーなど。
 - UI 開発が走る際は screenshot 自動生成タスクを Makefile + Python スクリプトで用意し、AGENTS.md に利用手順を追記すること。
-
-## 参考用のディレクトリ構造
-
-lostintangent/gistpad
-```
-├── README.md
-├── images
-    ├── daily.svg
-    ├── dark
-    │   ├── code-snippet-secret.svg
-    │   ├── code-snippet.svg
-    │   ├── code-swing-secret.svg
-    │   ├── code-swing-template-secret.svg
-    │   ├── code-swing-template.svg
-    │   ├── code-swing-tutorial-secret.svg
-    │   ├── code-swing-tutorial.svg
-    │   ├── code-swing.svg
-    │   ├── code-tour-secret.svg
-    │   ├── code-tour.svg
-    │   ├── diagram-secret.svg
-    │   ├── diagram.svg
-    │   ├── flash-code-secret.svg
-    │   ├── flash-code.svg
-    │   ├── note-secret.svg
-    │   ├── note.svg
-    │   ├── notebook-secret.svg
-    │   ├── notebook.svg
-    │   ├── sort-alphabetical.svg
-    │   ├── sort-time.svg
-    │   └── tag.svg
-    ├── icon-activity.svg
-    ├── icon-small.png
-    ├── icon.png
-    ├── light
-    │   ├── code-snippet-secret.svg
-    │   ├── code-snippet.svg
-    │   ├── code-swing-secret.svg
-    │   ├── code-swing-template-secret.svg
-    │   ├── code-swing-template.svg
-    │   ├── code-swing-tutorial-secret.svg
-    │   ├── code-swing-tutorial.svg
-    │   ├── code-swing.svg
-    │   ├── code-tour-secret.svg
-    │   ├── code-tour.svg
-    │   ├── diagram-secret.svg
-    │   ├── diagram.svg
-    │   ├── flash-code-secret.svg
-    │   ├── flash-code.svg
-    │   ├── note-secret.svg
-    │   ├── note.svg
-    │   ├── notebook-secret.svg
-    │   ├── notebook.svg
-    │   ├── sort-alphabetical.svg
-    │   ├── sort-time.svg
-    │   └── tag.svg
-    └── star.svg
-├── manifests
-    └── showcase.json
-├── package.json
-├── src
-    ├── abstractions
-    │   ├── browser
-    │   │   ├── images
-    │   │   │   └── pasteImage.ts
-    │   │   └── simple-git.ts
-    │   └── node
-    │   │   └── images
-    │   │       ├── clipboardToImageBuffer.ts
-    │   │       ├── pasteImage.ts
-    │   │       ├── pasteImageAsBase64.ts
-    │   │       ├── pasteImageAsFile.ts
-    │   │       ├── scripts
-    │   │           ├── linux.sh
-    │   │           ├── mac.applescript
-    │   │           └── win.ps1
-    │   │       └── utils
-    │   │           ├── createImageMarkup.ts
-    │   │           ├── createUploadMarkup.ts
-    │   │           ├── pasteImageMarkup.ts
-    │   │           └── randomInt.ts
-    ├── autoSave.ts
-    ├── commands
-    │   ├── auth.ts
-    │   ├── comments.ts
-    │   ├── daily.ts
-    │   ├── directory.ts
-    │   ├── editor.ts
-    │   ├── file.ts
-    │   ├── follow.ts
-    │   ├── gist.ts
-    │   ├── index.ts
-    │   ├── notebook.ts
-    │   └── tour.ts
-    ├── comments
-    │   └── index.ts
-    ├── config.ts
-    ├── constants.ts
-    ├── extension.ts
-    ├── fileSystem
-    │   ├── api.ts
-    │   ├── git.ts
-    │   └── index.ts
-    ├── mcp.ts
-    ├── output.ts
-    ├── repos
-    │   ├── commands.ts
-    │   ├── comments
-    │   │   ├── actions.ts
-    │   │   ├── commands.ts
-    │   │   └── index.ts
-    │   ├── fileSystem.ts
-    │   ├── index.ts
-    │   ├── store
-    │   │   ├── actions.ts
-    │   │   ├── index.ts
-    │   │   └── storage.ts
-    │   ├── tours
-    │   │   ├── actions.ts
-    │   │   ├── commands.ts
-    │   │   └── index.ts
-    │   ├── tree
-    │   │   ├── index.ts
-    │   │   └── nodes.ts
-    │   ├── utils.ts
-    │   └── wiki
-    │   │   ├── actions.ts
-    │   │   ├── commands.ts
-    │   │   ├── comments.ts
-    │   │   ├── completionProvider.ts
-    │   │   ├── config.ts
-    │   │   ├── decorator.ts
-    │   │   ├── hoverProvider.ts
-    │   │   ├── index.ts
-    │   │   ├── linkProvider.ts
-    │   │   ├── markdownPreview.ts
-    │   │   ├── statusBar.ts
-    │   │   └── utils.ts
-    ├── showcase
-    │   ├── index.ts
-    │   ├── store.ts
-    │   └── tree.ts
-    ├── store
-    │   ├── actions.ts
-    │   ├── auth.ts
-    │   ├── index.ts
-    │   └── storage.ts
-    ├── swings
-    │   └── index.ts
-    ├── tour.ts
-    ├── tree
-    │   ├── index.ts
-    │   └── nodes.ts
-    ├── uriHandler.ts
-    └── utils.ts
-├── tsconfig.json
-
-```
-
-negokaz/vscode-zenn-editor
-```
-├── media
-    └── icon
-    │   ├── draft.svg
-    │   ├── lock.svg
-    │   ├── preview-dark.svg
-    │   ├── preview-light.svg
-    │   ├── published.svg
-    │   └── unlock.svg
-├── package.json
-├── src
-    ├── extension
-    │   ├── extension.ts
-    │   ├── preview
-    │   │   ├── previewBackend.ts
-    │   │   ├── previewDocument.ts
-    │   │   ├── previewView.ts
-    │   │   └── previewViewManager.ts
-    │   ├── resource
-    │   │   └── extensionResource.ts
-    │   ├── statusBar
-    │   │   └── imageUploaderItem.ts
-    │   ├── treeView
-    │   │   ├── articles.ts
-    │   │   ├── books.ts
-    │   │   ├── markdownMeta.ts
-    │   │   ├── openZennTreeViewItemCommand.ts
-    │   │   ├── workspace.ts
-    │   │   ├── zennTreeItem.ts
-    │   │   ├── zennTreeViewManager.ts
-    │   │   └── zennTreeViewProvider.ts
-    │   ├── util
-    │   │   ├── uri.ts
-    │   │   └── zennWorkspace.ts
-    │   └── zenncli
-    │   │   ├── zennCli.ts
-    │   │   ├── zennNewArticle.ts
-    │   │   ├── zennNewBook.ts
-    │   │   ├── zennPreview.ts
-    │   │   ├── zennPreviewProxyServer.ts
-    │   │   └── zennVersion.ts
-    ├── test
-    │   ├── runTest.ts
-    │   └── suite
-    │   │   ├── extension.test.ts
-    │   │   └── index.ts
-    └── webview
-    │   ├── full-page-iframe.css
-    │   ├── proxyView
-    │       └── proxyView.ts
-    │   └── webview
-    │       └── webview.ts
-├── tsconfig.extension.json
-├── tsconfig.json
-├── tsconfig.webview.json
-├── vsc-extension-quickstart.md
-├── webpack.config.js
-└── yarn.lock
-```

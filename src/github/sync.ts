@@ -172,7 +172,12 @@ export class GitHubSync {
       const { headSha, treeSha } = await getHeadRefs(repoConfig.workBranch, octokit, repoConfig);
 
       const snapshot = this.state.snapshot();
-      const treeEntries = await buildTreeEntries(octokit, repoConfig, snapshot.writes, snapshot.deletes);
+      const treeEntries = await buildTreeEntries(
+        octokit,
+        repoConfig,
+        snapshot.writes,
+        snapshot.deletes
+      );
       if (treeEntries.length === 0) {
         return;
       }
@@ -222,7 +227,9 @@ export class GitHubSync {
       }
       const status = (error as { status?: number }).status;
       if (status === 409) {
-        throw new Error("work → main のマージでコンフリクトが発生しました。GitHub上で解消してください。");
+        throw new Error(
+          "work → main のマージでコンフリクトが発生しました。GitHub上で解消してください。"
+        );
       }
       throw error;
     }

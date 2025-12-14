@@ -73,7 +73,9 @@ async function deployToZenn(githubSync: GitHubSync): Promise<void> {
   try {
     await githubSync.flushPendingUnsafe();
     await githubSync.deployWorkToMain();
-    vscode.window.showInformationMessage(`Deployed ${workBranch} to ${mainBranch} and pushed for Zenn.`);
+    vscode.window.showInformationMessage(
+      `Deployed ${workBranch} to ${mainBranch} and pushed for Zenn.`
+    );
   } catch (error) {
     vscode.window.showErrorMessage(`[ZennPad] Failed to deploy work branch to main: ${error}`);
   }

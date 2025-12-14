@@ -8,18 +8,19 @@ import { GitHubSync } from "./github/sync";
 import { ContentCache } from "./utils/contentCache";
 import { registerImageInsertionProviders } from "./ui/imageInsertion";
 import { registerCommands } from "./commands/registerCommands";
-import { setAutoSyncContext, setSortOrderContext, updatePreviewableContext } from "./context";
+import { setAutoSyncContext, setSortOrderContext, updateActiveDocumentContext } from "./context";
 import { getMainBranch, getRepoConfigSummary, getZennOwner, validateRepoConfig } from "./config";
 import { StatusBarController } from "./ui/statusBar";
+import { SearchViewProvider } from "./ui/searchView";
+import { ActionsViewProvider } from "./ui/actionsView";
 
 export function activate(context: vscode.ExtensionContext): void {
-  vscode.commands.executeCommand("setContext", "zennpad.activated", true);
-
   const scheme = "zenn";
   const fsProvider = new ZennFsProvider();
   let contentCache = new ContentCache(context.globalStorageUri, buildCacheNamespace());
   const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
-  const statusBar = new StatusBarController(statusBarItem);
+  const statusBar = new StatusBarController(statusBarItem, context.extensionUri);
+  globalStatusBar = statusBar;
   context.subscriptions.push(statusBarItem);
   seedScaffoldContent(fsProvider, scheme);
   context.subscriptions.push(
@@ -28,10 +29,22 @@ export function activate(context: vscode.ExtensionContext): void {
     })
   );
 
-  const treeDataProvider = new ZennTreeDataProvider(fsProvider, context.extensionUri, scheme);
+  const treeDataProvider = new ZennTreeDataProvider(fsProvider, scheme);
   globalTreeDataProvider = treeDataProvider;
   context.subscriptions.push(
-    vscode.window.registerTreeDataProvider("zennPadExplorer", treeDataProvider)
+    vscode.window.registerTreeDataProvider("zennpad.repos", treeDataProvider)
+  );
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(
+      SearchViewProvider.viewId,
+      new SearchViewProvider(context.extensionUri, fsProvider, scheme)
+    )
+  );
+  context.subscriptions.push(
+    vscode.window.registerTreeDataProvider(
+      ActionsViewProvider.viewId,
+      new ActionsViewProvider(context)
+    )
   );
   setSortOrderContext(treeDataProvider.getSortOrder());
   applyBranchInfo(treeDataProvider);
@@ -44,6 +57,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const previewManager = new PreviewManager(previewWorkspace, context);
   globalPreviewManager = previewManager;
   const githubSync = new GitHubSync(fsProvider);
+  globalGithubSync = githubSync;
   setAutoSyncContext(githubSync.isAutoSyncPaused());
   githubSync.onPendingChange((paths) => {
     treeDataProvider.setDirtyPaths(paths);
@@ -72,7 +86,7 @@ export function activate(context: vscode.ExtensionContext): void {
       vscode.window.showWarningMessage(`[ZennPad] GitHub sync skipped: ${message}`);
     }
   })();
-  updatePreviewableContext();
+  updateActiveDocumentContext();
 
   registerCommands(context, {
     fsProvider,
@@ -105,8 +119,13 @@ export function activate(context: vscode.ExtensionContext): void {
         vscode.window.showWarningMessage(`[ZennPad] Failed to persist cache: ${message}`);
       }
     }),
-    vscode.window.onDidChangeActiveTextEditor(() => updatePreviewableContext()),
-    vscode.workspace.onDidOpenTextDocument(() => updatePreviewableContext()),
+    vscode.window.onDidChangeActiveTextEditor(() => updateActiveDocumentContext()),
+    vscode.workspace.onDidOpenTextDocument(() => updateActiveDocumentContext()),
+    vscode.workspace.onDidChangeTextDocument((event) => {
+      if (event.document === vscode.window.activeTextEditor?.document) {
+        updateActiveDocumentContext(event.document);
+      }
+    }),
     vscode.authentication.onDidChangeSessions(async (e) => {
       if (e.provider.id === "github") {
         await updateAuthStatus();
@@ -119,11 +138,13 @@ export function activate(context: vscode.ExtensionContext): void {
         updateStatusBar(statusBar, githubSync);
         // reload cache with new namespace on config changes
         contentCache = new ContentCache(context.globalStorageUri, buildCacheNamespace());
+        updateActiveDocumentContext();
       }
     })
   );
 
   updateStatusBar(statusBar, githubSync);
+  void vscode.commands.executeCommand("setContext", "zennpad.activated", true);
 }
 
 export function deactivate(): void {
@@ -154,16 +175,19 @@ function applyBranchInfo(treeDataProvider: ZennTreeDataProvider): void {
   treeDataProvider.setBranchInfo({ workBranch, mainBranch });
 }
 
-async function updateAuthStatus(): Promise<void> {
+async function updateAuthStatus(forceSignedOut = false): Promise<void> {
   const session = await vscode.authentication.getSession("github", ["repo"], {
     createIfNone: false,
     silent: true
   });
-  const hasSession = Boolean(session);
+  const hasSession = forceSignedOut ? false : Boolean(session);
   const hasRepoConfig = Boolean(getRepoConfigSummary());
   void vscode.commands.executeCommand("setContext", "zennpad.isSignedIn", hasSession);
   void vscode.commands.executeCommand("setContext", "zennpad.hasRepoConfig", hasRepoConfig);
   globalTreeDataProvider?.setStatus({ signedIn: hasSession, hasRepoConfig });
+  if (globalStatusBar && globalGithubSync) {
+    updateStatusBar(globalStatusBar, globalGithubSync);
+  }
 }
 
 function handleAuthError(error: unknown, action: string): void {
@@ -171,7 +195,10 @@ function handleAuthError(error: unknown, action: string): void {
   const message = error instanceof Error ? error.message : String(error);
   if (status === 409) {
     void vscode.window
-      .showErrorMessage(`[ZennPad] Conflict detected while trying to ${action}.`, "Refresh from GitHub")
+      .showErrorMessage(
+        `[ZennPad] Conflict detected while trying to ${action}.`,
+        "Refresh from GitHub"
+      )
       .then((choice) => {
         if (choice === "Refresh from GitHub") {
           void vscode.commands.executeCommand("zennpad.refresh");
@@ -181,12 +208,16 @@ function handleAuthError(error: unknown, action: string): void {
   }
   if (status === 401 || status === 403) {
     void vscode.window
-      .showErrorMessage(`[ZennPad] GitHub authentication required to ${action}.`, "Sign in", "Open Settings")
+      .showErrorMessage(
+        `[ZennPad] GitHub authentication required to ${action}.`,
+        "Sign in",
+        "Open Settings"
+      )
       .then((choice) => {
         if (choice === "Sign in") {
           void vscode.commands.executeCommand("zennpad.signIn");
         } else if (choice === "Open Settings") {
-          void vscode.commands.executeCommand("zennpad.openSettings");
+          void vscode.commands.executeCommand("zennpad.openSettingsPanel");
         }
       });
     return;
@@ -196,6 +227,8 @@ function handleAuthError(error: unknown, action: string): void {
 
 let globalTreeDataProvider: ZennTreeDataProvider | undefined;
 let globalPreviewManager: PreviewManager | undefined;
+let globalStatusBar: StatusBarController | undefined;
+let globalGithubSync: GitHubSync | undefined;
 
 function buildCacheNamespace(): string {
   const config = vscode.workspace.getConfiguration("zennpad");

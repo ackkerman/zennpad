@@ -72,7 +72,7 @@ VS Code Extension
 └─ Auth / Storage
 └─ GitHub Token (VS Code SecretStorage)
 
-````
+```
 
 三本柱: **Tree + 仮想FS + コマンド**
 
@@ -168,38 +168,37 @@ published: false
 ---
 
 本文…
-````
+```
 
 UI は段階導入:
 
-* Phase 1: QuickPick / InputBox で編集
-* Phase 2: Webview（Inspector パネル）で編集体験を改善
+- Phase 1: QuickPick / InputBox で編集
+- Phase 2: Webview（Inspector パネル）で編集体験を改善
 
 ---
 
 ### 6. Markdown プレビュー（Zenn 互換）
 
-* Markdown プレビュー（Zenn レンダリング互換）を提供する
-* 保存 → 数秒で Zenn 上に反映される前提のため、公開後 URL への即ジャンプ導線を用意する
+- Markdown プレビュー（Zenn レンダリング互換）を提供する
+- 保存 → 数秒で Zenn 上に反映される前提のため、公開後 URL への即ジャンプ導線を用意する
 
 ---
 
 ### 7. 知識ストックとしての再利用導線
 
-* 記事断片をスニペット的に保存できる（任意機能）
-* 過去記事からコピペしやすい UX（検索・最近使った）
-* Book 化を前提とした再構成がしやすい
+- 記事断片をスニペット的に保存できる（任意機能）
+- 過去記事からコピペしやすい UX（検索・最近使った）
+- Book 化を前提とした再構成がしやすい
 
 ---
 
 ### 8. 差分管理・競合検知
 
-* 保存前に現行の `sha` を保持する
-* 更新時に競合（409）を検知する
-* 競合時の UX:
-
-  * ローカル差分を退避（ローカルファイル/一時領域）
-  * 手動マージを促す（diff 表示 or 競合解消手順の提示）
+- 保存前に現行の `sha` を保持する
+- 更新時に競合（409）を検知する
+- 競合時の UX:
+  - ローカル差分を退避（ローカルファイル/一時領域）
+  - 手動マージを促す（diff 表示 or 競合解消手順の提示）
 
 ---
 
@@ -207,55 +206,54 @@ UI は段階導入:
 
 最低限:
 
-* `Zenn: New Article`
-* `Zenn: Publish Article`
-* `Zenn: Unpublish Article`
-* `Zenn: Open on Zenn`
-* `Zenn: Refresh`
+- `Zenn: New Article`
+- `Zenn: Publish Article`
+- `Zenn: Unpublish Article`
+- `Zenn: Open on Zenn`
+- `Zenn: Refresh`
 
 要件:
 
-* Tree 右クリック（Context Menu）と Command Palette の両方から実行可能
-* 実行結果は通知（成功/失敗/競合）で明確化
+- Tree 右クリック（Context Menu）と Command Palette の両方から実行可能
+- 実行結果は通知（成功/失敗/競合）で明確化
 
 ---
 
 ## 設定要件（Settings）
 
-* GitHub Owner / Repo
+- GitHub Owner / Repo
+  - 例: `ackkerman/ackkerman-zenn`
 
-  * 例: `ackkerman/ackkerman-zenn`
-* Branch（デフォルト: `main`）
-* Sync on Save（on/off）
-* Auto Save（VS Code の autosave との干渉を避けるため、拡張側でも制御可能にする）
-* Daily Draft の命名規則（任意）
+- Branch（デフォルト: `main`）
+- Sync on Save（on/off）
+- Auto Save（VS Code の autosave との干渉を避けるため、拡張側でも制御可能にする）
+- Daily Draft の命名規則（任意）
 
 ---
 
 ## 認証要件（Security / Token）
 
-* PAT は VS Code SecretStorage に保存する
+- PAT は VS Code SecretStorage に保存する
+  - `context.secrets.store("zennpad.githubToken", token)`
 
-  * `context.secrets.store("zennpad.githubToken", token)`
-* トークン入力は初回または再認証時に促す
-* 最小スコープで運用する（`repo:contents`）
-* トークンをログに出さない（マスク徹底）
+- トークン入力は初回または再認証時に促す
+- 最小スコープで運用する（`repo:contents`）
+- トークンをログに出さない（マスク徹底）
 
 ---
 
 ## 非機能要件
 
-* Zenn API / 非公式 API / scraping は使用しない（本拡張の責務外）
+- Zenn API / 非公式 API / scraping は使用しない（本拡張の責務外）
+  - 反映は GitHub Repo → Zenn 自動同期を前提とする
 
-  * 反映は GitHub Repo → Zenn 自動同期を前提とする
-* 認証トークンの安全な管理（SecretStorage）
-* オフライン時の一時保存（Draft）
+- 認証トークンの安全な管理（SecretStorage）
+- オフライン時の一時保存（Draft）
+  - GitHub への書き込み失敗時、編集内容を失わない
 
-  * GitHub への書き込み失敗時、編集内容を失わない
-* レート制限対応
-
-  * 取得結果のキャッシュ
-  * Tree 更新頻度の制御（手動 refresh を基本）
+- レート制限対応
+  - 取得結果のキャッシュ
+  - Tree 更新頻度の制御（手動 refresh を基本）
 
 ---
 
@@ -298,11 +296,9 @@ UI は段階導入:
 ### FileSystemProvider 登録（スケルトン）
 
 ```ts
-vscode.workspace.registerFileSystemProvider(
-  "zenn",
-  new ZennFsProvider(),
-  { isCaseSensitive: true }
-);
+vscode.workspace.registerFileSystemProvider("zenn", new ZennFsProvider(), {
+  isCaseSensitive: true
+});
 ```
 
 ### 保存時の GitHub 更新（Contents API）
@@ -322,9 +318,9 @@ await octokit.repos.createOrUpdateFileContents({
 
 ## マイルストーン（提案）
 
-* M1: 認証 + Tree 表示（articles/books の一覧）
-* M2: 仮想FS read/write（開く・保存する）
-* M3: New Article / Publish / Unpublish / Delete
-* M4: 競合検知（409）と退避
-* M5: Zenn 互換プレビュー / Open on Zenn
-* M6: Daily Draft / LRU / 検索・フィルタ
+- M1: 認証 + Tree 表示（articles/books の一覧）
+- M2: 仮想FS read/write（開く・保存する）
+- M3: New Article / Publish / Unpublish / Delete
+- M4: 競合検知（409）と退避
+- M5: Zenn 互換プレビュー / Open on Zenn
+- M6: Daily Draft / LRU / 検索・フィルタ

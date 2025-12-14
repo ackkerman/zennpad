@@ -4,11 +4,13 @@ import { registerContentCommands } from "./content";
 import { registerPreviewCommands } from "./preview";
 import { registerSortCommands } from "./sort";
 import { registerSyncCommands } from "./sync";
+import { registerHelpCommands } from "./help";
 import { updatePreviewableContext } from "../context";
 import { CommandDeps } from "./types";
 
 export function registerCommands(context: vscode.ExtensionContext, deps: CommandDeps): void {
   const disposables: vscode.Disposable[] = [
+    vscode.commands.registerCommand("zennpad.contextCaption", () => undefined),
     ...registerAuthCommands(context, deps),
     ...registerContentCommands(context, deps),
     ...registerPreviewCommands(context, {
@@ -16,7 +18,8 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
       previewManager: deps.previewManager
     }),
     ...registerSyncCommands(context, deps, deps.treeDataProvider),
-    ...registerSortCommands(context, deps, deps.treeDataProvider)
+    ...registerSortCommands(context, deps, deps.treeDataProvider),
+    ...registerHelpCommands()
   ];
 
   disposables.forEach((d) => context.subscriptions.push(d));
