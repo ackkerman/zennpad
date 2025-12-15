@@ -35,6 +35,7 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [x] Frontmatter 生成・更新ロジック（title/emoji/type/topics/published）
   - [x] Publish/Unpublish コマンドで frontmatter の published 切替
   - [x] Open on Zenn コマンドでブラウザ遷移（公開/下書き URL 判定）
+    - [x] Book chapter を chapters/<slug> の URL へ誘導し、未公開時は preview=1 を付与する
   - [x] 競合時のハンドリング（409 時のメッセージと再取得導線）
   - [x] Markdown プレビュー（Zenn 互換レンダラー/導線）
 
