@@ -17,6 +17,10 @@ test:
 lint:
 	$(PNPM) lint
 
+optimize-icons:
+	svgo --folder ./media/logo -o ./media/logo
+	svgo --folder ./media/icon -o ./media/icon
+
 # Build VS Code 拡張の .vsix パッケージ（必要時のみ）
 package:
 	rm -rf out/ *.vsix
