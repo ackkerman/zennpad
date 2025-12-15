@@ -1,8 +1,11 @@
 # CHANGELOG
 
-## Unreleased
+## v0.1.1
 
 ### 追加
+- GitHub サインイン完了時に githubOwner を自動補完し、リポジトリ選択を QuickPick 化（owner/repo 同期・所属リポジトリも含む）して設定フローを簡素化（src/commands/auth.ts, src/github/auth.ts, src/github/repoPicker.ts, src/ui/settings/panel.ts）。
+- GitHub sync のユニットテストを追加し、リモート未存在ファイルのプルーンや Blob フォールバックをカバー（src/__tests__/githubSync.test.ts）。
+- 変更差分からリリースノートを生成するスクリプトを追加（.github/workflows/scripts/generate-release-notes.sh）。
 - ActionsビューをTreeView化し、Sign in / Settings / Open Zennに加えてヘルプリンクも同ビューに統合。ヘルプリンクはプレビュー経由（preview.openPath）または外部ブラウザで開くようにした（src/ui/actionsView.ts, src/ui/helpGuide.ts, package.json）。
 - ActionsビューからZennユーザー名を入力して `zennpad.zennAccount` を更新し、`https://zenn.dev/{username}` を開ける導線を追加（src/ui/actionsView.ts）。
 - Repositoriesツリーで任意フォルダを新規作成できる `zennpad.newFolder` を追加し、articles/books/images 以外のフォルダもツリー末尾に表示・展開できるようにした（src/commands/content.ts, src/ui/tree/zennTreeDataProvider.ts, package.json）。
@@ -11,6 +14,9 @@
 - `resolveGitHubFileBuffer`のフォールバック動作をカバーするユニットテストを追加し、GitHub同期が大きなファイルでも途切れないことを検証（src/__tests__/githubSync.test.ts）。
 
 ### 修正
+- Book/Chapter の Zenn URL 生成でプレビュー/公開 URL を正しく分岐し、非 Markdown 資産は URL を作らないようにした（src/commands/openOnZenn.ts, src/__tests__/openOnZenn.test.ts）。
+- GitHub pull 時に articles/books/images のディレクトリを自動生成し、リモートで削除されたエントリをローカルからもプルーンするようにした（src/github/sync.ts）。
+- Searchビューで検索結果の summary をクリック/Enter/Space で開けるようにし、ダブルクリック依存を解消（src/ui/searchView.ts）。
 - プレビュープロキシで `http://localhost:<port>` のヘルプリンクを動的ポートの相対パスとして扱い、zenn CLI 起動ポートが変わってもプレビューできるようにした。外部サイトは埋め込みを避け、既定ブラウザで開くよう分岐（src/preview/previewManager.ts, src/ui/helpGuide.ts）。
 - クリップボード貼り付け時に画像リンクが二重挿入される問題を修正（src/ui/imageInsertion.ts）。
 - GitHub Content APIが1MB超のファイルでcontentを返さないケースに備え、`git.getBlob`によるバイナリ取得へフォールバックする処理を追加し、プレビュー用の同期が画像など大きなファイルでも失敗しないようにした（src/github/fileContent.ts, src/github/sync.ts）。
@@ -25,3 +31,7 @@
 ### 変更
 - ステータスバーにZennPadロゴSVGを用い、ライト/ダークテーマに応じたブランド表示とツールチップを追加（src/ui/statusBar.ts, media/logo）。
 - コマンド表示・コンテキストキーを多言語対応で整理し、エディタタイトルに「Zennで開く」ボタンを追加するなどUI導線を改善（package.json ほか）。
+
+## v0.0.1
+
+- 初期リリース。
