@@ -26,6 +26,9 @@ package:
 	rm -rf out/ *.vsix
 	$(PNPM) exec vsce package --allow-star-activation
 
+run-gha:
+	act
+
 # pre-commit フックと同等の実行（手動確認用）
 pre-commit:
 	$(PNPM) exec pre-commit run --all-files

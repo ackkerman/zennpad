@@ -3,7 +3,7 @@
   "displayName": "ZennPad",
   "publisher": "ackkerman",
   "description": "VS Code extension scaffold for editing Zenn content directly from the sidebar.",
-  "icon": "media/logo/zennpad_icon_transparent_128.png",
+  "icon": "media/extension-logo.png",
   "version": "0.0.1",
   "packageManager": "pnpm@10.18.3",
   "repository": {
