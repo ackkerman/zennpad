@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { GitHubSync } from "../../github/sync";
+import { pickGitHubRepo } from "../../github/repoPicker";
 import {
   loadSettings,
   updateMainBranch,
@@ -49,13 +50,15 @@ export async function showSettingsPanel(
         label: strings.setRepo,
         description: snapshot.repo || strings.repoUnset,
         run: async () => {
-          const value = await vscode.window.showInputBox({
-            prompt: strings.repoPrompt,
-            value: snapshot.repo,
-            ignoreFocusOut: true
-          });
-          if (!value) return;
-          await updateRepo(value);
+          try {
+            const pick = await pickGitHubRepo(strings.repoPrompt);
+            if (!pick) return;
+            await updateOwner(pick.owner);
+            await updateRepo(pick.repo);
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            void vscode.window.showErrorMessage(`[ZennPad] Failed to choose repository: ${message}`);
+          }
         }
       },
       {
@@ -188,7 +191,7 @@ function localizedStrings(locale: string): {
       ownerPrompt: "GitHub owner (user or organization)",
       setRepo: "$(repo) GitHub repo を設定",
       repoUnset: "未設定",
-      repoPrompt: "GitHub repository name for Zenn content",
+      repoPrompt: "Zenn 用の GitHub リポジトリを選択",
       setMainBranch: "$(git-branch) main ブランチ名を設定",
       mainBranchDefault: "main",
       mainBranchPrompt: "Branch to deploy articles from",
@@ -219,7 +222,7 @@ function localizedStrings(locale: string): {
     ownerPrompt: "GitHub owner (user or organization)",
     setRepo: "$(repo) Set GitHub repo",
     repoUnset: "Not set",
-    repoPrompt: "GitHub repository name for Zenn content",
+    repoPrompt: "Select GitHub repository for Zenn content",
     setMainBranch: "$(git-branch) Set main branch",
     mainBranchDefault: "main",
     mainBranchPrompt: "Branch to deploy articles from",
