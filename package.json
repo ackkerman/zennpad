@@ -50,7 +50,7 @@
           "name": "Search",
           "icon": "media/icon/search.svg",
           "type": "webview",
-          "visibility": "collapsed"
+          "visibility": "visible"
         }
       ]
     },
@@ -238,7 +238,7 @@
         {
           "command": "zennpad.newArticle",
           "when": "view == zennpad.repos && (viewItem == articles || viewItem == drafts)",
-          "group": "z-create@0"
+          "group": "inline@0"
         },
         {
           "command": "zennpad.openZennRoot",
