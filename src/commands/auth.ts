@@ -1,8 +1,9 @@
 import * as vscode from "vscode";
-import { getOctokit, signInToGitHub, signOutFromGitHub } from "../github/auth";
+import { getAuthenticatedLogin, signInToGitHub, signOutFromGitHub } from "../github/auth";
 import { getMainBranch, getRepoConfigSummary, getZennOwner } from "../config";
 import { showSettingsPanel } from "../ui/settings/panel";
 import { CommandDeps } from "./types";
+import { pickGitHubRepo } from "../github/repoPicker";
 
 export function registerAuthCommands(
   context: vscode.ExtensionContext,
@@ -12,6 +13,17 @@ export function registerAuthCommands(
     vscode.commands.registerCommand("zennpad.signIn", async () => {
       try {
         await signInToGitHub();
+        const config = vscode.workspace.getConfiguration("zennpad");
+        const owner = config.get<string>("githubOwner")?.trim();
+        if (!owner) {
+          try {
+            const login = await getAuthenticatedLogin();
+            await config.update("githubOwner", login, vscode.ConfigurationTarget.Global);
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            console.warn("[ZennPad] Failed to set githubOwner from sign-in:", message);
+          }
+        }
         await deps.updateAuthStatus();
         const repo = getRepoConfigSummary();
         vscode.window.showInformationMessage(
@@ -72,30 +84,17 @@ export function registerAuthCommands(
     }),
     vscode.commands.registerCommand("zennpad.chooseRepo", async () => {
       try {
-        const octokit = await getOctokit();
-        const user = await octokit.rest.users.getAuthenticated();
-        const login = user.data.login;
-        const repos = await octokit.paginate(octokit.rest.repos.listForAuthenticatedUser, {
-          per_page: 100,
-          affiliation: "owner"
-        });
-        const pick = await vscode.window.showQuickPick(
-          repos.map((repoItem) => ({
-            label: repoItem.name,
-            description: repoItem.private ? `${login} (private)` : `${login} (public)`
-          })),
-          { placeHolder: "Select a GitHub repository for Zenn content" }
-        );
+        const pick = await pickGitHubRepo("Select a GitHub repository for Zenn content");
         if (!pick) {
           return;
         }
         const config = vscode.workspace.getConfiguration("zennpad");
-        await config.update("githubOwner", login, vscode.ConfigurationTarget.Global);
-        await config.update("githubRepo", pick.label, vscode.ConfigurationTarget.Global);
+        await config.update("githubOwner", pick.owner, vscode.ConfigurationTarget.Global);
+        await config.update("githubRepo", pick.repo, vscode.ConfigurationTarget.Global);
         await deps.updateAuthStatus();
         await deps.githubSync.pullAll();
         deps.treeDataProvider.refresh();
-        vscode.window.showInformationMessage(`Repository set to ${login}/${pick.label}`);
+        vscode.window.showInformationMessage(`Repository set to ${pick.owner}/${pick.repo}`);
       } catch (error) {
         deps.handleAuthError(error, "choose repository");
       }

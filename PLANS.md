@@ -284,6 +284,7 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
 - [ ] Marketplaceに公開(https://marketplace.visualstudio.com/)
   - [x] VSIXファイルフォーマットに変換
   - [ ] READMEファイルを拡張機能向けにリッチにする
+  - [ ] Welcomeビューにスクリーンショットを差し込む
 
 - [ ] プレビュー起動時にサイドバーを折りたたんで起動するように変更
 
