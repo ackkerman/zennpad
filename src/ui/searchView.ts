@@ -574,6 +574,14 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
       const errorEl = document.getElementById("error");
       const searchArea = document.getElementById("search-area");
       const searchBar = document.querySelector(".searchbar");
+      const getSummaryPath = (event) => {
+        const target = event.target;
+        if (!target || typeof target.closest !== "function") {
+          return undefined;
+        }
+        const summary = target.closest("summary[data-path]");
+        return summary ? summary.getAttribute("data-path") : undefined;
+      };
 
       const actionButtons = document.querySelectorAll("[data-action]");
       actionButtons.forEach((btn) => {
@@ -646,6 +654,28 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
         vscode.postMessage({ type: "search", query, options: state });
       }
 
+      if (resultsEl) {
+        resultsEl.addEventListener("click", (event) => {
+          const targetPath = getSummaryPath(event);
+          if (!targetPath) {
+            return;
+          }
+          event.preventDefault();
+          vscode.postMessage({ type: "open", path: targetPath });
+        });
+        resultsEl.addEventListener("keydown", (event) => {
+          if (event.key !== "Enter" && event.key !== " ") {
+            return;
+          }
+          const targetPath = getSummaryPath(event);
+          if (!targetPath) {
+            return;
+          }
+          event.preventDefault();
+          vscode.postMessage({ type: "open", path: targetPath });
+        });
+      }
+
       window.addEventListener("message", (event) => {
         const { type, results = [], error } = event.data || {};
         if (type === "requireSignIn") {
@@ -688,7 +718,7 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
               '<details open>' +
               '<summary data-path="' +
               item.path +
-              '">' +
+              '" tabindex="0">' +
               '<div class="path">' +
               escapeHtml(item.fileName) +
               "</div>" +
@@ -705,14 +735,6 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
           })
           .join("");
 
-        resultsEl.querySelectorAll("summary").forEach((node) => {
-          node.addEventListener("click", (e) => {
-            if (e.detail === 2) {
-              const targetPath = node.getAttribute("data-path");
-              vscode.postMessage({ type: "open", path: targetPath });
-            }
-          });
-        });
       });
 
       function renderProductTour() {
