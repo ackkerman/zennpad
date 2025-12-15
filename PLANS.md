@@ -25,7 +25,10 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [x] GitHub Contents API との read/write/delete 実装（sha 管理・競合検知）
   - [x] 仮想FSと実ストレージの同期（URI → GitHub パス変換、pull/push）
   - [x] Contents API が1MB超で返さない場合に git.getBlob をフォールバックする同期とユニットテスト
+  - [x] サインイン完了時に githubOwner をセッションの login で自動補完
+  - [x] リポジトリ選択を QuickPick 化し、owner/repo を同時更新（所属リポジトリも対象）
   - [x] TreeDataProvider を GitHub 上の articles/books 構造から生成（LRU/ステータス表示）
+  - [x] GitHub pull 時にリモートで削除されたファイルをローカルから除去し、ディレクトリ構造を正しく維持する
   - [ ] PAT認証にも対応すること（SecretStorage で PAT 保存/読み出しにより認証できるように）
   - [x] [High Priority] Signoutを実装
   - [ ] Scrap対応？そもそもScrapはGithubに置かれないから編集できない？
@@ -35,6 +38,7 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [x] Frontmatter 生成・更新ロジック（title/emoji/type/topics/published）
   - [x] Publish/Unpublish コマンドで frontmatter の published 切替
   - [x] Open on Zenn コマンドでブラウザ遷移（公開/下書き URL 判定）
+    - [x] Book chapter を chapters/<slug> の URL へ誘導し、未公開時は preview=1 を付与する
   - [x] 競合時のハンドリング（409 時のメッセージと再取得導線）
   - [x] Markdown プレビュー（Zenn 互換レンダラー/導線）
 
@@ -283,8 +287,14 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
 
 - [ ] Marketplaceに公開(https://marketplace.visualstudio.com/)
   - [x] VSIXファイルフォーマットに変換
+  - [ ] READMEファイルを拡張機能向けにリッチにする
+  - [ ] Welcomeビューにスクリーンショットを差し込む
+
+- [ ] プレビュー起動時にサイドバーを折りたたんで起動するように変更
 
 ## メモ
 
 - GitHub連携、プレビュー、画像貼り付け、work/mainデプロイなどのコア機能はひと通り実装済み。残件は Books/PAT対応やキャッシュ失効ポリシーなど。
 - UI 開発が走る際は screenshot 自動生成タスクを Makefile + Python スクリプトで用意し、AGENTS.md に利用手順を追記すること。
+- GitHub サインイン後に githubOwner を自動補完し、リポジトリ選択を QuickPick に統一。pull 時は articles/books/images のリモート削除もローカルへ反映するようになった。
+- Book/Chapter の Zenn URL 生成を修正し、Search 結果の summary クリック/Enter/Space でファイルを開けるようにした。

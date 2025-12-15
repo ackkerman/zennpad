@@ -3,6 +3,7 @@
 .git/**
 .github/**
 .gitignore
+.specify/**
 .mypy_cache/**
 .pytest_cache/**
 pnpm-lock.yaml
@@ -10,6 +11,7 @@ tsconfig.json
 Makefile
 PLANS.md
 docs/**
+specs/**
 scripts/**
 src/**
 __tests__/**

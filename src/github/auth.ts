@@ -14,6 +14,12 @@ export async function getOctokit(): Promise<Octokit> {
   return new Octokit({ auth: session.accessToken });
 }
 
+export async function getAuthenticatedLogin(): Promise<string> {
+  const octokit = await getOctokit();
+  const user = await octokit.rest.users.getAuthenticated();
+  return user.data.login;
+}
+
 export async function signInToGitHub(): Promise<void> {
   await vscode.authentication.getSession(providerId, scopes, { createIfNone: true });
 }
