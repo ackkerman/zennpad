@@ -26,6 +26,7 @@ ZennPad VS Code 拡張を docs/spec.md の要件に沿って実装するため�
   - [x] 仮想FSと実ストレージの同期（URI → GitHub パス変換、pull/push）
   - [x] Contents API が1MB超で返さない場合に git.getBlob をフォールバックする同期とユニットテスト
   - [x] TreeDataProvider を GitHub 上の articles/books 構造から生成（LRU/ステータス表示）
+  - [x] GitHub pull 時にリモートで削除されたファイルをローカルから除去し、ディレクトリ構造を正しく維持する
   - [ ] PAT認証にも対応すること（SecretStorage で PAT 保存/読み出しにより認証できるように）
   - [x] [High Priority] Signoutを実装
   - [ ] Scrap対応？そもそもScrapはGithubに置かれないから編集できない？

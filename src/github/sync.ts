@@ -46,9 +46,15 @@ export class GitHubSync {
     try {
       await ensureWorkBranch(octokit, repoConfig);
       await this.ensureDirectories();
-      await this.pullDirectory(octokit, repoConfig, "articles", repoConfig.workBranch);
-      await this.pullDirectory(octokit, repoConfig, "books", repoConfig.workBranch);
-      await this.pullDirectory(octokit, repoConfig, "images", repoConfig.workBranch);
+      const remotePaths = new Set<string>(["/", "/articles", "/books", "/images"]);
+      const roots = ["articles", "books", "images"] as const;
+      for (const root of roots) {
+        const pulled = await this.pullDirectory(octokit, repoConfig, root, repoConfig.workBranch);
+        for (const path of pulled) {
+          remotePaths.add(path);
+        }
+      }
+      this.pruneLocalEntries(remotePaths);
       this.notifyPendingChange();
     } finally {
       this.pulling = false;
@@ -240,7 +246,9 @@ export class GitHubSync {
     repoConfig: RepoConfig,
     remotePath: string,
     branch: string
-  ): Promise<void> {
+  ): Promise<Set<string>> {
+    const pulled = new Set<string>();
+    const directoryPath = `/${remotePath}`;
     try {
       const contents = await octokit.repos.getContent({
         owner: repoConfig.owner,
@@ -248,22 +256,29 @@ export class GitHubSync {
         path: remotePath,
         ref: branch
       });
+      this.ensureLocalDirectory(remotePath);
+      pulled.add(directoryPath);
       if (!Array.isArray(contents.data)) {
-        return;
+        return pulled;
       }
       for (const item of contents.data) {
         if (item.type === "file") {
-          await this.pullFile(octokit, repoConfig, item.path, branch);
+          const filePath = await this.pullFile(octokit, repoConfig, item.path, branch);
+          if (filePath) {
+            pulled.add(filePath);
+          }
         } else if (item.type === "dir") {
-          await this.pullDirectory(octokit, repoConfig, item.path, branch);
+          const nested = await this.pullDirectory(octokit, repoConfig, item.path, branch);
+          nested.forEach((path) => pulled.add(path));
         }
       }
     } catch (error) {
       if (isNotFoundError(error)) {
-        return;
+        return pulled;
       }
       throw error;
     }
+    return pulled;
   }
 
   private async pullFile(
@@ -271,7 +286,7 @@ export class GitHubSync {
     repoConfig: RepoConfig,
     path: string,
     branch: string
-  ): Promise<void> {
+  ): Promise<string | undefined> {
     const file = await octokit.repos.getContent({
       owner: repoConfig.owner,
       repo: repoConfig.repo,
@@ -285,15 +300,17 @@ export class GitHubSync {
       encoding?: string | null;
     };
     if (data.type !== "file") {
-      return;
+      return undefined;
     }
     const buffer = await resolveGitHubFileBuffer(octokit, repoConfig, data);
     if (!buffer) {
-      return;
+      return undefined;
     }
+    this.ensureLocalDirectory(path.substring(0, path.lastIndexOf("/")));
     this.state.setRemoteState(branch, path, data.sha, hashContent(buffer));
     const uri = vscode.Uri.from({ scheme: "zenn", path: `/${path}` });
     this.fsProvider.writeFile(uri, buffer, { create: true, overwrite: true });
+    return uri.path;
   }
 
   private async ensureDirectories(): Promise<void> {
@@ -304,6 +321,52 @@ export class GitHubSync {
         this.fsProvider.createDirectory(uri);
       } catch {
         // ignore
+      }
+    }
+  }
+
+  private ensureLocalDirectory(path: string): void {
+    const segments = path.split("/").filter(Boolean);
+    let current = "";
+    for (const segment of segments) {
+      current += `/${segment}`;
+      const uri = vscode.Uri.from({ scheme: "zenn", path: current });
+      try {
+        this.fsProvider.createDirectory(uri);
+      } catch {
+        // ignore existing entries
+      }
+    }
+    if (segments.length === 0) {
+      try {
+        this.fsProvider.createDirectory(vscode.Uri.from({ scheme: "zenn", path: "/" }));
+      } catch {
+        // ignore existing entries
+      }
+    }
+  }
+
+  private pruneLocalEntries(remotePaths: Set<string>): void {
+    const trackedRoots = ["/articles", "/books", "/images"];
+    const pending = this.state.getPendingPaths();
+    for (const entry of this.fsProvider.snapshot()) {
+      const path = entry.path;
+      if (path === "/") {
+        continue;
+      }
+      if (!trackedRoots.some((root) => path === root || path.startsWith(`${root}/`))) {
+        continue;
+      }
+      if (pending.has(path)) {
+        continue;
+      }
+      if (!remotePaths.has(path)) {
+        try {
+          const uri = vscode.Uri.from({ scheme: "zenn", path });
+          this.fsProvider.delete(uri, { recursive: true });
+        } catch (error) {
+          console.error(`[ZennPad] Failed to prune stale entry ${path}`, error);
+        }
       }
     }
   }
