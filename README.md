@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="./media/logo/logo-dark-color.svg" alt="ZennPad Logo" width="200" height="200"/>
+    <img src="./media/extension-logo.png" alt="ZennPad Logo" width="200" height="200"/>
     <h1>📘 ZennPad</h1>
     <h3><em>Zenn をより手軽に、身近に</em></h3>
 </div>
