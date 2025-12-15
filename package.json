@@ -4,7 +4,7 @@
   "publisher": "ackkerman",
   "description": "VS Code extension scaffold for editing Zenn content directly from the sidebar.",
   "icon": "media/extension-logo.png",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "packageManager": "pnpm@10.18.3",
   "repository": {
     "type": "git",

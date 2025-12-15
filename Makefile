@@ -26,6 +26,9 @@ package:
 	rm -rf out/ *.vsix
 	$(PNPM) exec vsce package --allow-star-activation
 
+publish:
+	$(PNPM) exec vsce publish --allow-star-activation
+
 run-gha:
 	act
 
