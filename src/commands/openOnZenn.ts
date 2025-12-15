@@ -10,9 +10,18 @@ export function buildZennUrl(owner: string, path: string, published: boolean): s
       ? `https://zenn.dev/${owner}/articles/${slug}`
       : `https://zenn.dev/${owner}/articles/${slug}?preview=1`;
   }
-  if (segments[0] === "books" && segments.length >= 3) {
+  if (segments[0] === "books" && segments.length >= 2) {
     const book = segments[1];
-    return `https://zenn.dev/${owner}/books/${book}`;
+    const configOrChapter = segments[2];
+    if (!configOrChapter || configOrChapter === "config.yaml") {
+      const bookUrl = `https://zenn.dev/${owner}/books/${book}`;
+      return published ? bookUrl : `${bookUrl}?preview=1`;
+    }
+    if (!configOrChapter.endsWith(".md")) return undefined;
+    const chapter = configOrChapter.replace(/\.md$/, "");
+    if (!chapter) return undefined;
+    const chapterUrl = `https://zenn.dev/${owner}/books/${book}/chapters/${chapter}`;
+    return published ? chapterUrl : `${chapterUrl}?preview=1`;
   }
   return undefined;
 }
