@@ -181,12 +181,27 @@ async function updateAuthStatus(forceSignedOut = false): Promise<void> {
     silent: true
   });
   const hasSession = forceSignedOut ? false : Boolean(session);
+  if (hasSession) {
+    await ensureGithubOwnerFromSession(session);
+  }
   const hasRepoConfig = Boolean(getRepoConfigSummary());
   void vscode.commands.executeCommand("setContext", "zennpad.isSignedIn", hasSession);
   void vscode.commands.executeCommand("setContext", "zennpad.hasRepoConfig", hasRepoConfig);
   globalTreeDataProvider?.setStatus({ signedIn: hasSession, hasRepoConfig });
   if (globalStatusBar && globalGithubSync) {
     updateStatusBar(globalStatusBar, globalGithubSync);
+  }
+}
+
+async function ensureGithubOwnerFromSession(
+  session: vscode.AuthenticationSession | undefined
+): Promise<void> {
+  if (!session) return;
+  const config = vscode.workspace.getConfiguration("zennpad");
+  const current = config.get<string>("githubOwner")?.trim();
+  const login = session.account?.label?.trim();
+  if (!current && login) {
+    await config.update("githubOwner", login, vscode.ConfigurationTarget.Global);
   }
 }
 
