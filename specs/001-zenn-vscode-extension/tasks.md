@@ -85,8 +85,8 @@
 ### Implementation for User Story 3
 
 - [ ] T019 [P] [US3] `/home/ackkerman/repos/zennpad/src/ui/imageInsertion.ts` で貼り付け/ドロップ/ファイル選択処理に3MB上限・MIMEフィルタ・重複リネームを実装する
-- [x] T020 [P] [US3] `/home/ackkerman/repos/zennpad/src/ui/imageInsertion.ts` `/home/ackkerman/repos/zennpad/src/fs/zennFsProvider.ts` で `/images/<name>` 保存とMarkdownリンク自動挿入を保証する
-- [x] T021 [US3] `/home/ackkerman/repos/zennpad/src/github/sync.ts` `/home/ackkerman/repos/zennpad/src/github/syncScheduler.ts` で画像変更をdirtyキューに統合し、デバウンス/手動フラッシュ/DeployToZenn時のみmain反映にする
+- [ ] T020 [P] [US3] `/home/ackkerman/repos/zennpad/src/ui/imageInsertion.ts` `/home/ackkerman/repos/zennpad/src/fs/zennFsProvider.ts` で `/images/<name>` 保存とMarkdownリンク自動挿入を保証する
+- [ ] T021 [US3] `/home/ackkerman/repos/zennpad/src/github/sync.ts` `/home/ackkerman/repos/zennpad/src/github/syncScheduler.ts` で画像変更をdirtyキューに統合し、デバウンス/手動フラッシュ/DeployToZenn時のみmain反映にする
 - [ ] T022 [P] [US3] `/home/ackkerman/repos/zennpad/src/__tests__/imageInsertion.test.ts` に3MB超スキップ・リンク生成・重複リネームのテストを追加する
 
 **Checkpoint**: 画像挿入と同期制御が独立に検証可能
@@ -101,8 +101,8 @@
 
 ### Implementation for User Story 4
 
-- [x] T023 [P] [US4] `/home/ackkerman/repos/zennpad/src/ui/searchView.ts` でAa/単語/正規表現トグル付きの優先度スコアリングと結果ナビゲーションを実装/改善する
-- [x] T024 [US4] `/home/ackkerman/repos/zennpad/src/ui/searchView.ts` `/home/ackkerman/repos/zennpad/src/github/fileContent.ts` でキャッシュ優先→ライブフェッチの検索データ取得とエラー時のフォールバックを整備する
+- [ ] T023 [P] [US4] `/home/ackkerman/repos/zennpad/src/ui/searchView.ts` でAa/単語/正規表現トグル付きの優先度スコアリングと結果ナビゲーションを実装/改善する
+- [ ] T024 [US4] `/home/ackkerman/repos/zennpad/src/ui/searchView.ts` `/home/ackkerman/repos/zennpad/src/github/fileContent.ts` でキャッシュ優先→ライブフェッチの検索データ取得とエラー時のフォールバックを整備する
 - [ ] T025 [US4] `/home/ackkerman/repos/zennpad/src/github/sync.ts` `/home/ackkerman/repos/zennpad/src/commands/sync.ts` に409/429/タイムアウト時のバックオフ・再取得・手動リトライ導線を追加する
 - [ ] T026 [P] [US4] `/home/ackkerman/repos/zennpad/src/__tests__/searchView.test.ts` に検索トグルと結果ジャンプのテストを追加する
 
@@ -115,15 +115,81 @@
 **Purpose**: 仕上げと全体品質向上
 
 - [ ] T027 [P] `/home/ackkerman/repos/zennpad/specs/001-zenn-vscode-extension/quickstart.md` `/home/ackkerman/repos/zennpad/README.md` を最新のフロー・成功指標・UI手順で更新する
+- [ ] T028 [P] `make screenshot-web` を実行し生成物（/home/ackkerman/repos/zennpad/media/ 以下）を確認・更新する
 - [ ] T029 [P] `/home/ackkerman/repos/zennpad` で `pnpm lint && pnpm test && pnpm compile` を再実行し最終確認する
 - [ ] T030 `/home/ackkerman/repos/zennpad` で不要ログ/コメント/重複コードを整理し変更セットを最終レビュー可能な状態に整える
 
 ---
 
+## Phase 8: Books機能拡張
+
+**Purpose**: books/* 構造の管理・作成・公開・プレビューを実装する
+
+- [ ] T031 `/home/ackkerman/repos/zennpad/src/ui/tree/zennTreeDataProvider.ts` `/home/ackkerman/repos/zennpad/src/ui/tree/treeUtils.ts` で GitHub の books/* から Book/Chapter ツリーを構築しfrontmatter読込/ソートを実装する
+- [ ] T032 [P] `/home/ackkerman/repos/zennpad/src/commands/content.ts` に Book/Chapter 作成（slug生成、frontmatter初期値、章テンプレート）を追加する
+- [ ] T033 `/home/ackkerman/repos/zennpad/src/commands/content.ts` `/home/ackkerman/repos/zennpad/src/github/sync.ts` で Book/Chapter の rename/move/delete とリンク整合性/衝突ハンドリングを実装する
+- [ ] T034 `/home/ackkerman/repos/zennpad/src/commands/openOnZenn.ts` `/home/ackkerman/repos/zennpad/src/ui/tree/frontmatterIO.ts` で Book の published/非公開管理と Open on Zenn (book URL) 生成を実装する
+- [ ] T035 [P] `/home/ackkerman/repos/zennpad/src/preview/previewManager.ts` `/home/ackkerman/repos/zennpad/src/utils/path.ts` で Book/Chapter の preview パス解決（urlPath生成）を追加する
+- [ ] T036 [P] `/home/ackkerman/repos/zennpad/src/__tests__/books.test.ts` に Book/Chapter のCRUD/公開/プレビュー/競合復旧のテストを追加する
+
+---
+
+## Phase 9: 複数リポジトリ接続
+
+**Purpose**: 2つまでのZennリポを登録し、アクティブ切替でSync対象を変更する
+
+- [ ] T037 `/home/ackkerman/repos/zennpad/src/ui/tree/zennTreeDataProvider.ts` `/home/ackkerman/repos/zennpad/src/ui/actionsView.ts` に複数リポの一覧表示と選択UI（既存Repositoriesビュー改名含む）を追加する
+- [ ] T038 [P] `/home/ackkerman/repos/zennpad/src/context.ts` `/home/ackkerman/repos/zennpad/src/github/repoConfig.ts` `/home/ackkerman/repos/zennpad/src/github/sync.ts` でアクティブリポ切替に伴うFS/キャッシュ/同期ターゲット更新を実装する
+- [ ] T039 [P] `/home/ackkerman/repos/zennpad/src/__tests__/multiRepo.test.ts` にリポ切替でツリー/同期/プレビューが正しく切り替わることを検証する
+
+---
+
+## Phase 10: Deploy制御（回数表示・計測）
+
+**Purpose**: Zenn 150回/日上限に対する消費回数を計測・表示する
+
+- [ ] T040 `/home/ackkerman/repos/zennpad/src/github/syncScheduler.ts` `/home/ackkerman/repos/zennpad/src/github/pendingState.ts` で Zennアカウントごとのデプロイ回数計測・永続化を実装する
+- [ ] T041 [P] `/home/ackkerman/repos/zennpad/src/ui/statusBar.ts` `/home/ackkerman/repos/zennpad/src/ui/actionsView.ts` にデプロイ残回数/警告表示を追加し、上限超過時はブロックする
+- [ ] T042 [P] `/home/ackkerman/repos/zennpad/src/__tests__/deployCounter.test.ts` にデプロイ回数計測と警告/ブロックのテストを追加する
+
+---
+
+## Phase 11: 執筆日付関連機能（ストリーク/カレンダー/草）
+
+- [ ] T043 `/home/ackkerman/repos/zennpad/src/utils` `/home/ackkerman/repos/zennpad/src/ui` で投稿ストリーク/カレンダービュー/草マップ用の日付データ生成（コミット履歴またはfrontmatterから）を追加する
+- [ ] T044 [P] `/home/ackkerman/repos/zennpad/src/ui/searchView.ts` または専用ビューにストリーク/カレンダー/草マップ表示を実装し、ソート/フィルタと連動させる
+- [ ] T045 [P] `/home/ackkerman/repos/zennpad/src/__tests__/streakCalendar.test.ts` に日付集計と表示ロジックのテストを追加する
+
+---
+
+## Phase 12: GitHub同期キャッシュ失効とフォールバック
+
+- [ ] T046 `/home/ackkerman/repos/zennpad/src/github/sync.ts` `/home/ackkerman/repos/zennpad/src/github/pendingState.ts` で cache.json のバージョン管理と失効ポリシー（例:10分）を実装する
+- [ ] T047 [P] `/home/ackkerman/repos/zennpad/src/github/sync.ts` にパース失敗/不整合検知時のキャッシュ破棄→ライブ取得フォールバックを追加する
+- [ ] T048 [P] `/home/ackkerman/repos/zennpad/src/__tests__/cachePolicy.test.ts` に失効・バージョン不一致・パース失敗時の挙動を検証する
+
+---
+
+## Phase 13: スニペット/断片保存と検索（任意）
+
+- [ ] T049 `/home/ackkerman/repos/zennpad/src/ui/searchView.ts` `/home/ackkerman/repos/zennpad/src/ui/actionsView.ts` にスニペット保存/一覧/検索UIを追加する（ローカル保存で始める）
+- [ ] T050 [P] `/home/ackkerman/repos/zennpad/src/utils` `/home/ackkerman/repos/zennpad/src/github` でスニペット保存先（ローカルもしくは専用フォルダ）と検索インデックスを実装する
+- [ ] T051 [P] `/home/ackkerman/repos/zennpad/src/__tests__/snippets.test.ts` にスニペット保存・検索のテストを追加する
+
+---
+
+## Phase 14: Scrap対応の検討
+
+- [ ] T052 `/home/ackkerman/repos/zennpad/docs/scrap-support.md` に Scrap のGitHub配置可否と拡張で扱う範囲を調査・方針決定を記述する
+- [ ] T053 [P] `/home/ackkerman/repos/zennpad/src/ui/actionsView.ts` `/home/ackkerman/repos/zennpad/src/commands` で決定した方針に基づきScrap機能の導線（未対応ならガイダンス表示）を実装する
+
+---
+
 ## Dependencies & Execution Order
 
-- Phase 1 → Phase 2 → User Stories (US1 P1, US2 P1, US3 P2, US4 P3) → Phase 7
-- US1はプレビュー/編集基盤を提供するため最優先。US2はUS1の編集/ツリー/preview土台を前提とし並行可能。US3は同期キュー安定後（Phase2）に着手可能でUS1/US2と並行可。US4はツリー/キャッシュ/同期が揃った後に着手。
+Phase 1 → Phase 2 → User Stories (US1 P1, US2 P1, US3 P2, US4 P3) → Phase 7 → Phase 8 (Books) → Phase 9 (複数リポ) → Phase 10 (Deploy計測) → Phase 11 (日付可視化) → Phase 12 (キャッシュ失効) → Phase 13 (スニペット) → Phase 14 (Scrap方針)
+- US1はプレビュー/編集基盤を提供するため最優先。US2はUS1の土台を前提に並行可。US3は同期基盤後に並行可。US4はツリー/キャッシュ/同期が揃った後。
+- Phase 8以降は拡張機能群であり、Books→複数リポ→デプロイ計測→日付可視化→キャッシュ失効→スニペット→Scrap検討の順で進める。
 
 ### Parallel Opportunities
 
@@ -134,6 +200,13 @@
 - US3: T019/T020は並列可、T021は同期基盤前提、テストT022は後追い
 - US4: T023とT024は並列可、T025は同期エラーハンドリング前提、テストT026は後追い
 - Phase 7: T027/T028/T029はほぼ並列、T030は最終まとめ
+- Phase 8: T031/T032/T035/T036は並列可、T033/T034はツリー/コマンド前提
+- Phase 9: T037/T038並列可、T039は後追い
+- Phase 10: T040実装後にT041並列可、T042は後追い
+- Phase 11: T043/T044並列可、T045は後追い
+- Phase 12: T046後にT047/T048並列可
+- Phase 13: T049/T050並列可、T051は後追い
+- Phase 14: T052後にT053
 
 ### Suggested MVP Scope
 
