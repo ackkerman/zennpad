@@ -17,6 +17,7 @@ export function buildZennUrl(owner: string, path: string, published: boolean): s
       const bookUrl = `https://zenn.dev/${owner}/books/${book}`;
       return published ? bookUrl : `${bookUrl}?preview=1`;
     }
+    if (!configOrChapter.endsWith(".md")) return undefined;
     const chapter = configOrChapter.replace(/\.md$/, "");
     if (!chapter) return undefined;
     const chapterUrl = `https://zenn.dev/${owner}/books/${book}/chapters/${chapter}`;

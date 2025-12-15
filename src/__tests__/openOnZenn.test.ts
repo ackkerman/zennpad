@@ -42,6 +42,14 @@ test("buildZennUrl generates book chapter URLs", async () => {
   }, createVscodeStub());
 });
 
+test("buildZennUrl returns undefined for non-markdown book files", async () => {
+  await withMockedVscode(async () => {
+    const { buildZennUrl } = await import("../commands/openOnZenn");
+    assert.equal(buildZennUrl("dave", "books/my-book/assets/logo.png", true), undefined);
+    assert.equal(buildZennUrl("dave", "books/my-book/assets", false), undefined);
+  }, createVscodeStub());
+});
+
 test("buildZennUrl returns undefined for unsupported paths", async () => {
   await withMockedVscode(async () => {
     const { buildZennUrl } = await import("../commands/openOnZenn");
