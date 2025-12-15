@@ -15,6 +15,10 @@ const COMMIT_MESSAGE = "ZennPad sync";
 const DEPLOY_MESSAGE = "ZennPad deploy work -> main";
 
 export class GitHubSync {
+  private static readonly TRACKED_ROOTS = ["articles", "books", "images"] as const;
+  private static readonly TRACKED_ROOT_PATHS = GitHubSync.TRACKED_ROOTS.map(
+    (root) => `/${root}`
+  );
   private pulling = false;
   private autoSyncPaused = false;
   private readonly state = new PendingState();
@@ -46,9 +50,8 @@ export class GitHubSync {
     try {
       await ensureWorkBranch(octokit, repoConfig);
       await this.ensureDirectories();
-      const remotePaths = new Set<string>(["/", "/articles", "/books", "/images"]);
-      const roots = ["articles", "books", "images"] as const;
-      for (const root of roots) {
+      const remotePaths = new Set<string>(["/"]);
+      for (const root of GitHubSync.TRACKED_ROOTS) {
         const pulled = await this.pullDirectory(octokit, repoConfig, root, repoConfig.workBranch);
         for (const path of pulled) {
           remotePaths.add(path);
@@ -314,7 +317,7 @@ export class GitHubSync {
   }
 
   private async ensureDirectories(): Promise<void> {
-    const directories = ["/", "/articles", "/books", "/images"];
+    const directories = ["/", ...GitHubSync.TRACKED_ROOT_PATHS];
     for (const dir of directories) {
       const uri = vscode.Uri.from({ scheme: "zenn", path: dir });
       try {
@@ -347,7 +350,7 @@ export class GitHubSync {
   }
 
   private pruneLocalEntries(remotePaths: Set<string>): void {
-    const trackedRoots = ["/articles", "/books", "/images"];
+    const trackedRoots = GitHubSync.TRACKED_ROOT_PATHS;
     const pending = this.state.getPendingPaths();
     for (const entry of this.fsProvider.snapshot()) {
       const path = entry.path;
