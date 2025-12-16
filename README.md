@@ -17,7 +17,7 @@
 
 ZennPad は、VS Code のサイドバーから Zenn の記事/本/画像をまるごと扱える拡張機能です。GitHub リポジトリを仮想ファイルシステムとして開き、記事のドラフト作成・公開切替・画像挿入・プレビュー・デプロイまでをサイドバー上で行えるようにします。
 
-<img src="./docs/videos/demo-full.gif" width="750px" />
+<img src="./docs/videos/demo_full.gif" width="750px" />
 
 ---
 

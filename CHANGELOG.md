@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v0.1.3
+
+### 変更
+- README のデモ GIF（docs/videos/demo_full.gif）を微調整して差し替え、最新版の挙動が伝わるように更新。
+
 ## v0.1.2
 
 ### 変更
