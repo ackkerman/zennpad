@@ -3,7 +3,6 @@ name: Build VSIX Artifact
 on:
   push:
     branches:
-      - main
       - release
 
 jobs:
